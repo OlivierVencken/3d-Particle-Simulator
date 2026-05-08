@@ -1,0 +1,8 @@
+.gradle/
+.github/java-upgrade/
+.m2/
+build/
+target/
+out/
+*.log
+*.tmp

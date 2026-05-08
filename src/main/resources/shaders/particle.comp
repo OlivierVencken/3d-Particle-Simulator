@@ -1,0 +1,154 @@
+#version 430 core
+
+layout(local_size_x = 256) in;
+
+#define MAX_GROUPS 16
+
+layout(std430, binding = 0) buffer Positions {
+    vec4 positions[];
+};
+
+layout(std430, binding = 1) buffer Velocities {
+    vec4 velocities[];
+};
+
+layout(std430, binding = 2) buffer GridData {
+    int grid_data[];
+};
+
+layout(std430, binding = 3) buffer GridCounts {
+    int grid_counts[];
+};
+
+uniform float uDeltaTime;
+uniform int uParticleCount;
+uniform int uGroupCount;
+uniform float uForceFactor;
+uniform float uVelocityDamping;
+uniform float uInteractionRange;
+uniform float uBounds;
+uniform int uGridSize;
+uniform float uGridCellSize;
+uniform int uMaxParticlesPerCell;
+uniform int uNeighborRadius;
+uniform int uPass;
+uniform float uAttractionMatrix[MAX_GROUPS * MAX_GROUPS];
+
+float attraction(int gi, int gj) {
+    gi = clamp(gi, 0, uGroupCount - 1);
+    gj = clamp(gj, 0, uGroupCount - 1);
+    return uAttractionMatrix[gi * uGroupCount + gj];
+}
+
+ivec3 getGridCoord(vec3 pos) {
+    vec3 normalized = (pos + vec3(uBounds)) / (uBounds * 2.0);
+    ivec3 coord = ivec3(floor(normalized * float(uGridSize)));
+    coord.x = clamp(coord.x, 0, uGridSize - 1);
+    coord.y = clamp(coord.y, 0, uGridSize - 1);
+    coord.z = clamp(coord.z, 0, uGridSize - 1);
+    return coord;
+}
+
+int getGridIndex(ivec3 coord) {
+    return (coord.z * uGridSize * uGridSize) + (coord.y * uGridSize) + coord.x;
+}
+
+float calculateForce(float normalizedDistance, float attractionValue) {
+    float repulsionRadius = 0.3;
+    if (normalizedDistance < repulsionRadius) {
+        return normalizedDistance / repulsionRadius - 1.0;
+    }
+
+    if (normalizedDistance < 1.0) {
+        return attractionValue
+            * (1.0 - abs(2.0 * normalizedDistance - 1.0 - repulsionRadius) / (1.0 - repulsionRadius));
+    }
+
+    return 0.0;
+}
+
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    if (id >= uint(uParticleCount)) {
+        return;
+    }
+
+    if (uPass == 0) {
+        vec3 pos = positions[id].xyz;
+        ivec3 gridCoord = getGridCoord(pos);
+        int gridIndex = getGridIndex(gridCoord);
+        int cellOffset = atomicAdd(grid_counts[gridIndex], 1);
+
+        if (cellOffset < uMaxParticlesPerCell) {
+            int dataIndex = gridIndex * uMaxParticlesPerCell + cellOffset;
+            grid_data[dataIndex] = int(id);
+        }
+
+        return;
+    }
+
+    vec4 packedPosition = positions[id];
+    vec3 pos = packedPosition.xyz;
+    vec3 velocity = velocities[id].xyz;
+    int groupI = int(round(packedPosition.w));
+    vec3 force = vec3(0.0);
+    ivec3 currentGrid = getGridCoord(pos);
+
+    for (int dz = -uNeighborRadius; dz <= uNeighborRadius; dz++) {
+        for (int dy = -uNeighborRadius; dy <= uNeighborRadius; dy++) {
+            for (int dx = -uNeighborRadius; dx <= uNeighborRadius; dx++) {
+                ivec3 neighborGrid = currentGrid + ivec3(dx, dy, dz);
+                if (any(lessThan(neighborGrid, ivec3(0))) || any(greaterThanEqual(neighborGrid, ivec3(uGridSize)))) {
+                    continue;
+                }
+
+                int neighborIndex = getGridIndex(neighborGrid);
+                int cellParticleCount = min(grid_counts[neighborIndex], uMaxParticlesPerCell);
+
+                for (int i = 0; i < cellParticleCount; i++) {
+                    int dataIndex = neighborIndex * uMaxParticlesPerCell + i;
+                    int otherId = grid_data[dataIndex];
+
+                    if (otherId == int(id)) {
+                        continue;
+                    }
+
+                    vec4 otherPosition = positions[otherId];
+                    vec3 direction = otherPosition.xyz - pos;
+                    float distance = length(direction);
+
+                    if (distance > 0.0001 && distance < uInteractionRange) {
+                        int groupJ = int(round(otherPosition.w));
+                        float normalizedDistance = distance / uInteractionRange;
+                        float forceMagnitude = calculateForce(normalizedDistance, attraction(groupI, groupJ));
+                        force += normalize(direction) * forceMagnitude * uForceFactor;
+                    }
+                }
+            }
+        }
+    }
+
+    velocity += force * uDeltaTime * 0.1;
+    velocity *= uVelocityDamping;
+
+    float maxVelocity = 8.0;
+    float velocityMagnitude = length(velocity);
+    if (velocityMagnitude > maxVelocity) {
+        velocity = normalize(velocity) * maxVelocity;
+    }
+
+    pos += velocity * uDeltaTime;
+
+    for (int axis = 0; axis < 3; axis++) {
+        if (pos[axis] > uBounds) {
+            pos[axis] = uBounds;
+            velocity[axis] *= -0.65;
+        } else if (pos[axis] < -uBounds) {
+            pos[axis] = -uBounds;
+            velocity[axis] *= -0.65;
+        }
+    }
+
+    positions[id] = vec4(pos, packedPosition.w);
+    velocities[id] = vec4(velocity, 0.0);
+}
