@@ -4,6 +4,7 @@ import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
+import imgui.type.ImInt;
 
 public final class SimulationUi {
     private static final int LEFT_MOUSE_BUTTON = 0;
@@ -14,6 +15,7 @@ public final class SimulationUi {
     private float fpsTimeAccumulator;
     private int fpsFrameAccumulator;
     private float matrixEditStep = 0.1f;
+    private final ImInt customSpawnAmount = new ImInt(5_000);
 
     public void render(float deltaTime, GpuParticleSystem particles, CameraController camera) {
         updateFps(deltaTime);
@@ -50,6 +52,9 @@ public final class SimulationUi {
         ImGui.separatorText("Rendering");
         slider("Point size", particles.pointSize(), 1.0f, 8.0f, particles::pointSize);
 
+        ImGui.separatorText("Spawn");
+        renderSpawnControls(particles);
+
         ImGui.separatorText("Camera");
         if (ImGui.button("Reset camera")) {
             camera.reset();
@@ -66,6 +71,47 @@ public final class SimulationUi {
         }
 
         ImGui.end();
+    }
+
+    private void renderSpawnControls(GpuParticleSystem particles) {
+        ImGui.text("Max: %,d".formatted(particles.maxParticleCount()));
+
+        spawnButton("+1k", particles, 1_000);
+        ImGui.sameLine();
+        spawnButton("-1k", particles, -1_000);
+        ImGui.sameLine();
+        spawnButton("+10k", particles, 10_000);
+        ImGui.sameLine();
+        spawnButton("-10k", particles, -10_000);
+
+        spawnButton("+100k", particles, 100_000);
+        ImGui.sameLine();
+        spawnButton("-100k", particles, -100_000);
+        ImGui.sameLine();
+        if (ImGui.button("Clear")) {
+            particles.clearParticles();
+        }
+
+        if (customSpawnAmount.get() < 0) {
+            customSpawnAmount.set(0);
+        }
+
+        ImGui.setNextItemWidth(120.0f);
+        ImGui.inputInt("Amount", customSpawnAmount, 100, 1_000);
+        ImGui.sameLine();
+        if (ImGui.button("Add")) {
+            particles.addParticles(customSpawnAmount.get());
+        }
+    }
+
+    private void spawnButton(String label, GpuParticleSystem particles, int amount) {
+        if (ImGui.button(label)) {
+            if (amount >= 0) {
+                particles.addParticles(amount);
+            } else {
+                particles.removeParticles(-amount);
+            }
+        }
     }
 
     private void renderAttractionMatrixWindow(GpuParticleSystem particles) {

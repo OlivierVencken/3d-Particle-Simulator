@@ -32,6 +32,8 @@ The attraction matrix window edits group-to-group forces live. Left-click a tile
 
 Wrap-around mode can be enabled in the Physics section. When enabled, particles use 3D toroidal distance and wrap through the simulation bounds instead of bouncing.
 
+The Spawn section can add/remove particles with presets, clear the scene, or add a custom amount. Existing particles keep their current simulated state; newly spawned particles are randomly distributed through the simulation volume and across groups.
+
 ## Project Layout
 
 - `src/main/java/com/particle/sim/ParticleSimulatorApp.java` - GLFW window, OpenGL loop, frame orchestration

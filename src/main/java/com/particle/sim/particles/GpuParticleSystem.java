@@ -10,6 +10,8 @@ import java.util.Random;
 
 import static org.lwjgl.opengl.GL43C.GL_DYNAMIC_DRAW;
 import static org.lwjgl.opengl.GL43C.GL_STREAM_DRAW;
+import static org.lwjgl.opengl.GL43C.GL_COPY_READ_BUFFER;
+import static org.lwjgl.opengl.GL43C.GL_COPY_WRITE_BUFFER;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BARRIER_BIT;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
 import static org.lwjgl.opengl.GL43C.GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;
@@ -17,6 +19,7 @@ import static org.lwjgl.opengl.GL43C.glBindBuffer;
 import static org.lwjgl.opengl.GL43C.glBindBufferBase;
 import static org.lwjgl.opengl.GL43C.glBindVertexArray;
 import static org.lwjgl.opengl.GL43C.glBufferData;
+import static org.lwjgl.opengl.GL43C.glCopyBufferSubData;
 import static org.lwjgl.opengl.GL43C.glDeleteBuffers;
 import static org.lwjgl.opengl.GL43C.glDeleteProgram;
 import static org.lwjgl.opengl.GL43C.glDeleteVertexArrays;
@@ -40,8 +43,9 @@ public final class GpuParticleSystem {
     private static final int GROUP_COUNT = 6;
     private static final int GRID_SIZE = 16;
     private static final int GRID_CELL_COUNT = GRID_SIZE * GRID_SIZE * GRID_SIZE;
-    private static final int MAX_PARTICLES_PER_CELL = 96;
+    private static final int MAX_PARTICLES_PER_CELL = 512;
     private static final int MAX_GROUPS = 16;
+    private static final int MAX_PARTICLE_COUNT = 1_000_000;
 
     private int computeProgram;
     private int renderProgram;
@@ -64,6 +68,7 @@ public final class GpuParticleSystem {
     private boolean toroidalWrap;
     private final float[] attractionMatrix = new float[MAX_GROUPS * MAX_GROUPS];
     private final Random matrixRandom = new Random();
+    private final Random particleRandom = new Random();
 
     public void init() {
         computeProgram = ShaderProgram.compute("/shaders/particle.comp");
@@ -100,48 +105,14 @@ public final class GpuParticleSystem {
     }
 
     public void reset() {
-        if (positionSsbo != 0) {
-            glDeleteBuffers(positionSsbo);
-        }
-        if (velocitySsbo != 0) {
-            glDeleteBuffers(velocitySsbo);
-        }
-
-        Random random = new Random(42L);
-        FloatBuffer positions = BufferUtils.createFloatBuffer(particleCount * 4);
-        FloatBuffer velocities = BufferUtils.createFloatBuffer(particleCount * 4);
-
-        for (int i = 0; i < particleCount; i++) {
-            float radius = random.nextFloat() * bounds * 0.6f;
-            float theta = random.nextFloat() * (float) (Math.PI * 2.0);
-            float phi = (float) Math.acos(2.0f * random.nextFloat() - 1.0f);
-
-            float x = radius * (float) Math.sin(phi) * (float) Math.cos(theta);
-            float y = radius * (float) Math.cos(phi);
-            float z = radius * (float) Math.sin(phi) * (float) Math.sin(theta);
-
-            positions.put(x).put(y).put(z).put(i % GROUP_COUNT);
-            velocities
-                    .put((random.nextFloat() - 0.5f) * 0.2f)
-                    .put((random.nextFloat() - 0.5f) * 0.2f)
-                    .put((random.nextFloat() - 0.5f) * 0.2f)
-                    .put(0.0f);
-        }
-
-        positions.flip();
-        velocities.flip();
-
-        positionSsbo = glGenBuffers();
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, positionSsbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, positions, GL_DYNAMIC_DRAW);
-
-        velocitySsbo = glGenBuffers();
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, velocitySsbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, velocities, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        resizeParticles(particleCount, false);
     }
 
     public void update(float deltaTime, float elapsedTime) {
+        if (particleCount == 0) {
+            return;
+        }
+
         glUseProgram(computeProgram);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, positionSsbo);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, velocitySsbo);
@@ -190,6 +161,10 @@ public final class GpuParticleSystem {
     }
 
     public void render(int width, int height, float[] viewMatrix) {
+        if (particleCount == 0) {
+            return;
+        }
+
         glUseProgram(renderProgram);
         glBindVertexArray(vao);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, positionSsbo);
@@ -217,6 +192,122 @@ public final class GpuParticleSystem {
 
     public int particleCount() {
         return particleCount;
+    }
+
+    public int maxParticleCount() {
+        return MAX_PARTICLE_COUNT;
+    }
+
+    public void addParticles(int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        resizeParticles(particleCount + amount, true);
+    }
+
+    public void removeParticles(int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        resizeParticles(particleCount - amount, true);
+    }
+
+    public void clearParticles() {
+        resizeParticles(0, false);
+    }
+
+    private void resizeParticles(int requestedParticleCount, boolean preserveExisting) {
+        int oldParticleCount = particleCount;
+        int newParticleCount = Math.max(0, Math.min(MAX_PARTICLE_COUNT, requestedParticleCount));
+        int copiedParticleCount = preserveExisting ? Math.min(oldParticleCount, newParticleCount) : 0;
+        int appendedParticleCount = newParticleCount - copiedParticleCount;
+
+        int newPositionSsbo = glGenBuffers();
+        int newVelocitySsbo = glGenBuffers();
+        long newBufferBytes = particleBufferBytes(newParticleCount);
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, newPositionSsbo);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, newBufferBytes, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, newVelocitySsbo);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, newBufferBytes, GL_DYNAMIC_DRAW);
+
+        if (copiedParticleCount > 0) {
+            long copiedBytes = (long) copiedParticleCount * 4L * Float.BYTES;
+            copyBufferPrefix(positionSsbo, newPositionSsbo, copiedBytes);
+            copyBufferPrefix(velocitySsbo, newVelocitySsbo, copiedBytes);
+        }
+
+        if (appendedParticleCount > 0) {
+            long byteOffset = (long) copiedParticleCount * 4L * Float.BYTES;
+            uploadRandomParticles(newPositionSsbo, newVelocitySsbo, byteOffset, appendedParticleCount);
+        } else if (newParticleCount == 0) {
+            uploadZeroParticle(newPositionSsbo, newVelocitySsbo);
+        }
+
+        glDeleteBuffers(positionSsbo);
+        glDeleteBuffers(velocitySsbo);
+
+        positionSsbo = newPositionSsbo;
+        velocitySsbo = newVelocitySsbo;
+        particleCount = newParticleCount;
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+
+    private void uploadRandomParticles(int targetPositionSsbo, int targetVelocitySsbo, long byteOffset, int count) {
+        FloatBuffer positions = BufferUtils.createFloatBuffer(count * 4);
+        FloatBuffer velocities = BufferUtils.createFloatBuffer(count * 4);
+
+        for (int i = 0; i < count; i++) {
+            appendRandomParticle(positions, velocities);
+        }
+
+        positions.flip();
+        velocities.flip();
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, targetPositionSsbo);
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, byteOffset, positions);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, targetVelocitySsbo);
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, byteOffset, velocities);
+    }
+
+    private void uploadZeroParticle(int targetPositionSsbo, int targetVelocitySsbo) {
+        FloatBuffer positions = BufferUtils.createFloatBuffer(4);
+        FloatBuffer velocities = BufferUtils.createFloatBuffer(4);
+        positions.put(0.0f).put(0.0f).put(0.0f).put(0.0f).flip();
+        velocities.put(0.0f).put(0.0f).put(0.0f).put(0.0f).flip();
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, targetPositionSsbo);
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, positions);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, targetVelocitySsbo);
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, velocities);
+    }
+
+    private void appendRandomParticle(FloatBuffer positions, FloatBuffer velocities) {
+        float radius = particleRandom.nextFloat() * bounds * 0.6f;
+        float theta = particleRandom.nextFloat() * (float) (Math.PI * 2.0);
+        float phi = (float) Math.acos(2.0f * particleRandom.nextFloat() - 1.0f);
+
+        float x = radius * (float) Math.sin(phi) * (float) Math.cos(theta);
+        float y = radius * (float) Math.cos(phi);
+        float z = radius * (float) Math.sin(phi) * (float) Math.sin(theta);
+        int group = particleRandom.nextInt(GROUP_COUNT);
+
+        positions.put(x).put(y).put(z).put(group);
+        velocities
+                .put((particleRandom.nextFloat() - 0.5f) * 0.2f)
+                .put((particleRandom.nextFloat() - 0.5f) * 0.2f)
+                .put((particleRandom.nextFloat() - 0.5f) * 0.2f)
+                .put(0.0f);
+    }
+
+    private static void copyBufferPrefix(int sourceBuffer, int targetBuffer, long byteCount) {
+        glBindBuffer(GL_COPY_READ_BUFFER, sourceBuffer);
+        glBindBuffer(GL_COPY_WRITE_BUFFER, targetBuffer);
+        glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, byteCount);
+    }
+
+    private static long particleBufferBytes(int count) {
+        return (long) Math.max(count, 1) * 4L * Float.BYTES;
     }
 
     public float pointSize() {
