@@ -61,6 +61,7 @@ public final class GpuParticleSystem {
     private float repulsionRadius = 0.3f;
     private float maxVelocity = 8.0f;
     private float boundaryBounce = 0.65f;
+    private boolean toroidalWrap;
     private final float[] attractionMatrix = new float[MAX_GROUPS * MAX_GROUPS];
     private final Random matrixRandom = new Random();
 
@@ -178,6 +179,7 @@ public final class GpuParticleSystem {
         glUniform1f(glGetUniformLocation(computeProgram, "uGridCellSize"), gridCellSize());
         glUniform1i(glGetUniformLocation(computeProgram, "uMaxParticlesPerCell"), MAX_PARTICLES_PER_CELL);
         glUniform1i(glGetUniformLocation(computeProgram, "uNeighborRadius"), neighborRadius());
+        glUniform1i(glGetUniformLocation(computeProgram, "uToroidalWrap"), toroidalWrap ? 1 : 0);
         glUniform1i(glGetUniformLocation(computeProgram, "uPass"), pass);
         glUniform1fv(glGetUniformLocation(computeProgram, "uAttractionMatrix"), attractionMatrix);
     }
@@ -279,6 +281,14 @@ public final class GpuParticleSystem {
 
     public void bounds(float bounds) {
         this.bounds = bounds;
+    }
+
+    public boolean toroidalWrap() {
+        return toroidalWrap;
+    }
+
+    public void toroidalWrap(boolean toroidalWrap) {
+        this.toroidalWrap = toroidalWrap;
     }
 
     public float attraction(int groupA, int groupB) {

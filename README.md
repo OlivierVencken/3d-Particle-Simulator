@@ -30,6 +30,8 @@ Particles are assigned to color-coded groups. Each compute step first populates 
 
 The attraction matrix window edits group-to-group forces live. Left-click a tile to increase attraction, right-click to increase repulsion. Green cells attract, grey cells are neutral, and red cells repel.
 
+Wrap-around mode can be enabled in the Physics section. When enabled, particles use 3D toroidal distance and wrap through the simulation bounds instead of bouncing.
+
 ## Project Layout
 
 - `src/main/java/com/particle/sim/ParticleSimulatorApp.java` - GLFW window, OpenGL loop, frame orchestration

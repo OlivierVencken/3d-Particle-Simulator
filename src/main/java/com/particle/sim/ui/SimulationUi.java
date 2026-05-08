@@ -42,6 +42,10 @@ public final class SimulationUi {
         slider("Max velocity", particles.maxVelocity(), 0.5f, 30.0f, particles::maxVelocity);
         slider("Boundary bounce", particles.boundaryBounce(), 0.0f, 1.0f, particles::boundaryBounce);
         slider("Bounds", particles.bounds(), 2.0f, 24.0f, particles::bounds);
+        ImBoolean toroidalWrap = new ImBoolean(particles.toroidalWrap());
+        if (ImGui.checkbox("Wrap around", toroidalWrap)) {
+            particles.toroidalWrap(toroidalWrap.get());
+        }
 
         ImGui.separatorText("Rendering");
         slider("Point size", particles.pointSize(), 1.0f, 8.0f, particles::pointSize);
