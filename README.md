@@ -17,8 +17,8 @@ The first run downloads LWJGL and imgui-java dependencies.
 
 ## Camera Controls
 
-- Right mouse drag: rotate
-- Middle mouse drag, or Shift + right mouse drag: pan
+- Left mouse drag: rotate
+- Middle mouse drag, or Shift + left mouse drag: pan
 - Mouse wheel: zoom
 - WASD: move through the scene
 - Space / Ctrl: move up and down
@@ -27,6 +27,8 @@ The first run downloads LWJGL and imgui-java dependencies.
 ## Simulation Model
 
 Particles are assigned to color-coded groups. Each compute step first populates a 3D spatial grid, then evaluates nearby particles from neighboring grid cells using a group attraction matrix, short-range repulsion, velocity damping, and bounded-space collisions.
+
+The attraction matrix window edits group-to-group forces live. Left-click a tile to increase attraction, right-click to increase repulsion. Green cells attract, grey cells are neutral, and red cells repel.
 
 ## Project Layout
 

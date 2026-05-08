@@ -59,8 +59,8 @@ public final class ParticleSimulatorApp {
     private final SimulationUi ui = new SimulationUi();
 
     private long window;
-    private int width = 1280;
-    private int height = 720;
+    private int width = 1920;
+    private int height = 1080;
 
     private double lastFrameTime;
     private double startTime;

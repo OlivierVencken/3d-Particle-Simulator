@@ -26,6 +26,9 @@ uniform int uGroupCount;
 uniform float uForceFactor;
 uniform float uVelocityDamping;
 uniform float uInteractionRange;
+uniform float uRepulsionRadius;
+uniform float uMaxVelocity;
+uniform float uBoundaryBounce;
 uniform float uBounds;
 uniform int uGridSize;
 uniform float uGridCellSize;
@@ -54,7 +57,7 @@ int getGridIndex(ivec3 coord) {
 }
 
 float calculateForce(float normalizedDistance, float attractionValue) {
-    float repulsionRadius = 0.3;
+    float repulsionRadius = clamp(uRepulsionRadius, 0.01, 0.95);
     if (normalizedDistance < repulsionRadius) {
         return normalizedDistance / repulsionRadius - 1.0;
     }
@@ -131,10 +134,9 @@ void main() {
     velocity += force * uDeltaTime * 0.1;
     velocity *= uVelocityDamping;
 
-    float maxVelocity = 8.0;
     float velocityMagnitude = length(velocity);
-    if (velocityMagnitude > maxVelocity) {
-        velocity = normalize(velocity) * maxVelocity;
+    if (velocityMagnitude > uMaxVelocity) {
+        velocity = normalize(velocity) * uMaxVelocity;
     }
 
     pos += velocity * uDeltaTime;
@@ -142,10 +144,10 @@ void main() {
     for (int axis = 0; axis < 3; axis++) {
         if (pos[axis] > uBounds) {
             pos[axis] = uBounds;
-            velocity[axis] *= -0.65;
+            velocity[axis] *= -uBoundaryBounce;
         } else if (pos[axis] < -uBounds) {
             pos[axis] = -uBounds;
-            velocity[axis] *= -0.65;
+            velocity[axis] *= -uBoundaryBounce;
         }
     }
 

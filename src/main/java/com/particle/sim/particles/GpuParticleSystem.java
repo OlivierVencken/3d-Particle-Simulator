@@ -58,7 +58,11 @@ public final class GpuParticleSystem {
     private float forceFactor = 9.0f;
     private float velocityDamping = 0.965f;
     private float interactionRange = 0.95f;
+    private float repulsionRadius = 0.3f;
+    private float maxVelocity = 8.0f;
+    private float boundaryBounce = 0.65f;
     private final float[] attractionMatrix = new float[MAX_GROUPS * MAX_GROUPS];
+    private final Random matrixRandom = new Random();
 
     public void init() {
         computeProgram = ShaderProgram.compute("/shaders/particle.comp");
@@ -83,10 +87,9 @@ public final class GpuParticleSystem {
     }
 
     private void initAttractionMatrix() {
-        Random random = new Random(7L);
         for (int i = 0; i < GROUP_COUNT; i++) {
             for (int j = 0; j < GROUP_COUNT; j++) {
-                float value = -0.6f + random.nextFloat() * 1.4f;
+                float value = -0.6f + matrixRandom.nextFloat() * 1.4f;
                 if (i == j) {
                     value += 0.25f;
                 }
@@ -167,6 +170,9 @@ public final class GpuParticleSystem {
         glUniform1f(glGetUniformLocation(computeProgram, "uForceFactor"), forceFactor);
         glUniform1f(glGetUniformLocation(computeProgram, "uVelocityDamping"), velocityDamping);
         glUniform1f(glGetUniformLocation(computeProgram, "uInteractionRange"), interactionRange);
+        glUniform1f(glGetUniformLocation(computeProgram, "uRepulsionRadius"), repulsionRadius);
+        glUniform1f(glGetUniformLocation(computeProgram, "uMaxVelocity"), maxVelocity);
+        glUniform1f(glGetUniformLocation(computeProgram, "uBoundaryBounce"), boundaryBounce);
         glUniform1f(glGetUniformLocation(computeProgram, "uBounds"), bounds);
         glUniform1i(glGetUniformLocation(computeProgram, "uGridSize"), GRID_SIZE);
         glUniform1f(glGetUniformLocation(computeProgram, "uGridCellSize"), gridCellSize());
@@ -243,6 +249,80 @@ public final class GpuParticleSystem {
         this.velocityDamping = velocityDamping;
     }
 
+    public float repulsionRadius() {
+        return repulsionRadius;
+    }
+
+    public void repulsionRadius(float repulsionRadius) {
+        this.repulsionRadius = repulsionRadius;
+    }
+
+    public float maxVelocity() {
+        return maxVelocity;
+    }
+
+    public void maxVelocity(float maxVelocity) {
+        this.maxVelocity = maxVelocity;
+    }
+
+    public float boundaryBounce() {
+        return boundaryBounce;
+    }
+
+    public void boundaryBounce(float boundaryBounce) {
+        this.boundaryBounce = boundaryBounce;
+    }
+
+    public float bounds() {
+        return bounds;
+    }
+
+    public void bounds(float bounds) {
+        this.bounds = bounds;
+    }
+
+    public float attraction(int groupA, int groupB) {
+        return attractionMatrix[groupA * GROUP_COUNT + groupB];
+    }
+
+    public void attraction(int groupA, int groupB, float value) {
+        attractionMatrix[groupA * GROUP_COUNT + groupB] = clampAttraction(value);
+    }
+
+    public void adjustAttraction(int groupA, int groupB, float delta) {
+        attraction(groupA, groupB, attraction(groupA, groupB) + delta);
+    }
+
+    public void randomizeAttractionMatrix() {
+        initAttractionMatrix();
+    }
+
+    public void zeroAttractionMatrix() {
+        for (int i = 0; i < GROUP_COUNT; i++) {
+            for (int j = 0; j < GROUP_COUNT; j++) {
+                attraction(i, j, 0.0f);
+            }
+        }
+    }
+
+    public void symmetrizeAttractionMatrix() {
+        for (int i = 0; i < GROUP_COUNT; i++) {
+            for (int j = i + 1; j < GROUP_COUNT; j++) {
+                float average = (attraction(i, j) + attraction(j, i)) * 0.5f;
+                attraction(i, j, average);
+                attraction(j, i, average);
+            }
+        }
+    }
+
+    public void invertAttractionMatrix() {
+        for (int i = 0; i < GROUP_COUNT; i++) {
+            for (int j = 0; j < GROUP_COUNT; j++) {
+                attraction(i, j, -attraction(i, j));
+            }
+        }
+    }
+
     public int groupCount() {
         return GROUP_COUNT;
     }
@@ -261,5 +341,9 @@ public final class GpuParticleSystem {
 
     private int neighborRadius() {
         return Math.max(1, (int) Math.ceil(interactionRange / gridCellSize()));
+    }
+
+    private static float clampAttraction(float value) {
+        return Math.max(-1.0f, Math.min(1.0f, value));
     }
 }

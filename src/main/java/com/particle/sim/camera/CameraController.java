@@ -13,8 +13,8 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_MIDDLE;
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.glfwGetKey;
 
@@ -57,16 +57,16 @@ public final class CameraController {
     }
 
     private void updateMouse(long window, float dx, float dy, float wheel, float[] right, float[] up) {
-        boolean rightDragging = ImGui.getIO().getMouseDown(GLFW_MOUSE_BUTTON_RIGHT);
+        boolean leftDragging = ImGui.getIO().getMouseDown(GLFW_MOUSE_BUTTON_LEFT);
         boolean middleDragging = ImGui.getIO().getMouseDown(GLFW_MOUSE_BUTTON_MIDDLE);
         boolean shiftDown = isPressed(window, GLFW_KEY_LEFT_SHIFT) || isPressed(window, GLFW_KEY_RIGHT_SHIFT);
 
-        if (rightDragging && !shiftDown) {
+        if (leftDragging && !shiftDown) {
             yaw -= dx * 0.006f;
             pitch = Math3d.clamp(pitch - dy * 0.006f, -1.45f, 1.45f);
         }
 
-        if (middleDragging || (rightDragging && shiftDown)) {
+        if (middleDragging || (leftDragging && shiftDown)) {
             float panScale = distance * 0.0015f;
             targetX += (-right[0] * dx + up[0] * dy) * panScale;
             targetY += (-right[1] * dx + up[1] * dy) * panScale;
