@@ -17,9 +17,8 @@ The first run downloads LWJGL and imgui-java dependencies.
 
 ## Camera Controls
 
-- Left mouse drag: rotate
-- Middle mouse drag, or Shift + left mouse drag: pan
-- Mouse wheel: zoom
+- Left-click: enter free-look
+- Right-click or ESC: exit simulation focus
 - WASD: move through the scene
 - Space / Ctrl: move up and down
 - Home: reset camera

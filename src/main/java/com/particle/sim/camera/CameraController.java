@@ -2,10 +2,12 @@ package com.particle.sim.camera;
 
 import com.particle.sim.math.Math3d;
 import imgui.ImGui;
+import imgui.flag.ImGuiConfigFlags;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_HOME;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_CONTROL;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_CONTROL;
@@ -14,27 +16,43 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_MIDDLE;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_DISABLED;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
 import static org.lwjgl.glfw.GLFW.glfwGetKey;
+import static org.lwjgl.glfw.GLFW.glfwSetInputMode;
 
 public final class CameraController {
-    private float targetX;
-    private float targetY;
-    private float targetZ;
+    private float posX;
+    private float posY;
+    private float posZ;
+    
     private float yaw;
-    private float pitch = 0.25f;
-    private float distance = 18.5f;
+    private float pitch;
+    
+    private float sensitivity = 0.002f;
+    private boolean mouseCaptured = false;
+
+    public CameraController() {
+        reset();
+    }
 
     public void update(long window, float deltaTime) {
         var io = ImGui.getIO();
-        float[] eye = eye();
-        float[] forward = Math3d.normalize(targetX - eye[0], targetY - eye[1], targetZ - eye[2]);
+        
+        float cosPitch = (float) Math.cos(pitch);
+        float[] forward = {
+                cosPitch * (float) Math.sin(yaw),
+                (float) Math.sin(pitch),
+                cosPitch * (float) Math.cos(yaw)
+        };
+        
         float[] right = Math3d.normalize(Math3d.cross(forward[0], forward[1], forward[2], 0.0f, 1.0f, 0.0f));
-        float[] up = Math3d.normalize(Math3d.cross(right[0], right[1], right[2], -forward[0], -forward[1], -forward[2]));
-
+        
         if (!io.getWantCaptureMouse()) {
-            updateMouse(window, io.getMouseDeltaX(), io.getMouseDeltaY(), io.getMouseWheel(), right, up);
+            updateMouse(window, io.getMouseDeltaX(), io.getMouseDeltaY(), io.getMouseWheel());
         }
 
         if (!io.getWantCaptureKeyboard()) {
@@ -43,39 +61,49 @@ public final class CameraController {
     }
 
     public float[] viewMatrix() {
-        float[] eye = eye();
-        return Math3d.lookAt(eye[0], eye[1], eye[2], targetX, targetY, targetZ);
+        float cosPitch = (float) Math.cos(pitch);
+        float targetX = posX + (cosPitch * (float) Math.sin(yaw));
+        float targetY = posY + (float) Math.sin(pitch);
+        float targetZ = posZ + (cosPitch * (float) Math.cos(yaw));
+
+        return Math3d.lookAt(posX, posY, posZ, targetX, targetY, targetZ);
     }
 
     public void reset() {
-        targetX = 0.0f;
-        targetY = 0.0f;
-        targetZ = 0.0f;
+        posX = 0.0f;
+        posY = 0.0f;
+        posZ = -18.5f;
         yaw = 0.0f;
         pitch = 0.25f;
-        distance = 18.5f;
     }
 
-    private void updateMouse(long window, float dx, float dy, float wheel, float[] right, float[] up) {
-        boolean leftDragging = ImGui.getIO().getMouseDown(GLFW_MOUSE_BUTTON_LEFT);
-        boolean middleDragging = ImGui.getIO().getMouseDown(GLFW_MOUSE_BUTTON_MIDDLE);
-        boolean shiftDown = isPressed(window, GLFW_KEY_LEFT_SHIFT) || isPressed(window, GLFW_KEY_RIGHT_SHIFT);
+    private void updateMouse(long window, float dx, float dy, float wheel) {
+        boolean leftClick = ImGui.getIO().getMouseClicked(GLFW_MOUSE_BUTTON_LEFT);
+        boolean rightClick = ImGui.getIO().getMouseClicked(GLFW_MOUSE_BUTTON_RIGHT);
+        boolean escPressed = isPressed(window, GLFW_KEY_ESCAPE);
 
-        if (leftDragging && !shiftDown) {
-            yaw -= dx * 0.006f;
-            pitch = Math3d.clamp(pitch - dy * 0.006f, -1.45f, 1.45f);
+        if (leftClick && !mouseCaptured) {
+            mouseCaptured = true;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            ImGui.getIO().addConfigFlags(ImGuiConfigFlags.NoMouse);
+        } else if ((rightClick || escPressed) && mouseCaptured) {
+            mouseCaptured = false;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            ImGui.getIO().removeConfigFlags(ImGuiConfigFlags.NoMouse);
         }
 
-        if (middleDragging || (leftDragging && shiftDown)) {
-            float panScale = distance * 0.0015f;
-            targetX += (-right[0] * dx + up[0] * dy) * panScale;
-            targetY += (-right[1] * dx + up[1] * dy) * panScale;
-            targetZ += (-right[2] * dx + up[2] * dy) * panScale;
+        if (mouseCaptured) {
+            yaw -= dx * sensitivity;
+            pitch = Math3d.clamp(pitch - dy * sensitivity, -1.5f, 1.5f);
         }
+    }
 
-        if (wheel != 0.0f) {
-            distance = Math3d.clamp(distance * (float) Math.pow(0.88f, wheel), 1.5f, 120.0f);
-        }
+    public float getSensitivity() {
+        return sensitivity;
+    }
+
+    public void setSensitivity(float sensitivity) {
+        this.sensitivity = Math.max(0.0001f, sensitivity);
     }
 
     private void updateKeyboard(long window, float deltaTime, float[] forward, float[] right) {
@@ -83,41 +111,32 @@ public final class CameraController {
         float step = speed * deltaTime;
 
         if (isPressed(window, GLFW_KEY_W)) {
-            moveTarget(forward, step);
+            move(forward, step);
         }
         if (isPressed(window, GLFW_KEY_S)) {
-            moveTarget(forward, -step);
+            move(forward, -step);
         }
         if (isPressed(window, GLFW_KEY_D)) {
-            moveTarget(right, step);
+            move(right, step);
         }
         if (isPressed(window, GLFW_KEY_A)) {
-            moveTarget(right, -step);
+            move(right, -step);
         }
         if (isPressed(window, GLFW_KEY_SPACE)) {
-            targetY += step;
+            posY += step;
         }
         if (isPressed(window, GLFW_KEY_LEFT_CONTROL) || isPressed(window, GLFW_KEY_RIGHT_CONTROL)) {
-            targetY -= step;
+            posY -= step;
         }
         if (isPressed(window, GLFW_KEY_HOME)) {
             reset();
         }
     }
 
-    private void moveTarget(float[] direction, float amount) {
-        targetX += direction[0] * amount;
-        targetY += direction[1] * amount;
-        targetZ += direction[2] * amount;
-    }
-
-    private float[] eye() {
-        float cosPitch = (float) Math.cos(pitch);
-        return new float[]{
-                targetX + distance * cosPitch * (float) Math.sin(yaw),
-                targetY + distance * (float) Math.sin(pitch),
-                targetZ + distance * cosPitch * (float) Math.cos(yaw)
-        };
+    private void move(float[] direction, float amount) {
+        posX += direction[0] * amount;
+        posY += direction[1] * amount;
+        posZ += direction[2] * amount;
     }
 
     private static boolean isPressed(long window, int key) {
