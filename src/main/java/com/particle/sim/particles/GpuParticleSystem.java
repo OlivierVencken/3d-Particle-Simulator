@@ -30,12 +30,16 @@ import static org.lwjgl.opengl.GL43C.glGenVertexArrays;
 import static org.lwjgl.opengl.GL43C.glGetUniformLocation;
 import static org.lwjgl.opengl.GL43C.glMemoryBarrier;
 import static org.lwjgl.opengl.GL43C.glBufferSubData;
+import static org.lwjgl.opengl.GL43C.glClearBufferData;
 import static org.lwjgl.opengl.GL43C.glUniform1f;
 import static org.lwjgl.opengl.GL43C.glUniform1fv;
 import static org.lwjgl.opengl.GL43C.glUniform1i;
 import static org.lwjgl.opengl.GL43C.glUniformMatrix4fv;
 import static org.lwjgl.opengl.GL43C.glUseProgram;
 import static org.lwjgl.opengl.GL43C.GL_POINTS;
+import static org.lwjgl.opengl.GL43C.GL_R32I;
+import static org.lwjgl.opengl.GL43C.GL_RED_INTEGER;
+import static org.lwjgl.opengl.GL43C.GL_INT;
 
 public final class GpuParticleSystem {
     private static final int INITIAL_PARTICLE_COUNT = 65_536;
@@ -53,7 +57,6 @@ public final class GpuParticleSystem {
     private int velocitySsbo;
     private int gridDataSsbo;
     private int gridCountsSsbo;
-    private IntBuffer zeroGridCounts;
 
     private int particleCount = INITIAL_PARTICLE_COUNT;
     private float pointSize = 2.2f;
@@ -69,13 +72,42 @@ public final class GpuParticleSystem {
     private final Random matrixRandom = new Random();
     private final Random particleRandom = new Random();
 
+    // Cached uniform locations
+    private int uDeltaTimeLoc, uParticleCountLoc, uGroupCountLoc, uForceFactorLoc;
+    private int uVelocityDampingLoc, uInteractionRangeLoc, uRepulsionRadiusLoc;
+    private int uMaxVelocityLoc, uBoundaryBounceLoc, uBoundsLoc, uGridSizeLoc;
+    private int uMapSizeLoc, uMaxParticlesPerCellLoc, uToroidalWrapLoc, uPassLoc;
+    private int uAttractionMatrixLoc, uViewProjectionLoc, uPointSizeLoc;
+
     public void init() {
         computeProgram = ShaderProgram.compute("/shaders/particle.comp");
         renderProgram = ShaderProgram.render("/shaders/particle.vert", "/shaders/particle.frag");
         vao = glGenVertexArrays();
+        initUniforms();
         initSpatialGrid();
         initAttractionMatrix();
         reset();
+    }
+
+    private void initUniforms() {
+        uDeltaTimeLoc = glGetUniformLocation(computeProgram, "uDeltaTime");
+        uParticleCountLoc = glGetUniformLocation(computeProgram, "uParticleCount");
+        uGroupCountLoc = glGetUniformLocation(computeProgram, "uGroupCount");
+        uForceFactorLoc = glGetUniformLocation(computeProgram, "uForceFactor");
+        uVelocityDampingLoc = glGetUniformLocation(computeProgram, "uVelocityDamping");
+        uInteractionRangeLoc = glGetUniformLocation(computeProgram, "uInteractionRange");
+        uRepulsionRadiusLoc = glGetUniformLocation(computeProgram, "uRepulsionRadius");
+        uMaxVelocityLoc = glGetUniformLocation(computeProgram, "uMaxVelocity");
+        uBoundaryBounceLoc = glGetUniformLocation(computeProgram, "uBoundaryBounce");
+        uBoundsLoc = glGetUniformLocation(computeProgram, "uBounds");
+        uGridSizeLoc = glGetUniformLocation(computeProgram, "uGridSize");
+        uMapSizeLoc = glGetUniformLocation(computeProgram, "uMapSize");
+        uMaxParticlesPerCellLoc = glGetUniformLocation(computeProgram, "uMaxParticlesPerCell");
+        uToroidalWrapLoc = glGetUniformLocation(computeProgram, "uToroidalWrap");
+        uPassLoc = glGetUniformLocation(computeProgram, "uPass");
+        uAttractionMatrixLoc = glGetUniformLocation(computeProgram, "uAttractionMatrix");
+        uViewProjectionLoc = glGetUniformLocation(renderProgram, "uViewProjection");
+        uPointSizeLoc = glGetUniformLocation(renderProgram, "uPointSize");
     }
 
     private void initSpatialGrid() {
@@ -88,8 +120,6 @@ public final class GpuParticleSystem {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsSsbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, (long) SPATIAL_MAP_SIZE * Integer.BYTES, GL_STREAM_DRAW);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-        zeroGridCounts = BufferUtils.createIntBuffer(SPATIAL_MAP_SIZE);
     }
 
     private void initAttractionMatrix() {
@@ -130,28 +160,27 @@ public final class GpuParticleSystem {
     }
 
     private void clearGridCounts() {
-        zeroGridCounts.clear();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsSsbo);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, zeroGridCounts);
+        glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32I, GL_RED_INTEGER, GL_INT, new int[]{0});
     }
 
     private void setSimulationUniforms(float deltaTime, int pass) {
-        glUniform1f(glGetUniformLocation(computeProgram, "uDeltaTime"), deltaTime);
-        glUniform1i(glGetUniformLocation(computeProgram, "uParticleCount"), particleCount);
-        glUniform1i(glGetUniformLocation(computeProgram, "uGroupCount"), GROUP_COUNT);
-        glUniform1f(glGetUniformLocation(computeProgram, "uForceFactor"), forceFactor);
-        glUniform1f(glGetUniformLocation(computeProgram, "uVelocityDamping"), velocityDamping);
-        glUniform1f(glGetUniformLocation(computeProgram, "uInteractionRange"), interactionRange);
-        glUniform1f(glGetUniformLocation(computeProgram, "uRepulsionRadius"), repulsionRadius);
-        glUniform1f(glGetUniformLocation(computeProgram, "uMaxVelocity"), maxVelocity);
-        glUniform1f(glGetUniformLocation(computeProgram, "uBoundaryBounce"), boundaryBounce);
-        glUniform1f(glGetUniformLocation(computeProgram, "uBounds"), bounds);
-        glUniform1i(glGetUniformLocation(computeProgram, "uGridSize"), gridSize());
-        glUniform1i(glGetUniformLocation(computeProgram, "uMapSize"), SPATIAL_MAP_SIZE);
-        glUniform1i(glGetUniformLocation(computeProgram, "uMaxParticlesPerCell"), MAX_PARTICLES_PER_CELL);
-        glUniform1i(glGetUniformLocation(computeProgram, "uToroidalWrap"), toroidalWrap ? 1 : 0);
-        glUniform1i(glGetUniformLocation(computeProgram, "uPass"), pass);
-        glUniform1fv(glGetUniformLocation(computeProgram, "uAttractionMatrix"), attractionMatrix);
+        glUniform1f(uDeltaTimeLoc, deltaTime);
+        glUniform1i(uParticleCountLoc, particleCount);
+        glUniform1i(uGroupCountLoc, GROUP_COUNT);
+        glUniform1f(uForceFactorLoc, forceFactor);
+        glUniform1f(uVelocityDampingLoc, velocityDamping);
+        glUniform1f(uInteractionRangeLoc, interactionRange);
+        glUniform1f(uRepulsionRadiusLoc, repulsionRadius);
+        glUniform1f(uMaxVelocityLoc, maxVelocity);
+        glUniform1f(uBoundaryBounceLoc, boundaryBounce);
+        glUniform1f(uBoundsLoc, bounds);
+        glUniform1i(uGridSizeLoc, gridSize());
+        glUniform1i(uMapSizeLoc, SPATIAL_MAP_SIZE);
+        glUniform1i(uMaxParticlesPerCellLoc, MAX_PARTICLES_PER_CELL);
+        glUniform1i(uToroidalWrapLoc, toroidalWrap ? 1 : 0);
+        glUniform1i(uPassLoc, pass);
+        glUniform1fv(uAttractionMatrixLoc, attractionMatrix);
     }
 
     private void dispatchParticles() {
@@ -173,8 +202,8 @@ public final class GpuParticleSystem {
                 Math3d.perspective((float) Math.toRadians(60.0), aspect, 0.1f, 100.0f),
                 viewMatrix);
 
-        glUniformMatrix4fv(glGetUniformLocation(renderProgram, "uViewProjection"), false, viewProjection);
-        glUniform1f(glGetUniformLocation(renderProgram, "uPointSize"), pointSize);
+        glUniformMatrix4fv(uViewProjectionLoc, false, viewProjection);
+        glUniform1f(uPointSizeLoc, pointSize);
         glDrawArrays(GL_POINTS, 0, particleCount);
     }
 
