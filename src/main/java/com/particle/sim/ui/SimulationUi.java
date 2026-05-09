@@ -195,7 +195,7 @@ public final class SimulationUi {
         float strength = Math.min(1.0f, Math.abs(value));
         float neutral = 0.16f;
         if (value >= 0.0f) {
-            return new float[]{
+            return new float[] {
                     neutral * (1.0f - strength),
                     neutral * (1.0f - strength) + strength,
                     neutral * (1.0f - strength),
@@ -203,7 +203,7 @@ public final class SimulationUi {
             };
         }
 
-        return new float[]{
+        return new float[] {
                 neutral * (1.0f - strength) + strength,
                 neutral * (1.0f - strength),
                 neutral * (1.0f - strength),
@@ -223,7 +223,7 @@ public final class SimulationUi {
     }
 
     private void slider(String label, float value, float min, float max, FloatSetter setter) {
-        float[] valueRef = {value};
+        float[] valueRef = { value };
         if (ImGui.sliderFloat(label, valueRef, min, max)) {
             setter.set(valueRef[0]);
         }

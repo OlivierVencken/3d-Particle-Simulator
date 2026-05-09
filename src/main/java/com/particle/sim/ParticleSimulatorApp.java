@@ -118,8 +118,7 @@ public final class ParticleSimulatorApp {
                 glfwSetWindowPos(
                         window,
                         (videoMode.width() - pWidth.get(0)) / 2,
-                        (videoMode.height() - pHeight.get(0)) / 2
-                );
+                        (videoMode.height() - pHeight.get(0)) / 2);
             }
         }
     }

@@ -82,7 +82,8 @@ public final class GpuParticleSystem {
     private void initSpatialGrid() {
         gridDataSsbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridDataSsbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) GRID_CELL_COUNT * MAX_PARTICLES_PER_CELL * Integer.BYTES, GL_DYNAMIC_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) GRID_CELL_COUNT * MAX_PARTICLES_PER_CELL * Integer.BYTES,
+                GL_DYNAMIC_DRAW);
 
         gridCountsSsbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsSsbo);
@@ -172,8 +173,7 @@ public final class GpuParticleSystem {
         float aspect = width / (float) height;
         float[] viewProjection = Math3d.multiply(
                 Math3d.perspective((float) Math.toRadians(60.0), aspect, 0.1f, 100.0f),
-                viewMatrix
-        );
+                viewMatrix);
 
         glUniformMatrix4fv(glGetUniformLocation(renderProgram, "uViewProjection"), false, viewProjection);
         glUniform1f(glGetUniformLocation(renderProgram, "uPointSize"), pointSize);

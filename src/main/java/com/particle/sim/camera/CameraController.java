@@ -28,10 +28,10 @@ public final class CameraController {
     private float posX;
     private float posY;
     private float posZ;
-    
+
     private float yaw;
     private float pitch;
-    
+
     private float sensitivity = 0.002f;
     private boolean mouseCaptured = false;
 
@@ -41,16 +41,16 @@ public final class CameraController {
 
     public void update(long window, float deltaTime) {
         var io = ImGui.getIO();
-        
+
         float cosPitch = (float) Math.cos(pitch);
         float[] forward = {
                 cosPitch * (float) Math.sin(yaw),
                 (float) Math.sin(pitch),
                 cosPitch * (float) Math.cos(yaw)
         };
-        
+
         float[] right = Math3d.normalize(Math3d.cross(forward[0], forward[1], forward[2], 0.0f, 1.0f, 0.0f));
-        
+
         if (!io.getWantCaptureMouse()) {
             updateMouse(window, io.getMouseDeltaX(), io.getMouseDeltaY(), io.getMouseWheel());
         }
@@ -107,7 +107,8 @@ public final class CameraController {
     }
 
     private void updateKeyboard(long window, float deltaTime, float[] forward, float[] right) {
-        float speed = (isPressed(window, GLFW_KEY_LEFT_SHIFT) || isPressed(window, GLFW_KEY_RIGHT_SHIFT)) ? 16.0f : 7.0f;
+        float speed = (isPressed(window, GLFW_KEY_LEFT_SHIFT) || isPressed(window, GLFW_KEY_RIGHT_SHIFT)) ? 16.0f
+                : 7.0f;
         float step = speed * deltaTime;
 
         if (isPressed(window, GLFW_KEY_W)) {
