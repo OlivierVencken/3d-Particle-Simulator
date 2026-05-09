@@ -72,16 +72,7 @@ float calculateForce(float normalizedDistance, float attractionValue) {
 vec3 toroidalDistance(vec3 from, vec3 to) {
     vec3 diff = to - from;
     float worldSize = uBounds * 2.0;
-
-    for (int axis = 0; axis < 3; axis++) {
-        if (diff[axis] > uBounds) {
-            diff[axis] -= worldSize;
-        } else if (diff[axis] < -uBounds) {
-            diff[axis] += worldSize;
-        }
-    }
-
-    return diff;
+    return diff - worldSize * round(diff / worldSize);
 }
 
 ivec3 wrapGridCoord(ivec3 coord) {
@@ -94,16 +85,7 @@ ivec3 wrapGridCoord(ivec3 coord) {
 
 vec3 wrapPosition(vec3 pos) {
     float worldSize = uBounds * 2.0;
-
-    for (int axis = 0; axis < 3; axis++) {
-        if (pos[axis] > uBounds) {
-            pos[axis] -= worldSize;
-        } else if (pos[axis] < -uBounds) {
-            pos[axis] += worldSize;
-        }
-    }
-
-    return pos;
+    return mod(pos + vec3(uBounds), vec3(worldSize)) - vec3(uBounds);
 }
 
 void main() {
@@ -132,6 +114,9 @@ void main() {
     int groupI = int(round(packedPosition.w));
     vec3 force = vec3(0.0);
     ivec3 currentGrid = getGridCoord(pos);
+    
+    float interactionRangeSq = uInteractionRange * uInteractionRange;
+    float invInteractionRange = 1.0 / uInteractionRange;
 
     for (int dz = -1; dz <= 1; dz++) {
         for (int dy = -1; dy <= 1; dy++) {
@@ -159,10 +144,10 @@ void main() {
                     
                     float sqDist = dot(direction, direction);
 
-                    if (sqDist > 0.00000001 && sqDist < uInteractionRange * uInteractionRange) {
+                    if (sqDist > 0.00000001 && sqDist < interactionRangeSq) {
                         float distance = sqrt(sqDist);
                         int groupJ = int(round(otherPosition.w));
-                        float normalizedDistance = distance / uInteractionRange;
+                        float normalizedDistance = distance * invInteractionRange;
                         float forceMagnitude = calculateForce(normalizedDistance, attraction(groupI, groupJ));
                         force += (direction / distance) * forceMagnitude * uForceFactor;
                     }
