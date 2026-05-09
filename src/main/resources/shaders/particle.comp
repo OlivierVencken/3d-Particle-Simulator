@@ -156,13 +156,15 @@ void main() {
                     vec3 direction = uToroidalWrap == 1
                         ? toroidalDistance(pos, otherPosition.xyz)
                         : otherPosition.xyz - pos;
-                    float distance = length(direction);
+                    
+                    float sqDist = dot(direction, direction);
 
-                    if (distance > 0.0001 && distance < uInteractionRange) {
+                    if (sqDist > 0.00000001 && sqDist < uInteractionRange * uInteractionRange) {
+                        float distance = sqrt(sqDist);
                         int groupJ = int(round(otherPosition.w));
                         float normalizedDistance = distance / uInteractionRange;
                         float forceMagnitude = calculateForce(normalizedDistance, attraction(groupI, groupJ));
-                        force += normalize(direction) * forceMagnitude * uForceFactor;
+                        force += (direction / distance) * forceMagnitude * uForceFactor;
                     }
                 }
             }
