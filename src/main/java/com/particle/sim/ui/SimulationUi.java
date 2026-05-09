@@ -37,13 +37,13 @@ public final class SimulationUi {
         ImGui.text("Cell capacity: %d".formatted(particles.maxParticlesPerCell()));
 
         ImGui.separatorText("Physics");
-        slider("Force", particles.forceFactor(), 0.0f, 25.0f, particles::forceFactor);
+        slider("Force", particles.forceFactor(), 0.0f, 10.0f, particles::forceFactor);
         slider("Interaction range", particles.interactionRange(), 0.2f, 3.0f, particles::interactionRange);
         slider("Repulsion radius", particles.repulsionRadius(), 0.02f, 0.95f, particles::repulsionRadius);
         slider("Velocity damping", particles.velocityDamping(), 0.85f, 1.0f, particles::velocityDamping);
         slider("Max velocity", particles.maxVelocity(), 0.5f, 30.0f, particles::maxVelocity);
         slider("Boundary bounce", particles.boundaryBounce(), 0.0f, 1.0f, particles::boundaryBounce);
-        slider("Bounds", particles.bounds(), 2.0f, 24.0f, particles::bounds);
+        slider("Bounds", particles.bounds(), 2.0f, 10.0f, particles::bounds);
         ImBoolean toroidalWrap = new ImBoolean(particles.toroidalWrap());
         if (ImGui.checkbox("Wrap around", toroidalWrap)) {
             particles.toroidalWrap(toroidalWrap.get());

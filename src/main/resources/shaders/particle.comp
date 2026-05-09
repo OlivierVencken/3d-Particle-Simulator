@@ -31,9 +31,8 @@ uniform float uMaxVelocity;
 uniform float uBoundaryBounce;
 uniform float uBounds;
 uniform int uGridSize;
-uniform float uGridCellSize;
+uniform int uMapSize;
 uniform int uMaxParticlesPerCell;
-uniform int uNeighborRadius;
 uniform int uToroidalWrap;
 uniform int uPass;
 uniform float uAttractionMatrix[MAX_GROUPS * MAX_GROUPS];
@@ -45,16 +44,15 @@ float attraction(int gi, int gj) {
 }
 
 ivec3 getGridCoord(vec3 pos) {
-    vec3 normalized = (pos + vec3(uBounds)) / (uBounds * 2.0);
-    ivec3 coord = ivec3(floor(normalized * float(uGridSize)));
-    coord.x = clamp(coord.x, 0, uGridSize - 1);
-    coord.y = clamp(coord.y, 0, uGridSize - 1);
-    coord.z = clamp(coord.z, 0, uGridSize - 1);
-    return coord;
+    vec3 normalized = (pos + vec3(uBounds)) / uInteractionRange;
+    return ivec3(floor(normalized));
 }
 
 int getGridIndex(ivec3 coord) {
-    return (coord.z * uGridSize * uGridSize) + (coord.y * uGridSize) + coord.x;
+    uint h = uint(coord.x) * 73856093u;
+    h ^= uint(coord.y) * 19349663u;
+    h ^= uint(coord.z) * 83492791u;
+    return int(h % uint(uMapSize));
 }
 
 float calculateForce(float normalizedDistance, float attractionValue) {
@@ -135,14 +133,12 @@ void main() {
     vec3 force = vec3(0.0);
     ivec3 currentGrid = getGridCoord(pos);
 
-    for (int dz = -uNeighborRadius; dz <= uNeighborRadius; dz++) {
-        for (int dy = -uNeighborRadius; dy <= uNeighborRadius; dy++) {
-            for (int dx = -uNeighborRadius; dx <= uNeighborRadius; dx++) {
+    for (int dz = -1; dz <= 1; dz++) {
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
                 ivec3 neighborGrid = currentGrid + ivec3(dx, dy, dz);
                 if (uToroidalWrap == 1) {
                     neighborGrid = wrapGridCoord(neighborGrid);
-                } else if (any(lessThan(neighborGrid, ivec3(0))) || any(greaterThanEqual(neighborGrid, ivec3(uGridSize)))) {
-                    continue;
                 }
 
                 int neighborIndex = getGridIndex(neighborGrid);

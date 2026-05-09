@@ -41,9 +41,8 @@ public final class GpuParticleSystem {
     private static final int INITIAL_PARTICLE_COUNT = 65_536;
     private static final int WORK_GROUP_SIZE = 256;
     private static final int GROUP_COUNT = 6;
-    private static final int GRID_SIZE = 16;
-    private static final int GRID_CELL_COUNT = GRID_SIZE * GRID_SIZE * GRID_SIZE;
-    private static final int MAX_PARTICLES_PER_CELL = 512;
+    private static final int SPATIAL_MAP_SIZE = 524287;
+    private static final int MAX_PARTICLES_PER_CELL = 128;
     private static final int MAX_GROUPS = 16;
     private static final int MAX_PARTICLE_COUNT = 1_000_000;
 
@@ -58,8 +57,8 @@ public final class GpuParticleSystem {
 
     private int particleCount = INITIAL_PARTICLE_COUNT;
     private float pointSize = 2.2f;
-    private float bounds = 8.0f;
-    private float forceFactor = 9.0f;
+    private float bounds = 4.0f;
+    private float forceFactor = 1.0f;
     private float velocityDamping = 0.965f;
     private float interactionRange = 0.95f;
     private float repulsionRadius = 0.3f;
@@ -82,15 +81,15 @@ public final class GpuParticleSystem {
     private void initSpatialGrid() {
         gridDataSsbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridDataSsbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) GRID_CELL_COUNT * MAX_PARTICLES_PER_CELL * Integer.BYTES,
+        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) SPATIAL_MAP_SIZE * MAX_PARTICLES_PER_CELL * Integer.BYTES,
                 GL_DYNAMIC_DRAW);
 
         gridCountsSsbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsSsbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) GRID_CELL_COUNT * Integer.BYTES, GL_STREAM_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) SPATIAL_MAP_SIZE * Integer.BYTES, GL_STREAM_DRAW);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-        zeroGridCounts = BufferUtils.createIntBuffer(GRID_CELL_COUNT);
+        zeroGridCounts = BufferUtils.createIntBuffer(SPATIAL_MAP_SIZE);
     }
 
     private void initAttractionMatrix() {
@@ -147,10 +146,9 @@ public final class GpuParticleSystem {
         glUniform1f(glGetUniformLocation(computeProgram, "uMaxVelocity"), maxVelocity);
         glUniform1f(glGetUniformLocation(computeProgram, "uBoundaryBounce"), boundaryBounce);
         glUniform1f(glGetUniformLocation(computeProgram, "uBounds"), bounds);
-        glUniform1i(glGetUniformLocation(computeProgram, "uGridSize"), GRID_SIZE);
-        glUniform1f(glGetUniformLocation(computeProgram, "uGridCellSize"), gridCellSize());
+        glUniform1i(glGetUniformLocation(computeProgram, "uGridSize"), gridSize());
+        glUniform1i(glGetUniformLocation(computeProgram, "uMapSize"), SPATIAL_MAP_SIZE);
         glUniform1i(glGetUniformLocation(computeProgram, "uMaxParticlesPerCell"), MAX_PARTICLES_PER_CELL);
-        glUniform1i(glGetUniformLocation(computeProgram, "uNeighborRadius"), neighborRadius());
         glUniform1i(glGetUniformLocation(computeProgram, "uToroidalWrap"), toroidalWrap ? 1 : 0);
         glUniform1i(glGetUniformLocation(computeProgram, "uPass"), pass);
         glUniform1fv(glGetUniformLocation(computeProgram, "uAttractionMatrix"), attractionMatrix);
@@ -429,19 +427,11 @@ public final class GpuParticleSystem {
     }
 
     public int gridSize() {
-        return GRID_SIZE;
+        return Math.max(1, (int) Math.ceil((bounds * 2.0f) / interactionRange));
     }
 
     public int maxParticlesPerCell() {
         return MAX_PARTICLES_PER_CELL;
-    }
-
-    private float gridCellSize() {
-        return (bounds * 2.0f) / GRID_SIZE;
-    }
-
-    private int neighborRadius() {
-        return Math.max(1, (int) Math.ceil(interactionRange / gridCellSize()));
     }
 
     private static float clampAttraction(float value) {
