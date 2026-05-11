@@ -107,6 +107,10 @@ public final class CameraController {
         this.sensitivity = Math.max(0.0001f, sensitivity);
     }
 
+    public boolean isMouseCaptured() {
+        return mouseCaptured;
+    }
+
     private void updateKeyboard(long window, float deltaTime, float[] forward, float[] right) {
         float speed = (isPressed(window, GLFW_KEY_LEFT_SHIFT) || isPressed(window, GLFW_KEY_RIGHT_SHIFT)) ? 16.0f
                 : 7.0f;

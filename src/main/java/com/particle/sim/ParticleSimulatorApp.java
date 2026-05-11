@@ -18,23 +18,30 @@ import java.nio.file.Path;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_F11;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_CORE_PROFILE;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_FORWARD_COMPAT;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_PROFILE;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
 import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
 import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
 import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
+import static org.lwjgl.glfw.GLFW.glfwGetKey;
 import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
+import static org.lwjgl.glfw.GLFW.glfwGetWindowPos;
 import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
 import static org.lwjgl.glfw.GLFW.glfwInit;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowMonitor;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 import static org.lwjgl.glfw.GLFW.glfwShowWindow;
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
@@ -66,6 +73,13 @@ public final class ParticleSimulatorApp {
     private long window;
     private int width = 1920;
     private int height = 1080;
+    private int windowedX;
+    private int windowedY;
+    private int windowedWidth = 1920;
+    private int windowedHeight = 1080;
+    private boolean fullscreen = true;
+    private boolean f11WasPressed;
+    private boolean escWasPressed;
 
     private double lastFrameTime;
     private double startTime;
@@ -101,15 +115,77 @@ public final class ParticleSimulatorApp {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
-        window = glfwCreateWindow(width, height, "3D Particle Simulator", NULL, NULL);
+        var monitor = glfwGetPrimaryMonitor();
+        var videoMode = monitor == NULL ? null : glfwGetVideoMode(monitor);
+        long fullscreenMonitor = videoMode == null ? NULL : monitor;
+        if (videoMode != null) {
+            width = videoMode.width();
+            height = videoMode.height();
+        } else {
+            fullscreen = false;
+        }
+
+        window = glfwCreateWindow(width, height, "3D Particle Simulator", fullscreenMonitor, NULL);
         if (window == NULL) {
             throw new IllegalStateException("Could not create the GLFW window.");
         }
 
-        centerWindow();
+        if (!fullscreen) {
+            centerWindow();
+        } else {
+            setDefaultWindowedBounds();
+        }
         glfwMakeContextCurrent(window);
         glfwSwapInterval(1);
         glfwShowWindow(window);
+    }
+
+    private void toggleFullscreen() {
+        if (fullscreen) {
+            fullscreen = false;
+            glfwSetWindowMonitor(window, NULL, windowedX, windowedY, windowedWidth, windowedHeight, 0);
+            return;
+        }
+
+        saveWindowedBounds();
+        var monitor = glfwGetPrimaryMonitor();
+        var videoMode = monitor == NULL ? null : glfwGetVideoMode(monitor);
+        if (videoMode == null) {
+            return;
+        }
+
+        fullscreen = true;
+        glfwSetWindowMonitor(window, monitor, 0, 0, videoMode.width(), videoMode.height(), videoMode.refreshRate());
+    }
+
+    private void saveWindowedBounds() {
+        try (MemoryStack stack = stackPush()) {
+            var pX = stack.mallocInt(1);
+            var pY = stack.mallocInt(1);
+            var pWidth = stack.mallocInt(1);
+            var pHeight = stack.mallocInt(1);
+            glfwGetWindowPos(window, pX, pY);
+            glfwGetWindowSize(window, pWidth, pHeight);
+            windowedX = pX.get(0);
+            windowedY = pY.get(0);
+            windowedWidth = Math.max(pWidth.get(0), 1);
+            windowedHeight = Math.max(pHeight.get(0), 1);
+        }
+    }
+
+    private void setDefaultWindowedBounds() {
+        var monitor = glfwGetPrimaryMonitor();
+        var videoMode = monitor == NULL ? null : glfwGetVideoMode(monitor);
+        if (videoMode == null) {
+            windowedX = 0;
+            windowedY = 0;
+            return;
+        }
+
+        windowedWidth = Math.min(1920, Math.max(1, videoMode.width() - 160));
+        windowedHeight = Math.min(1080, Math.max(1, videoMode.height() - 120));
+        windowedX = (videoMode.width() - windowedWidth) / 2;
+        windowedY = (videoMode.height() - windowedHeight) / 2;
     }
 
     private void centerWindow() {
@@ -165,6 +241,7 @@ public final class ParticleSimulatorApp {
     private void loop() {
         while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
+            handleFullscreenShortcut();
 
             double now = glfwGetTime();
             float deltaTime = (float) Math.min(now - lastFrameTime, 1.0 / 30.0);
@@ -172,6 +249,7 @@ public final class ParticleSimulatorApp {
 
             updateFramebufferSize();
             beginImGuiFrame();
+            handleCloseShortcut();
             camera.update(window, deltaTime);
 
             if (!ui.isPaused()) {
@@ -184,6 +262,22 @@ public final class ParticleSimulatorApp {
 
             glfwSwapBuffers(window);
         }
+    }
+
+    private void handleFullscreenShortcut() {
+        boolean f11Pressed = glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS;
+        if (f11Pressed && !f11WasPressed) {
+            toggleFullscreen();
+        }
+        f11WasPressed = f11Pressed;
+    }
+
+    private void handleCloseShortcut() {
+        boolean escPressed = glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
+        if (escPressed && !escWasPressed && !camera.isMouseCaptured()) {
+            glfwSetWindowShouldClose(window, true);
+        }
+        escWasPressed = escPressed;
     }
 
     private void updateFramebufferSize() {
