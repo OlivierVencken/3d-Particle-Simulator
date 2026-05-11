@@ -7,6 +7,8 @@ import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.settings.SimulationDefaults;
 
 import imgui.ImGui;
+import imgui.ImVec2;
+import imgui.ImVec4;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
 
@@ -225,10 +227,12 @@ public final class SimulationUi {
 
     private void renderMatrixTile(GpuParticleSystem particles, int row, int column) {
         float value = particles.attraction(row, column);
-        float[] color = attractionColor(value);
+        ImVec4 color = attractionColor(value);
+        ImVec2 size = new ImVec2(34.0f, 24.0f);
+
 
         ImGui.pushID("matrix-%d-%d".formatted(row, column));
-        ImGui.colorButton("##tile", color, 0, 34.0f, 24.0f);
+        ImGui.colorButton("##tile", color, size);
 
         if (ImGui.isItemClicked(LEFT_MOUSE_BUTTON)) {
             particles.adjustAttraction(row, column, matrixEditStep);
@@ -245,24 +249,24 @@ public final class SimulationUi {
         ImGui.popID();
     }
 
-    private float[] attractionColor(float value) {
+    private ImVec4 attractionColor(float value) {
         float strength = Math.min(1.0f, Math.abs(value));
         float neutral = 0.16f;
         if (value >= 0.0f) {
-            return new float[] {
+            return new ImVec4(
                     neutral * (1.0f - strength),
                     neutral * (1.0f - strength) + strength,
                     neutral * (1.0f - strength),
                     1.0f
-            };
+            );
         }
 
-        return new float[] {
+        return new ImVec4 (
                 neutral * (1.0f - strength) + strength,
                 neutral * (1.0f - strength),
                 neutral * (1.0f - strength),
                 1.0f
-        };
+        );
     }
 
     private void updateFps(float deltaTime) {
