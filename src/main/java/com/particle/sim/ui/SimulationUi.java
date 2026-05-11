@@ -1,6 +1,7 @@
 package com.particle.sim.ui;
 
 import com.particle.sim.camera.CameraController;
+import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.particles.SpawnMode;
 
@@ -43,7 +44,7 @@ public final class SimulationUi {
         slider("Interaction range", particles.interactionRange(), 0.2f, 3.0f, particles::interactionRange);
         slider("Repulsion radius", particles.repulsionRadius(), 0.02f, 0.95f, particles::repulsionRadius);
         slider("Velocity damping", particles.velocityDamping(), 0.85f, 1.0f, particles::velocityDamping);
-        slider("Max velocity", particles.maxVelocity(), 0.5f, 30.0f, particles::maxVelocity);
+        slider("Max velocity", particles.maxVelocity(), 0.5f, 16.0f, particles::maxVelocity);
         slider("Boundary bounce", particles.boundaryBounce(), 0.0f, 1.0f, particles::boundaryBounce);
         slider("Bounds", particles.bounds(), 2.0f, 10.0f, particles::bounds);
         ImBoolean toroidalWrap = new ImBoolean(particles.toroidalWrap());
@@ -53,6 +54,13 @@ public final class SimulationUi {
 
         ImGui.separatorText("Rendering");
         slider("Point size", particles.pointSize(), 1.0f, 8.0f, particles::pointSize);
+
+        ImGui.separatorText("Particles");
+        ImInt currentColorMode = new ImInt(particles.colorMode().ordinal());
+        String[] colorModes = {"Group", "Velocity", "Position", "Distance", "Direction", "Density"};
+        if (ImGui.combo("Color Mode", currentColorMode, colorModes)) {
+            particles.colorMode(ColorMode.values()[currentColorMode.get()]);
+        }
 
         ImGui.separatorText("Spawn");
         renderSpawnControls(particles);

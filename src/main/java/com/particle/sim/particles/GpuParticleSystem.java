@@ -45,9 +45,10 @@ public final class GpuParticleSystem {
     private float velocityDamping = 0.965f;
     private float interactionRange = 0.95f;
     private float repulsionRadius = 0.3f;
-    private float maxVelocity = 8.0f;
+    private float maxVelocity = 4.0f;
     private float boundaryBounce = 0.65f;
     private boolean toroidalWrap;
+    private ColorMode colorMode = ColorMode.GROUP;
     private SpawnMode spawnMode = SpawnMode.RANDOM;
     private final float[] attractionMatrix = new float[MAX_GROUPS * MAX_GROUPS];
     private final Random matrixRandom = new Random();
@@ -110,7 +111,7 @@ public final class GpuParticleSystem {
     }
 
     public void render(int width, int height, float[] viewMatrix) {
-        renderer.render(width, height, viewMatrix, positionSsbo, particleCount, pointSize);
+        renderer.render(width, height, viewMatrix, positionSsbo, velocitySsbo, gridCountsSsbo, particleCount, pointSize, colorMode.ordinal(), maxVelocity, bounds, interactionRange);
     }
 
     public void dispose() {
@@ -146,6 +147,14 @@ public final class GpuParticleSystem {
 
     public void clearParticles() {
         resizeParticles(0, false);
+    }
+
+    public ColorMode colorMode() {
+        return colorMode;
+    }
+
+    public void colorMode(ColorMode colorMode) {
+        this.colorMode = colorMode;
     }
 
     private void resizeParticles(int requestedParticleCount, boolean preserveExisting) {
