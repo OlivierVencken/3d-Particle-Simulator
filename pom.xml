@@ -13,6 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lwjgl.version>3.4.1</lwjgl.version>
         <imgui.version>1.90.0</imgui.version>
+        <junit.version>5.12.2</junit.version>
         <lwjgl.natives>natives-windows</lwjgl.natives>
         <imgui.natives>imgui-java-natives-windows</imgui.natives>
     </properties>
@@ -78,6 +79,13 @@
             <version>${imgui.version}</version>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -122,6 +130,11 @@
                 <configuration>
                     <mainClass>com.particle.sim.ParticleSimulatorApp</mainClass>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.3</version>
             </plugin>
         </plugins>
     </build>

@@ -1,0 +1,45 @@
+package com.particle.sim.camera;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CameraControllerTest {
+    private static final float EPSILON = 0.0001f;
+
+    @Test
+    void resetRestoresDefaultViewMatrix() {
+        CameraController camera = new CameraController();
+        float[] initialView = camera.viewMatrix();
+
+        camera.reset();
+
+        assertArrayEquals(initialView, camera.viewMatrix(), EPSILON);
+    }
+
+    @Test
+    void defaultViewMatrixUsesExpectedCameraPositionAndPitch() {
+        CameraController camera = new CameraController();
+
+        assertArrayEquals(new float[] {
+                -1.0f, 0.0f, -0.0f, 0.0f,
+                0.0f, 0.9689124f, -0.2474041f, 0.0f,
+                0.0f, -0.2474041f, -0.9689124f, 0.0f,
+                -0.0f, -4.576976f, -17.924879f, 1.0f
+        }, camera.viewMatrix(), EPSILON);
+    }
+
+    @Test
+    void sensitivityCannotBeSetBelowMinimum() {
+        CameraController camera = new CameraController();
+
+        camera.setSensitivity(-1.0f);
+
+        assertEquals(0.0001f, camera.getSensitivity(), EPSILON);
+
+        camera.setSensitivity(0.005f);
+
+        assertEquals(0.005f, camera.getSensitivity(), EPSILON);
+    }
+}
