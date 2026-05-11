@@ -2,6 +2,8 @@ package com.particle.sim.ui;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.particles.SpawnMode;
+
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
@@ -101,6 +103,12 @@ public final class SimulationUi {
         ImGui.sameLine();
         if (ImGui.button("Add")) {
             particles.addParticles(customSpawnAmount.get());
+        }
+
+        ImInt currentSpawnMode = new ImInt(particles.spawnMode().ordinal());
+        String[] spawnModes = {"Random", "Spherical", "Grid", "Shell", "Spiral", "Disc", "Clusters", "Point"};
+        if (ImGui.combo("Mode", currentSpawnMode, spawnModes)) {
+            particles.spawnMode(SpawnMode.values()[currentSpawnMode.get()]);
         }
     }
 

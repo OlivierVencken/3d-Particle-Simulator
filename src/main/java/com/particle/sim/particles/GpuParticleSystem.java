@@ -48,6 +48,7 @@ public final class GpuParticleSystem {
     private float maxVelocity = 8.0f;
     private float boundaryBounce = 0.65f;
     private boolean toroidalWrap;
+    private SpawnMode spawnMode = SpawnMode.RANDOM;
     private final float[] attractionMatrix = new float[MAX_GROUPS * MAX_GROUPS];
     private final Random matrixRandom = new Random();
     private final Random particleRandom = new Random();
@@ -188,9 +189,7 @@ public final class GpuParticleSystem {
         FloatBuffer positions = BufferUtils.createFloatBuffer(count * 4);
         FloatBuffer velocities = BufferUtils.createFloatBuffer(count * 4);
 
-        for (int i = 0; i < count; i++) {
-            appendRandomParticle(positions, velocities);
-        }
+        ParticleSpawner.spawnParticles(positions, velocities, count, bounds, GROUP_COUNT, spawnMode, particleRandom);
 
         positions.flip();
         velocities.flip();
@@ -211,24 +210,6 @@ public final class GpuParticleSystem {
         glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, positions);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, targetVelocitySsbo);
         glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, velocities);
-    }
-
-    private void appendRandomParticle(FloatBuffer positions, FloatBuffer velocities) {
-        float radius = particleRandom.nextFloat() * bounds * 0.6f;
-        float theta = particleRandom.nextFloat() * (float) (Math.PI * 2.0);
-        float phi = (float) Math.acos(2.0f * particleRandom.nextFloat() - 1.0f);
-
-        float x = radius * (float) Math.sin(phi) * (float) Math.cos(theta);
-        float y = radius * (float) Math.cos(phi);
-        float z = radius * (float) Math.sin(phi) * (float) Math.sin(theta);
-        int group = particleRandom.nextInt(GROUP_COUNT);
-
-        positions.put(x).put(y).put(z).put(group);
-        velocities
-                .put((particleRandom.nextFloat() - 0.5f) * 0.2f)
-                .put((particleRandom.nextFloat() - 0.5f) * 0.2f)
-                .put((particleRandom.nextFloat() - 0.5f) * 0.2f)
-                .put(0.0f);
     }
 
     private static void copyBufferPrefix(int sourceBuffer, int targetBuffer, long byteCount) {
@@ -303,6 +284,14 @@ public final class GpuParticleSystem {
 
     public void bounds(float bounds) {
         this.bounds = bounds;
+    }
+
+    public SpawnMode spawnMode() {
+        return spawnMode;
+    }
+
+    public void spawnMode(SpawnMode spawnMode) {
+        this.spawnMode = spawnMode;
     }
 
     public boolean toroidalWrap() {
