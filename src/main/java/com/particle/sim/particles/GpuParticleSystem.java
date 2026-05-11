@@ -24,10 +24,8 @@ import static org.lwjgl.opengl.GL43C.GL_INT;
 
 public final class GpuParticleSystem {
     private static final int WORK_GROUP_SIZE = 256;
-    public static final int GROUP_COUNT = 6;
     public static final int SPATIAL_MAP_SIZE = 524287;
     private static final int MAX_PARTICLES_PER_CELL = 128;
-    private static final int MAX_GROUPS = 16;
 
     private int positionSsbo;
     private int velocitySsbo;
@@ -49,7 +47,9 @@ public final class GpuParticleSystem {
     private boolean toroidalWrap = SimulationDefaults.TOROIDAL_WRAP;
     private ColorMode colorMode = SimulationDefaults.COLOR_MODE;
     private SpawnMode spawnMode = SimulationDefaults.SPAWN_MODE;
-    private final AttractionMatrix attractionMatrix = new AttractionMatrix(GROUP_COUNT, MAX_GROUPS);
+    private final AttractionMatrix attractionMatrix = new AttractionMatrix(
+            SimulationDefaults.GROUP_COUNT,
+            SimulationDefaults.MAX_GROUP_COUNT);
     private final Random particleRandom = new Random();
     private boolean initialized;
 
@@ -99,7 +99,8 @@ public final class GpuParticleSystem {
     }
 
     public void render(int width, int height, float[] viewMatrix) {
-        renderer.render(width, height, viewMatrix, positionSsbo, velocitySsbo, gridCountsSsbo, particleCount, pointSize, colorMode.ordinal(), maxVelocity, bounds, interactionRange);
+        renderer.render(width, height, viewMatrix, positionSsbo, velocitySsbo, gridCountsSsbo, particleCount, pointSize,
+                colorMode.ordinal(), groupCount(), maxVelocity, bounds, interactionRange);
     }
 
     public void dispose() {
@@ -199,7 +200,7 @@ public final class GpuParticleSystem {
         FloatBuffer positions = BufferUtils.createFloatBuffer(count * 4);
         FloatBuffer velocities = BufferUtils.createFloatBuffer(count * 4);
 
-        ParticleSpawner.spawnParticles(positions, velocities, count, bounds, GROUP_COUNT, spawnMode, particleRandom);
+        ParticleSpawner.spawnParticles(positions, velocities, count, bounds, groupCount(), spawnMode, particleRandom);
 
         positions.flip();
         velocities.flip();
@@ -349,7 +350,19 @@ public final class GpuParticleSystem {
     }
 
     public int groupCount() {
-        return GROUP_COUNT;
+        return attractionMatrix.groupCount();
+    }
+
+    public void groupCount(int groupCount) {
+        int previousGroupCount = attractionMatrix.groupCount();
+        attractionMatrix.groupCount(groupCount);
+        if (initialized && previousGroupCount != attractionMatrix.groupCount()) {
+            reset();
+        }
+    }
+
+    public int maxGroupCount() {
+        return attractionMatrix.maxGroups();
     }
 
     public int gridSize() {

@@ -36,6 +36,7 @@ class AppSettingsTest {
         particles.maxVelocity(7.0f);
         particles.boundaryBounce(0.25f);
         particles.toroidalWrap(true);
+        particles.groupCount(8);
         particles.colorMode(ColorMode.DENSITY);
         particles.spawnMode(SpawnMode.SPIRAL);
         particles.zeroAttractionMatrix();
@@ -62,6 +63,7 @@ class AppSettingsTest {
         assertEquals(7.0f, loadedParticles.maxVelocity(), EPSILON);
         assertEquals(0.25f, loadedParticles.boundaryBounce(), EPSILON);
         assertEquals(true, loadedParticles.toroidalWrap());
+        assertEquals(8, loadedParticles.groupCount());
         assertEquals(ColorMode.DENSITY, loadedParticles.colorMode());
         assertEquals(SpawnMode.SPIRAL, loadedParticles.spawnMode());
         assertEquals(0.75f, loadedParticles.attraction(2, 3), EPSILON);
@@ -80,6 +82,7 @@ class AppSettingsTest {
         particles.setParticleCount(10);
         particles.pointSize(8.0f);
         particles.colorMode(ColorMode.DENSITY);
+        particles.groupCount(12);
         particles.spawnMode(SpawnMode.GRID);
         particles.toroidalWrap(true);
         camera.setSensitivity(0.007f);
@@ -92,6 +95,7 @@ class AppSettingsTest {
         assertEquals(SimulationDefaults.PARTICLE_COUNT, particles.particleCount());
         assertEquals(SimulationDefaults.POINT_SIZE, particles.pointSize(), EPSILON);
         assertEquals(SimulationDefaults.COLOR_MODE, particles.colorMode());
+        assertEquals(SimulationDefaults.GROUP_COUNT, particles.groupCount());
         assertEquals(SimulationDefaults.SPAWN_MODE, particles.spawnMode());
         assertFalse(particles.toroidalWrap());
         assertEquals(SimulationDefaults.CAMERA_SENSITIVITY, camera.getSensitivity(), EPSILON);
@@ -112,5 +116,16 @@ class AppSettingsTest {
         AppSettings.defaults().applySimulationTo(particles, camera, ui);
 
         assertEquals(0.65f, particles.attraction(1, 4), EPSILON);
+    }
+
+    @Test
+    void clampsLoadedGroupCountToSupportedRange() throws Exception {
+        Path settingsFile = tempDir.resolve("settings.properties");
+        java.nio.file.Files.writeString(settingsFile, "groupCount=99\n");
+
+        GpuParticleSystem particles = new GpuParticleSystem();
+        AppSettings.load(settingsFile).applySimulationTo(particles, new CameraController(), new SimulationUi());
+
+        assertEquals(SimulationDefaults.MAX_GROUP_COUNT, particles.groupCount());
     }
 }

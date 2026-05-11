@@ -4,21 +4,23 @@ import java.util.Random;
 
 public class AttractionMatrix {
     private final float[] matrix;
-    private final int groupCount;
+    private final int maxGroups;
+    private int groupCount;
     private final Random random = new Random();
 
     public AttractionMatrix(int groupCount, int maxGroups) {
-        this.groupCount = groupCount;
+        this.maxGroups = maxGroups;
+        this.groupCount = clampGroupCount(groupCount);
         this.matrix = new float[maxGroups * maxGroups];
         randomize();
     }
 
     public float attraction(int groupA, int groupB) {
-        return matrix[groupA * groupCount + groupB];
+        return matrix[index(groupA, groupB)];
     }
 
     public void attraction(int groupA, int groupB, float value) {
-        matrix[groupA * groupCount + groupB] = clamp(value);
+        matrix[index(groupA, groupB)] = clamp(value);
     }
 
     public void adjustAttraction(int groupA, int groupB, float delta) {
@@ -32,7 +34,7 @@ public class AttractionMatrix {
                 if (i == j) {
                     value += 0.25f;
                 }
-                matrix[i * groupCount + j] = value;
+                matrix[index(i, j)] = value;
             }
         }
     }
@@ -79,7 +81,27 @@ public class AttractionMatrix {
         return matrix;
     }
 
+    public int groupCount() {
+        return groupCount;
+    }
+
+    public void groupCount(int groupCount) {
+        this.groupCount = clampGroupCount(groupCount);
+    }
+
+    public int maxGroups() {
+        return maxGroups;
+    }
+
+    private int index(int groupA, int groupB) {
+        return groupA * maxGroups + groupB;
+    }
+
     private static float clamp(float value) {
         return Math.max(-1.0f, Math.min(1.0f, value));
+    }
+
+    private int clampGroupCount(int groupCount) {
+        return Math.max(1, Math.min(maxGroups, groupCount));
     }
 }

@@ -52,7 +52,6 @@ public final class SimulationUi {
 
         ImGui.separatorText("Config");
         ImGui.text("Particles: %,d".formatted(particles.particleCount()));
-        ImGui.text("Groups: %d".formatted(particles.groupCount()));
         ImGui.text("Grid: %d x %d x %d".formatted(particles.gridSize(), particles.gridSize(), particles.gridSize()));
         ImGui.text("Cell capacity: %d".formatted(particles.maxParticlesPerCell()));
 
@@ -74,6 +73,12 @@ public final class SimulationUi {
         settingSlider("Point size", particles.pointSize(), 1.0f, 8.0f, particles::pointSize);
 
         ImGui.separatorText("Particles");
+        ImInt groupCount = new ImInt(particles.groupCount());
+        ImGui.setNextItemWidth(120.0f);
+        if (ImGui.inputInt("Groups", groupCount, 1, 2)) {
+            particles.groupCount(groupCount.get());
+            settingsChanged.run();
+        }
         ImInt currentColorMode = new ImInt(particles.colorMode().ordinal());
         String[] colorModes = {"Group", "Velocity", "Position", "Distance", "Direction", "Density"};
         if (ImGui.combo("Color Mode", currentColorMode, colorModes)) {

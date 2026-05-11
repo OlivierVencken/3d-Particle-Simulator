@@ -15,6 +15,7 @@ layout(std430, binding = 2) readonly buffer GridCounts {
 uniform mat4 uViewProjection;
 uniform float uPointSize;
 uniform int uColorMode;
+uniform int uGroupCount;
 uniform float uMaxVelocity;
 uniform float uBounds;
 uniform float uInteractionRange;
@@ -37,21 +38,31 @@ int getGridIndex(ivec3 coord) {
 void main() {
     vec4 particle = positions[gl_VertexID];
     vec3 position = particle.xyz;
-    float group = mod(particle.w, 6.0);
+    int group = int(mod(particle.w, float(max(uGroupCount, 1))));
 
     gl_Position = uViewProjection * vec4(position, 1.0);
     gl_PointSize = uPointSize;
 
     if (uColorMode == 0) {
-        vec3 palette[6] = vec3[](
+        vec3 palette[16] = vec3[](
             vec3(0.18, 0.65, 1.0),
             vec3(1.0, 0.35, 0.16),
             vec3(0.45, 1.0, 0.42),
             vec3(1.0, 0.86, 0.25),
             vec3(0.78, 0.42, 1.0),
-            vec3(0.15, 0.95, 0.86)
+            vec3(0.15, 0.95, 0.86),
+            vec3(1.0, 0.45, 0.72),
+            vec3(0.5, 0.95, 0.2),
+            vec3(0.95, 0.62, 0.15),
+            vec3(0.35, 0.55, 1.0),
+            vec3(0.9, 0.95, 0.35),
+            vec3(0.55, 0.25, 1.0),
+            vec3(0.1, 0.8, 0.45),
+            vec3(1.0, 0.2, 0.35),
+            vec3(0.35, 1.0, 0.95),
+            vec3(0.85, 0.85, 0.9)
         );
-        vColor = palette[int(group)];
+        vColor = palette[group];
     }  else if (uColorMode == 2) {
         // POSITION mode
         vec3 normalizedPos = (position + vec3(uBounds)) / (2.0 * uBounds);

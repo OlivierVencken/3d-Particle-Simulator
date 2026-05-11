@@ -40,7 +40,7 @@ uniform float uAttractionMatrix[MAX_GROUPS * MAX_GROUPS];
 float attraction(int gi, int gj) {
     gi = clamp(gi, 0, uGroupCount - 1);
     gj = clamp(gj, 0, uGroupCount - 1);
-    return uAttractionMatrix[gi * uGroupCount + gj];
+    return uAttractionMatrix[gi * MAX_GROUPS + gj];
 }
 
 ivec3 getGridCoord(vec3 pos) {

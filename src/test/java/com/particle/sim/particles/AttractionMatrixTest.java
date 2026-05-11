@@ -114,4 +114,15 @@ class AttractionMatrixTest {
         assertSame(matrix.getFlatArray(), matrix.getFlatArray());
         assertEquals(16 * 16, matrix.getFlatArray().length);
     }
+
+    @Test
+    void changingGroupCountPreservesExistingMaxStrideCells() {
+        AttractionMatrix matrix = new AttractionMatrix(6, 16);
+        matrix.zero();
+        matrix.attraction(5, 5, 0.7f);
+
+        matrix.groupCount(8);
+
+        assertEquals(0.7f, matrix.attraction(5, 5), EPSILON);
+    }
 }

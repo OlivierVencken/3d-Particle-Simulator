@@ -23,6 +23,7 @@ public final class ParticleRenderer {
     private int uViewProjectionLoc;
     private int uPointSizeLoc;
     private int uColorModeLoc;
+    private int uGroupCountLoc;
     private int uMaxVelocityLoc;
     private int uBoundsLoc;
     private int uInteractionRangeLoc;
@@ -34,6 +35,7 @@ public final class ParticleRenderer {
         uViewProjectionLoc = glGetUniformLocation(renderProgram, "uViewProjection");
         uPointSizeLoc = glGetUniformLocation(renderProgram, "uPointSize");
         uColorModeLoc = glGetUniformLocation(renderProgram, "uColorMode");
+        uGroupCountLoc = glGetUniformLocation(renderProgram, "uGroupCount");
         uMaxVelocityLoc = glGetUniformLocation(renderProgram, "uMaxVelocity");
         uBoundsLoc = glGetUniformLocation(renderProgram, "uBounds");
         uInteractionRangeLoc = glGetUniformLocation(renderProgram, "uInteractionRange");
@@ -41,7 +43,7 @@ public final class ParticleRenderer {
     }
 
     public void render(int width, int height, float[] viewMatrix, int positionSsbo, int velocitySsbo, int gridCountsSsbo, int particleCount,
-            float pointSize, int colorMode, float maxVelocity, float bounds, float interactionRange) {
+            float pointSize, int colorMode, int groupCount, float maxVelocity, float bounds, float interactionRange) {
         if (particleCount == 0) {
             return;
         }
@@ -60,6 +62,7 @@ public final class ParticleRenderer {
         glUniformMatrix4fv(uViewProjectionLoc, false, viewProjection);
         glUniform1f(uPointSizeLoc, pointSize);
         if (uColorModeLoc != -1) glUniform1i(uColorModeLoc, colorMode);
+        if (uGroupCountLoc != -1) glUniform1i(uGroupCountLoc, groupCount);
         if (uMaxVelocityLoc != -1) glUniform1f(uMaxVelocityLoc, maxVelocity);
         if (uBoundsLoc != -1) glUniform1f(uBoundsLoc, bounds);
         if (uInteractionRangeLoc != -1) glUniform1f(uInteractionRangeLoc, interactionRange);

@@ -9,6 +9,8 @@ public final class SimulationDefaults {
 
     public static final int PARTICLE_COUNT = 65_536;
     public static final int MAX_PARTICLE_COUNT = 1_000_000;
+    public static final int GROUP_COUNT = 6;
+    public static final int MAX_GROUP_COUNT = 16;
 
     public static final float POINT_SIZE = 2.2f;
     public static final float BOUNDS = 4.0f;

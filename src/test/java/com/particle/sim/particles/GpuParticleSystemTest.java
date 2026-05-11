@@ -1,5 +1,6 @@
 package com.particle.sim.particles;
 
+import com.particle.sim.settings.SimulationDefaults;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,6 +22,20 @@ class GpuParticleSystemTest {
         assertEquals(ColorMode.GROUP, system.colorMode());
         assertEquals(SpawnMode.RANDOM, system.spawnMode());
         assertFalse(system.toroidalWrap());
+    }
+
+    @Test
+    void groupCountCanBeChangedWithinSupportedRange() {
+        GpuParticleSystem system = new GpuParticleSystem();
+
+        system.groupCount(10);
+        assertEquals(10, system.groupCount());
+
+        system.groupCount(0);
+        assertEquals(1, system.groupCount());
+
+        system.groupCount(99);
+        assertEquals(SimulationDefaults.MAX_GROUP_COUNT, system.groupCount());
     }
 
     @Test

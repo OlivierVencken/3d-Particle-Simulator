@@ -26,6 +26,7 @@ public final class AppSettings {
     private float maxVelocity = SimulationDefaults.MAX_VELOCITY;
     private float boundaryBounce = SimulationDefaults.BOUNDARY_BOUNCE;
     private boolean toroidalWrap = SimulationDefaults.TOROIDAL_WRAP;
+    private int groupCount = SimulationDefaults.GROUP_COUNT;
     private ColorMode colorMode = SimulationDefaults.COLOR_MODE;
     private SpawnMode spawnMode = SimulationDefaults.SPAWN_MODE;
     private float[] attractionMatrix;
@@ -36,7 +37,7 @@ public final class AppSettings {
     private int customSpawnAmount = SimulationDefaults.CUSTOM_SPAWN_AMOUNT;
 
     public AppSettings() {
-        attractionMatrix = new float[GpuParticleSystem.GROUP_COUNT * GpuParticleSystem.GROUP_COUNT];
+        attractionMatrix = new float[SimulationDefaults.MAX_GROUP_COUNT * SimulationDefaults.MAX_GROUP_COUNT];
     }
 
     public static Path defaultPath() {
@@ -70,6 +71,8 @@ public final class AppSettings {
         settings.maxVelocity = floatProperty(properties, "maxVelocity", settings.maxVelocity);
         settings.boundaryBounce = floatProperty(properties, "boundaryBounce", settings.boundaryBounce);
         settings.toroidalWrap = booleanProperty(properties, "toroidalWrap", settings.toroidalWrap);
+        settings.groupCount = intProperty(properties, "groupCount", settings.groupCount);
+        settings.groupCount = Math.max(1, Math.min(SimulationDefaults.MAX_GROUP_COUNT, settings.groupCount));
         settings.colorMode = enumProperty(properties, "colorMode", ColorMode.class, settings.colorMode);
         settings.spawnMode = enumProperty(properties, "spawnMode", SpawnMode.class, settings.spawnMode);
         settings.cameraSensitivity = floatProperty(properties, "cameraSensitivity", settings.cameraSensitivity);
@@ -77,7 +80,8 @@ public final class AppSettings {
         settings.matrixEditStep = floatProperty(properties, "matrixEditStep", settings.matrixEditStep);
         settings.customSpawnAmount = intProperty(properties, "customSpawnAmount", settings.customSpawnAmount);
 
-        for (int i = 0; i < settings.attractionMatrix.length; i++) {
+        int attractionValueCount = settings.groupCount * settings.groupCount;
+        for (int i = 0; i < attractionValueCount; i++) {
             settings.attractionMatrix[i] = floatProperty(properties, "attraction." + i, settings.attractionMatrix[i]);
         }
 
@@ -98,6 +102,7 @@ public final class AppSettings {
         properties.setProperty("maxVelocity", Float.toString(maxVelocity));
         properties.setProperty("boundaryBounce", Float.toString(boundaryBounce));
         properties.setProperty("toroidalWrap", Boolean.toString(toroidalWrap));
+        properties.setProperty("groupCount", Integer.toString(groupCount));
         properties.setProperty("colorMode", colorMode.name());
         properties.setProperty("spawnMode", spawnMode.name());
         properties.setProperty("cameraSensitivity", Float.toString(cameraSensitivity));
@@ -105,7 +110,8 @@ public final class AppSettings {
         properties.setProperty("matrixEditStep", Float.toString(matrixEditStep));
         properties.setProperty("customSpawnAmount", Integer.toString(customSpawnAmount));
 
-        for (int i = 0; i < attractionMatrix.length; i++) {
+        int attractionValueCount = groupCount * groupCount;
+        for (int i = 0; i < attractionValueCount; i++) {
             properties.setProperty("attraction." + i, Float.toString(attractionMatrix[i]));
         }
 
@@ -139,6 +145,7 @@ public final class AppSettings {
         particles.maxVelocity(maxVelocity);
         particles.boundaryBounce(boundaryBounce);
         particles.toroidalWrap(toroidalWrap);
+        particles.groupCount(groupCount);
         particles.colorMode(colorMode);
         particles.spawnMode(spawnMode);
 
@@ -160,9 +167,16 @@ public final class AppSettings {
         settings.maxVelocity = particles.maxVelocity();
         settings.boundaryBounce = particles.boundaryBounce();
         settings.toroidalWrap = particles.toroidalWrap();
+        settings.groupCount = particles.groupCount();
         settings.colorMode = particles.colorMode();
         settings.spawnMode = particles.spawnMode();
-        System.arraycopy(particles.getAttractionMatrix(), 0, settings.attractionMatrix, 0, settings.attractionMatrix.length);
+        int attractionIndex = 0;
+        for (int row = 0; row < settings.groupCount; row++) {
+            for (int column = 0; column < settings.groupCount; column++) {
+                settings.attractionMatrix[attractionIndex] = particles.attraction(row, column);
+                attractionIndex++;
+            }
+        }
 
         settings.cameraSensitivity = camera.getSensitivity();
         settings.paused = ui.isPaused();
@@ -182,11 +196,13 @@ public final class AppSettings {
         repulsionRadius = clamp(repulsionRadius, 0.02f, 0.95f);
         maxVelocity = clamp(maxVelocity, 0.5f, 16.0f);
         boundaryBounce = clamp(boundaryBounce, 0.0f, 1.0f);
+        groupCount = Math.max(1, Math.min(SimulationDefaults.MAX_GROUP_COUNT, groupCount));
         cameraSensitivity = Math.max(0.0001f, cameraSensitivity);
         matrixEditStep = clamp(matrixEditStep, 0.01f, 0.5f);
         customSpawnAmount = Math.max(0, customSpawnAmount);
 
-        for (int i = 0; i < attractionMatrix.length; i++) {
+        int attractionValueCount = groupCount * groupCount;
+        for (int i = 0; i < attractionValueCount; i++) {
             attractionMatrix[i] = clamp(attractionMatrix[i], -1.0f, 1.0f);
         }
     }
