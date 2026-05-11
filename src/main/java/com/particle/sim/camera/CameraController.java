@@ -1,6 +1,7 @@
 package com.particle.sim.camera;
 
 import com.particle.sim.math.Math3d;
+import com.particle.sim.settings.SimulationDefaults;
 import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
 
@@ -32,7 +33,7 @@ public final class CameraController {
     private float yaw;
     private float pitch;
 
-    private float sensitivity = 0.002f;
+    private float sensitivity = SimulationDefaults.CAMERA_SENSITIVITY;
     private boolean mouseCaptured = false;
 
     public CameraController() {

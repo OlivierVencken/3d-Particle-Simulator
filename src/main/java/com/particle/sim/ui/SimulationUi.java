@@ -4,6 +4,7 @@ import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.settings.SimulationDefaults;
 
 import imgui.ImGui;
 import imgui.type.ImBoolean;
@@ -17,8 +18,22 @@ public final class SimulationUi {
     private float currentFps;
     private float fpsTimeAccumulator;
     private int fpsFrameAccumulator;
-    private float matrixEditStep = 0.1f;
-    private final ImInt customSpawnAmount = new ImInt(5_000);
+    private float matrixEditStep = SimulationDefaults.MATRIX_EDIT_STEP;
+    private final ImInt customSpawnAmount = new ImInt(SimulationDefaults.CUSTOM_SPAWN_AMOUNT);
+    private Runnable settingsChanged = () -> {
+    };
+    private Runnable resetSettings = () -> {
+    };
+
+    public void onSettingsChanged(Runnable settingsChanged) {
+        this.settingsChanged = settingsChanged == null ? () -> {
+        } : settingsChanged;
+    }
+
+    public void onResetSettings(Runnable resetSettings) {
+        this.resetSettings = resetSettings == null ? () -> {
+        } : resetSettings;
+    }
 
     public void render(float deltaTime, GpuParticleSystem particles, CameraController camera) {
         updateFps(deltaTime);
@@ -40,32 +55,35 @@ public final class SimulationUi {
         ImGui.text("Cell capacity: %d".formatted(particles.maxParticlesPerCell()));
 
         ImGui.separatorText("Physics");
-        slider("Force", particles.forceFactor(), 0.0f, 10.0f, particles::forceFactor);
-        slider("Interaction range", particles.interactionRange(), 0.2f, 3.0f, particles::interactionRange);
-        slider("Repulsion radius", particles.repulsionRadius(), 0.02f, 0.95f, particles::repulsionRadius);
-        slider("Velocity damping", particles.velocityDamping(), 0.85f, 1.0f, particles::velocityDamping);
-        slider("Max velocity", particles.maxVelocity(), 0.5f, 16.0f, particles::maxVelocity);
-        slider("Boundary bounce", particles.boundaryBounce(), 0.0f, 1.0f, particles::boundaryBounce);
-        slider("Bounds", particles.bounds(), 2.0f, 10.0f, particles::bounds);
+        settingSlider("Force", particles.forceFactor(), 0.0f, 10.0f, particles::forceFactor);
+        settingSlider("Interaction range", particles.interactionRange(), 0.2f, 3.0f, particles::interactionRange);
+        settingSlider("Repulsion radius", particles.repulsionRadius(), 0.02f, 0.95f, particles::repulsionRadius);
+        settingSlider("Velocity damping", particles.velocityDamping(), 0.85f, 1.0f, particles::velocityDamping);
+        settingSlider("Max velocity", particles.maxVelocity(), 0.5f, 16.0f, particles::maxVelocity);
+        settingSlider("Boundary bounce", particles.boundaryBounce(), 0.0f, 1.0f, particles::boundaryBounce);
+        settingSlider("Bounds", particles.bounds(), 2.0f, 10.0f, particles::bounds);
         ImBoolean toroidalWrap = new ImBoolean(particles.toroidalWrap());
         if (ImGui.checkbox("Wrap around", toroidalWrap)) {
             particles.toroidalWrap(toroidalWrap.get());
+            settingsChanged.run();
         }
 
         ImGui.separatorText("Rendering");
-        slider("Point size", particles.pointSize(), 1.0f, 8.0f, particles::pointSize);
+        settingSlider("Point size", particles.pointSize(), 1.0f, 8.0f, particles::pointSize);
 
         ImGui.separatorText("Particles");
         ImInt currentColorMode = new ImInt(particles.colorMode().ordinal());
         String[] colorModes = {"Group", "Velocity", "Position", "Distance", "Direction", "Density"};
         if (ImGui.combo("Color Mode", currentColorMode, colorModes)) {
             particles.colorMode(ColorMode.values()[currentColorMode.get()]);
+            settingsChanged.run();
         }
 
         ImGui.separatorText("Spawn");
         renderSpawnControls(particles);
 
         ImGui.separatorText("Camera");
+        settingSlider("Sensitivity", camera.getSensitivity(), 0.0001f, 0.01f, camera::setSensitivity);
         if (ImGui.button("Reset camera")) {
             camera.reset();
         }
@@ -74,10 +92,15 @@ public final class SimulationUi {
         ImBoolean pausedRef = new ImBoolean(paused);
         if (ImGui.checkbox("Paused", pausedRef)) {
             paused = pausedRef.get();
+            settingsChanged.run();
         }
 
         if (ImGui.button("Reset particles")) {
             particles.reset();
+        }
+
+        if (ImGui.button("Reset simulation settings")) {
+            resetSettings.run();
         }
 
         ImGui.end();
@@ -100,6 +123,7 @@ public final class SimulationUi {
         ImGui.sameLine();
         if (ImGui.button("Clear")) {
             particles.clearParticles();
+            settingsChanged.run();
         }
 
         if (customSpawnAmount.get() < 0) {
@@ -107,16 +131,23 @@ public final class SimulationUi {
         }
 
         ImGui.setNextItemWidth(120.0f);
-        ImGui.inputInt("Amount", customSpawnAmount, 100, 1_000);
+        if (ImGui.inputInt("Amount", customSpawnAmount, 100, 1_000)) {
+            if (customSpawnAmount.get() < 0) {
+                customSpawnAmount.set(0);
+            }
+            settingsChanged.run();
+        }
         ImGui.sameLine();
         if (ImGui.button("Add")) {
             particles.addParticles(customSpawnAmount.get());
+            settingsChanged.run();
         }
 
         ImInt currentSpawnMode = new ImInt(particles.spawnMode().ordinal());
         String[] spawnModes = {"Random", "Spherical", "Grid", "Shell", "Spiral", "Disc", "Clusters", "Point"};
         if (ImGui.combo("Mode", currentSpawnMode, spawnModes)) {
             particles.spawnMode(SpawnMode.values()[currentSpawnMode.get()]);
+            settingsChanged.run();
         }
     }
 
@@ -127,28 +158,33 @@ public final class SimulationUi {
             } else {
                 particles.removeParticles(-amount);
             }
+            settingsChanged.run();
         }
     }
 
     private void renderAttractionMatrixWindow(GpuParticleSystem particles) {
         ImGui.begin("Attraction Matrix");
 
-        slider("Edit step", matrixEditStep, 0.01f, 0.5f, value -> matrixEditStep = value);
+        settingSlider("Edit step", matrixEditStep, 0.01f, 0.5f, value -> matrixEditStep = value);
 
         if (ImGui.button("Randomize")) {
             particles.randomizeAttractionMatrix();
+            settingsChanged.run();
         }
         ImGui.sameLine();
         if (ImGui.button("Zero")) {
             particles.zeroAttractionMatrix();
+            settingsChanged.run();
         }
         ImGui.sameLine();
         if (ImGui.button("Symmetrize")) {
             particles.symmetrizeAttractionMatrix();
+            settingsChanged.run();
         }
         ImGui.sameLine();
         if (ImGui.button("Invert")) {
             particles.invertAttractionMatrix();
+            settingsChanged.run();
         }
 
         ImGui.spacing();
@@ -196,9 +232,11 @@ public final class SimulationUi {
 
         if (ImGui.isItemClicked(LEFT_MOUSE_BUTTON)) {
             particles.adjustAttraction(row, column, matrixEditStep);
+            settingsChanged.run();
         }
         if (ImGui.isItemClicked(RIGHT_MOUSE_BUTTON)) {
             particles.adjustAttraction(row, column, -matrixEditStep);
+            settingsChanged.run();
         }
         if (ImGui.isItemHovered()) {
             ImGui.setTooltip("G%d -> G%d: %.2f".formatted(row, column, value));
@@ -238,15 +276,43 @@ public final class SimulationUi {
         }
     }
 
-    private void slider(String label, float value, float min, float max, FloatSetter setter) {
+    private void settingSlider(String label, float value, float min, float max, FloatSetter setter) {
+        if (slider(label, value, min, max, setter)) {
+            settingsChanged.run();
+        }
+    }
+
+    private boolean slider(String label, float value, float min, float max, FloatSetter setter) {
         float[] valueRef = { value };
         if (ImGui.sliderFloat(label, valueRef, min, max)) {
             setter.set(valueRef[0]);
+            return true;
         }
+        return false;
     }
 
     public boolean isPaused() {
         return paused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
+    }
+
+    public float matrixEditStep() {
+        return matrixEditStep;
+    }
+
+    public void setMatrixEditStep(float matrixEditStep) {
+        this.matrixEditStep = Math.max(0.01f, Math.min(0.5f, matrixEditStep));
+    }
+
+    public int customSpawnAmount() {
+        return customSpawnAmount.get();
+    }
+
+    public void setCustomSpawnAmount(int customSpawnAmount) {
+        this.customSpawnAmount.set(Math.max(0, customSpawnAmount));
     }
 
     @FunctionalInterface

@@ -1,5 +1,6 @@
 package com.particle.sim.particles;
 
+import com.particle.sim.settings.SimulationDefaults;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
@@ -22,13 +23,11 @@ import static org.lwjgl.opengl.GL43C.GL_RED_INTEGER;
 import static org.lwjgl.opengl.GL43C.GL_INT;
 
 public final class GpuParticleSystem {
-    private static final int INITIAL_PARTICLE_COUNT = 65_536;
     private static final int WORK_GROUP_SIZE = 256;
     public static final int GROUP_COUNT = 6;
     public static final int SPATIAL_MAP_SIZE = 524287;
     private static final int MAX_PARTICLES_PER_CELL = 128;
     private static final int MAX_GROUPS = 16;
-    private static final int MAX_PARTICLE_COUNT = 1_000_000;
 
     private int positionSsbo;
     private int velocitySsbo;
@@ -38,26 +37,28 @@ public final class GpuParticleSystem {
     private final ParticleRenderer renderer = new ParticleRenderer();
     private final ParticleCompute compute = new ParticleCompute();
 
-    private int particleCount = INITIAL_PARTICLE_COUNT;
-    private float pointSize = 2.2f;
-    private float bounds = 4.0f;
-    private float forceFactor = 1.0f;
-    private float velocityDamping = 0.965f;
-    private float interactionRange = 0.95f;
-    private float repulsionRadius = 0.3f;
-    private float maxVelocity = 4.0f;
-    private float boundaryBounce = 0.65f;
-    private boolean toroidalWrap;
-    private ColorMode colorMode = ColorMode.GROUP;
-    private SpawnMode spawnMode = SpawnMode.RANDOM;
+    private int particleCount = SimulationDefaults.PARTICLE_COUNT;
+    private float pointSize = SimulationDefaults.POINT_SIZE;
+    private float bounds = SimulationDefaults.BOUNDS;
+    private float forceFactor = SimulationDefaults.FORCE_FACTOR;
+    private float velocityDamping = SimulationDefaults.VELOCITY_DAMPING;
+    private float interactionRange = SimulationDefaults.INTERACTION_RANGE;
+    private float repulsionRadius = SimulationDefaults.REPULSION_RADIUS;
+    private float maxVelocity = SimulationDefaults.MAX_VELOCITY;
+    private float boundaryBounce = SimulationDefaults.BOUNDARY_BOUNCE;
+    private boolean toroidalWrap = SimulationDefaults.TOROIDAL_WRAP;
+    private ColorMode colorMode = SimulationDefaults.COLOR_MODE;
+    private SpawnMode spawnMode = SimulationDefaults.SPAWN_MODE;
     private final AttractionMatrix attractionMatrix = new AttractionMatrix(GROUP_COUNT, MAX_GROUPS);
     private final Random particleRandom = new Random();
+    private boolean initialized;
 
     public void init() {
         compute.init();
         renderer.init();
         initSpatialGrid();
         attractionMatrix.randomize();
+        initialized = true;
         reset();
     }
 
@@ -115,25 +116,38 @@ public final class GpuParticleSystem {
     }
 
     public int maxParticleCount() {
-        return MAX_PARTICLE_COUNT;
+        return SimulationDefaults.MAX_PARTICLE_COUNT;
     }
 
     public void addParticles(int amount) {
         if (amount <= 0) {
             return;
         }
-        resizeParticles(particleCount + amount, true);
+        setParticleCount(particleCount + amount, true);
     }
 
     public void removeParticles(int amount) {
         if (amount <= 0) {
             return;
         }
-        resizeParticles(particleCount - amount, true);
+        setParticleCount(particleCount - amount, true);
     }
 
     public void clearParticles() {
-        resizeParticles(0, false);
+        setParticleCount(0, false);
+    }
+
+    public void setParticleCount(int particleCount) {
+        setParticleCount(particleCount, false);
+    }
+
+    private void setParticleCount(int requestedParticleCount, boolean preserveExisting) {
+        int newParticleCount = Math.max(0, Math.min(SimulationDefaults.MAX_PARTICLE_COUNT, requestedParticleCount));
+        if (initialized) {
+            resizeParticles(newParticleCount, preserveExisting);
+        } else {
+            particleCount = newParticleCount;
+        }
     }
 
     public ColorMode colorMode() {
@@ -146,7 +160,7 @@ public final class GpuParticleSystem {
 
     private void resizeParticles(int requestedParticleCount, boolean preserveExisting) {
         int oldParticleCount = particleCount;
-        int newParticleCount = Math.max(0, Math.min(MAX_PARTICLE_COUNT, requestedParticleCount));
+        int newParticleCount = Math.max(0, Math.min(SimulationDefaults.MAX_PARTICLE_COUNT, requestedParticleCount));
         int copiedParticleCount = preserveExisting ? Math.min(oldParticleCount, newParticleCount) : 0;
         int appendedParticleCount = newParticleCount - copiedParticleCount;
 
@@ -304,6 +318,10 @@ public final class GpuParticleSystem {
 
     public void attraction(int groupA, int groupB, float value) {
         attractionMatrix.attraction(groupA, groupB, value);
+    }
+
+    public void setAttractionMatrix(float[] values) {
+        attractionMatrix.setActiveValues(values);
     }
 
     public float[] getAttractionMatrix() {

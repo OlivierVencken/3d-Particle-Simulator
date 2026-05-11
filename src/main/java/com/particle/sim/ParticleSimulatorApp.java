@@ -2,6 +2,7 @@ package com.particle.sim;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.settings.AppSettings;
 import com.particle.sim.ui.SimulationUi;
 import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
@@ -10,6 +11,9 @@ import imgui.glfw.ImGuiImplGlfw;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR;
@@ -57,6 +61,7 @@ public final class ParticleSimulatorApp {
     private final CameraController camera = new CameraController();
     private final GpuParticleSystem particles = new GpuParticleSystem();
     private final SimulationUi ui = new SimulationUi();
+    private final Path settingsPath = AppSettings.defaultPath();
 
     private long window;
     private int width = 1920;
@@ -74,6 +79,7 @@ public final class ParticleSimulatorApp {
         initOpenGl();
         initImGui();
         particles.init();
+        initSettings();
 
         lastFrameTime = glfwGetTime();
         startTime = lastFrameTime;
@@ -135,6 +141,25 @@ public final class ParticleSimulatorApp {
         ImGui.getIO().addConfigFlags(ImGuiConfigFlags.NavEnableKeyboard);
         imGuiGlfw.init(window, true);
         imGuiGl3.init("#version 430");
+    }
+
+    private void initSettings() {
+        ui.onSettingsChanged(this::saveSettings);
+        ui.onResetSettings(this::resetSettings);
+
+        if (Files.exists(settingsPath)) {
+            AppSettings.load(settingsPath).applyTo(particles, camera, ui);
+        }
+    }
+
+    private void saveSettings() {
+        AppSettings.capture(particles, camera, ui).save(settingsPath);
+    }
+
+    private void resetSettings() {
+        AppSettings.defaults().applySimulationTo(particles, camera, ui);
+        particles.reset();
+        saveSettings();
     }
 
     private void loop() {

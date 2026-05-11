@@ -63,6 +63,18 @@ public class AttractionMatrix {
         }
     }
 
+    public void setActiveValues(float[] values) {
+        int index = 0;
+        for (int i = 0; i < groupCount; i++) {
+            for (int j = 0; j < groupCount; j++) {
+                if (index < values.length) {
+                    attraction(i, j, values[index]);
+                }
+                index++;
+            }
+        }
+    }
+
     public float[] getFlatArray() {
         return matrix;
     }

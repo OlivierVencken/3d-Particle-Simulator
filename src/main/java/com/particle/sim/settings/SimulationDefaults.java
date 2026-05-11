@@ -1,0 +1,30 @@
+package com.particle.sim.settings;
+
+import com.particle.sim.particles.ColorMode;
+import com.particle.sim.particles.SpawnMode;
+
+public final class SimulationDefaults {
+    private SimulationDefaults() {
+    }
+
+    public static final int PARTICLE_COUNT = 65_536;
+    public static final int MAX_PARTICLE_COUNT = 1_000_000;
+
+    public static final float POINT_SIZE = 2.2f;
+    public static final float BOUNDS = 4.0f;
+    public static final float FORCE_FACTOR = 1.0f;
+    public static final float VELOCITY_DAMPING = 0.965f;
+    public static final float INTERACTION_RANGE = 0.95f;
+    public static final float REPULSION_RADIUS = 0.3f;
+    public static final float MAX_VELOCITY = 4.0f;
+    public static final float BOUNDARY_BOUNCE = 0.65f;
+    public static final boolean TOROIDAL_WRAP = false;
+    public static final ColorMode COLOR_MODE = ColorMode.GROUP;
+    public static final SpawnMode SPAWN_MODE = SpawnMode.RANDOM;
+
+    public static final float CAMERA_SENSITIVITY = 0.002f;
+
+    public static final boolean PAUSED = false;
+    public static final float MATRIX_EDIT_STEP = 0.1f;
+    public static final int CUSTOM_SPAWN_AMOUNT = 5_000;
+}
