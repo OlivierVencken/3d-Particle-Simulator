@@ -50,15 +50,14 @@ public final class GpuParticleSystem {
     private boolean toroidalWrap;
     private ColorMode colorMode = ColorMode.GROUP;
     private SpawnMode spawnMode = SpawnMode.RANDOM;
-    private final float[] attractionMatrix = new float[MAX_GROUPS * MAX_GROUPS];
-    private final Random matrixRandom = new Random();
+    private final AttractionMatrix attractionMatrix = new AttractionMatrix(GROUP_COUNT, MAX_GROUPS);
     private final Random particleRandom = new Random();
 
     public void init() {
         compute.init();
         renderer.init();
         initSpatialGrid();
-        initAttractionMatrix();
+        attractionMatrix.randomize();
         reset();
     }
 
@@ -72,18 +71,6 @@ public final class GpuParticleSystem {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsSsbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, (long) SPATIAL_MAP_SIZE * Integer.BYTES, GL_STREAM_DRAW);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    }
-
-    private void initAttractionMatrix() {
-        for (int i = 0; i < GROUP_COUNT; i++) {
-            for (int j = 0; j < GROUP_COUNT; j++) {
-                float value = -0.6f + matrixRandom.nextFloat() * 1.4f;
-                if (i == j) {
-                    value += 0.25f;
-                }
-                attractionMatrix[i * GROUP_COUNT + j] = value;
-            }
-        }
     }
 
     public void reset() {
@@ -312,49 +299,35 @@ public final class GpuParticleSystem {
     }
 
     public float attraction(int groupA, int groupB) {
-        return attractionMatrix[groupA * GROUP_COUNT + groupB];
+        return attractionMatrix.attraction(groupA, groupB);
     }
 
     public void attraction(int groupA, int groupB, float value) {
-        attractionMatrix[groupA * GROUP_COUNT + groupB] = clampAttraction(value);
+        attractionMatrix.attraction(groupA, groupB, value);
     }
 
     public float[] getAttractionMatrix() {
-        return attractionMatrix;
+        return attractionMatrix.getFlatArray();
     }
 
     public void adjustAttraction(int groupA, int groupB, float delta) {
-        attraction(groupA, groupB, attraction(groupA, groupB) + delta);
+        attractionMatrix.adjustAttraction(groupA, groupB, delta);
     }
 
     public void randomizeAttractionMatrix() {
-        initAttractionMatrix();
+        attractionMatrix.randomize();
     }
 
     public void zeroAttractionMatrix() {
-        for (int i = 0; i < GROUP_COUNT; i++) {
-            for (int j = 0; j < GROUP_COUNT; j++) {
-                attraction(i, j, 0.0f);
-            }
-        }
+        attractionMatrix.zero();
     }
 
     public void symmetrizeAttractionMatrix() {
-        for (int i = 0; i < GROUP_COUNT; i++) {
-            for (int j = i + 1; j < GROUP_COUNT; j++) {
-                float average = (attraction(i, j) + attraction(j, i)) * 0.5f;
-                attraction(i, j, average);
-                attraction(j, i, average);
-            }
-        }
+        attractionMatrix.symmetrize();
     }
 
     public void invertAttractionMatrix() {
-        for (int i = 0; i < GROUP_COUNT; i++) {
-            for (int j = 0; j < GROUP_COUNT; j++) {
-                attraction(i, j, -attraction(i, j));
-            }
-        }
+        attractionMatrix.invert();
     }
 
     public int groupCount() {
@@ -367,9 +340,5 @@ public final class GpuParticleSystem {
 
     public int maxParticlesPerCell() {
         return MAX_PARTICLES_PER_CELL;
-    }
-
-    private static float clampAttraction(float value) {
-        return Math.max(-1.0f, Math.min(1.0f, value));
     }
 }
