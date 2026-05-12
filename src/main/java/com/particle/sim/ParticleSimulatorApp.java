@@ -1,6 +1,7 @@
 package com.particle.sim;
 
 import com.particle.sim.camera.CameraController;
+import com.particle.sim.input.AppHotkeys;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.AppSettings;
 import com.particle.sim.settings.DebouncedSettingsSaver;
@@ -19,18 +20,14 @@ import java.nio.file.Path;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_F11;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_CORE_PROFILE;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_FORWARD_COMPAT;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_PROFILE;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
 import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
 import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
 import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
-import static org.lwjgl.glfw.GLFW.glfwGetKey;
 import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
@@ -73,6 +70,10 @@ public final class ParticleSimulatorApp {
     private final CameraController camera = new CameraController();
     private final GpuParticleSystem particles = new GpuParticleSystem();
     private final SimulationUi ui = new SimulationUi();
+    private final AppHotkeys hotkeys = new AppHotkeys(
+            this::toggleFullscreen,
+            () -> !camera.isMouseCaptured(),
+            this::requestClose);
     private final Path settingsPath = AppSettings.defaultPath();
     private final DebouncedSettingsSaver settingsSaver = new DebouncedSettingsSaver(
             SETTINGS_SAVE_DEBOUNCE_SECONDS,
@@ -86,8 +87,6 @@ public final class ParticleSimulatorApp {
     private int windowedWidth = 1920;
     private int windowedHeight = 1080;
     private boolean fullscreen = true;
-    private boolean f11WasPressed;
-    private boolean escWasPressed;
 
     private double lastFrameTime;
     private double startTime;
@@ -262,7 +261,7 @@ public final class ParticleSimulatorApp {
     private void loop() {
         while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
-            handleFullscreenShortcut();
+            hotkeys.update(window);
 
             double now = glfwGetTime();
             float deltaTime = (float) Math.min(now - lastFrameTime, 1.0 / 30.0);
@@ -270,7 +269,6 @@ public final class ParticleSimulatorApp {
 
             updateFramebufferSize();
             beginImGuiFrame();
-            handleCloseShortcut();
             camera.update(window, deltaTime);
 
             if (!ui.isPaused()) {
@@ -286,20 +284,8 @@ public final class ParticleSimulatorApp {
         }
     }
 
-    private void handleFullscreenShortcut() {
-        boolean f11Pressed = glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS;
-        if (f11Pressed && !f11WasPressed) {
-            toggleFullscreen();
-        }
-        f11WasPressed = f11Pressed;
-    }
-
-    private void handleCloseShortcut() {
-        boolean escPressed = glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
-        if (escPressed && !escWasPressed && !camera.isMouseCaptured()) {
-            glfwSetWindowShouldClose(window, true);
-        }
-        escWasPressed = escPressed;
+    private void requestClose() {
+        glfwSetWindowShouldClose(window, true);
     }
 
     private void updateFramebufferSize() {
