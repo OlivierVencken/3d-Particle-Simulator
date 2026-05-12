@@ -40,18 +40,7 @@ public final class GpuParticleSystem {
     private final ParticleRenderer renderer = new ParticleRenderer();
     private final ParticleCompute compute = new ParticleCompute();
 
-    private int particleCount = SimulationDefaults.PARTICLE_COUNT;
-    private float pointSize = SimulationDefaults.POINT_SIZE;
-    private float bounds = SimulationDefaults.BOUNDS;
-    private float forceFactor = SimulationDefaults.FORCE_FACTOR;
-    private float velocityDamping = SimulationDefaults.VELOCITY_DAMPING;
-    private float interactionRange = SimulationDefaults.INTERACTION_RANGE;
-    private float repulsionRadius = SimulationDefaults.REPULSION_RADIUS;
-    private float maxVelocity = SimulationDefaults.MAX_VELOCITY;
-    private float boundaryBounce = SimulationDefaults.BOUNDARY_BOUNCE;
-    private boolean toroidalWrap = SimulationDefaults.TOROIDAL_WRAP;
-    private ColorMode colorMode = SimulationDefaults.COLOR_MODE;
-    private SpawnMode spawnMode = SimulationDefaults.SPAWN_MODE;
+    private final ParticleSimulationConfig config = ParticleSimulationConfig.defaults();
     private final AttractionMatrix attractionMatrix = new AttractionMatrix(
             SimulationDefaults.GROUP_COUNT,
             SimulationDefaults.MAX_GROUP_COUNT);
@@ -97,11 +86,11 @@ public final class GpuParticleSystem {
     }
 
     public void reset() {
-        resizeParticles(particleCount, false);
+        resizeParticles(particleCount(), false);
     }
 
     public void update(float deltaTime, float elapsedTime) {
-        if (particleCount == 0) {
+        if (particleCount() == 0) {
             return;
         }
 
@@ -110,10 +99,10 @@ public final class GpuParticleSystem {
 
         clearSpatialGrid();
         compute.setUniforms(this, deltaTime, 0);
-        compute.dispatch(particleCount, WORK_GROUP_SIZE, false);
+        compute.dispatch(particleCount(), WORK_GROUP_SIZE, false);
 
         compute.setUniforms(this, deltaTime, 1);
-        compute.dispatch(particleCount, WORK_GROUP_SIZE, true);
+        compute.dispatch(particleCount(), WORK_GROUP_SIZE, true);
     }
 
     private void clearSpatialGrid() {
@@ -125,8 +114,8 @@ public final class GpuParticleSystem {
 
     public void render(int width, int height, float[] viewMatrix) {
         renderer.render(width, height, viewMatrix, positionSsbo, velocitySsbo, gridCountsSsbo, gridKeysSsbo,
-                particleCount, pointSize, colorMode.ordinal(), groupCount(), maxVelocity, bounds, interactionRange,
-                spatialMapSize());
+                particleCount(), pointSize(), colorMode().ordinal(), groupCount(), maxVelocity(), bounds(),
+                interactionRange(), spatialMapSize());
     }
 
     public void dispose() {
@@ -140,25 +129,49 @@ public final class GpuParticleSystem {
     }
 
     public int particleCount() {
-        return particleCount;
+        return config.particleCount();
     }
 
     public int maxParticleCount() {
         return SimulationDefaults.MAX_PARTICLE_COUNT;
     }
 
+    public ParticleSimulationConfig config() {
+        return config.copy();
+    }
+
+    public void applyConfig(ParticleSimulationConfig config) {
+        if (config == null) {
+            return;
+        }
+
+        setParticleCount(config.particleCount());
+        pointSize(config.pointSize());
+        bounds(config.bounds());
+        forceFactor(config.forceFactor());
+        velocityDamping(config.velocityDamping());
+        interactionRange(config.interactionRange());
+        repulsionRadius(config.repulsionRadius());
+        maxVelocity(config.maxVelocity());
+        boundaryBounce(config.boundaryBounce());
+        toroidalWrap(config.toroidalWrap());
+        groupCount(config.groupCount());
+        colorMode(config.colorMode());
+        spawnMode(config.spawnMode());
+    }
+
     public void addParticles(int amount) {
         if (amount <= 0) {
             return;
         }
-        setParticleCount(particleCount + amount, true);
+        setParticleCount(particleCount() + amount, true);
     }
 
     public void removeParticles(int amount) {
         if (amount <= 0) {
             return;
         }
-        setParticleCount(particleCount - amount, true);
+        setParticleCount(particleCount() - amount, true);
     }
 
     public void clearParticles() {
@@ -174,20 +187,20 @@ public final class GpuParticleSystem {
         if (initialized) {
             resizeParticles(newParticleCount, preserveExisting);
         } else {
-            particleCount = newParticleCount;
+            config.particleCount(newParticleCount);
         }
     }
 
     public ColorMode colorMode() {
-        return colorMode;
+        return config.colorMode();
     }
 
     public void colorMode(ColorMode colorMode) {
-        this.colorMode = colorMode;
+        config.colorMode(colorMode);
     }
 
     private void resizeParticles(int requestedParticleCount, boolean preserveExisting) {
-        int oldParticleCount = particleCount;
+        int oldParticleCount = particleCount();
         int newParticleCount = Math.max(0, Math.min(SimulationDefaults.MAX_PARTICLE_COUNT, requestedParticleCount));
         int copiedParticleCount = preserveExisting ? Math.min(oldParticleCount, newParticleCount) : 0;
         int appendedParticleCount = newParticleCount - copiedParticleCount;
@@ -219,7 +232,7 @@ public final class GpuParticleSystem {
 
         positionSsbo = newPositionSsbo;
         velocitySsbo = newVelocitySsbo;
-        particleCount = newParticleCount;
+        config.particleCount(newParticleCount);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
 
@@ -227,7 +240,7 @@ public final class GpuParticleSystem {
         FloatBuffer positions = BufferUtils.createFloatBuffer(count * 4);
         FloatBuffer velocities = BufferUtils.createFloatBuffer(count * 4);
 
-        ParticleSpawner.spawnParticles(positions, velocities, count, bounds, groupCount(), spawnMode, particleRandom);
+        ParticleSpawner.spawnParticles(positions, velocities, count, bounds(), groupCount(), spawnMode(), particleRandom);
 
         positions.flip();
         velocities.flip();
@@ -261,83 +274,83 @@ public final class GpuParticleSystem {
     }
 
     public float pointSize() {
-        return pointSize;
+        return config.pointSize();
     }
 
     public void pointSize(float pointSize) {
-        this.pointSize = pointSize;
+        config.pointSize(pointSize);
     }
 
     public float forceFactor() {
-        return forceFactor;
+        return config.forceFactor();
     }
 
     public void forceFactor(float forceFactor) {
-        this.forceFactor = forceFactor;
+        config.forceFactor(forceFactor);
     }
 
     public float interactionRange() {
-        return interactionRange;
+        return config.interactionRange();
     }
 
     public void interactionRange(float interactionRange) {
-        this.interactionRange = interactionRange;
+        config.interactionRange(interactionRange);
     }
 
     public float velocityDamping() {
-        return velocityDamping;
+        return config.velocityDamping();
     }
 
     public void velocityDamping(float velocityDamping) {
-        this.velocityDamping = velocityDamping;
+        config.velocityDamping(velocityDamping);
     }
 
     public float repulsionRadius() {
-        return repulsionRadius;
+        return config.repulsionRadius();
     }
 
     public void repulsionRadius(float repulsionRadius) {
-        this.repulsionRadius = repulsionRadius;
+        config.repulsionRadius(repulsionRadius);
     }
 
     public float maxVelocity() {
-        return maxVelocity;
+        return config.maxVelocity();
     }
 
     public void maxVelocity(float maxVelocity) {
-        this.maxVelocity = maxVelocity;
+        config.maxVelocity(maxVelocity);
     }
 
     public float boundaryBounce() {
-        return boundaryBounce;
+        return config.boundaryBounce();
     }
 
     public void boundaryBounce(float boundaryBounce) {
-        this.boundaryBounce = boundaryBounce;
+        config.boundaryBounce(boundaryBounce);
     }
 
     public float bounds() {
-        return bounds;
+        return config.bounds();
     }
 
     public void bounds(float bounds) {
-        this.bounds = bounds;
+        config.bounds(bounds);
     }
 
     public SpawnMode spawnMode() {
-        return spawnMode;
+        return config.spawnMode();
     }
 
     public void spawnMode(SpawnMode spawnMode) {
-        this.spawnMode = spawnMode;
+        config.spawnMode(spawnMode);
     }
 
     public boolean toroidalWrap() {
-        return toroidalWrap;
+        return config.toroidalWrap();
     }
 
     public void toroidalWrap(boolean toroidalWrap) {
-        this.toroidalWrap = toroidalWrap;
+        config.toroidalWrap(toroidalWrap);
     }
 
     public float attraction(int groupA, int groupB) {
@@ -377,13 +390,14 @@ public final class GpuParticleSystem {
     }
 
     public int groupCount() {
-        return attractionMatrix.groupCount();
+        return config.groupCount();
     }
 
     public void groupCount(int groupCount) {
-        int previousGroupCount = attractionMatrix.groupCount();
-        attractionMatrix.groupCount(groupCount);
-        if (initialized && previousGroupCount != attractionMatrix.groupCount()) {
+        int previousGroupCount = config.groupCount();
+        config.groupCount(groupCount);
+        attractionMatrix.groupCount(config.groupCount());
+        if (initialized && previousGroupCount != config.groupCount()) {
             reset();
         }
     }
@@ -393,7 +407,7 @@ public final class GpuParticleSystem {
     }
 
     public int gridSize() {
-        return Math.max(1, (int) Math.ceil((bounds * 2.0f) / interactionRange));
+        return Math.max(1, (int) Math.ceil((bounds() * 2.0f) / interactionRange()));
     }
 
     public int spatialMapSize() {
@@ -402,7 +416,7 @@ public final class GpuParticleSystem {
 
     private int desiredSpatialMapSize() {
         long gridCellCount = gridCellCount();
-        long occupiedCellLimit = Math.max(1L, Math.min((long) Math.max(particleCount, 1), gridCellCount));
+        long occupiedCellLimit = Math.max(1L, Math.min((long) Math.max(particleCount(), 1), gridCellCount));
         long targetBuckets = (long) Math.ceil(occupiedCellLimit / SPATIAL_GRID_MAX_LOAD);
         int clampedBuckets = (int) Math.max(MIN_SPATIAL_MAP_SIZE, Math.min(MAX_SPATIAL_MAP_SIZE, targetBuckets));
         return Math3d.previousPrime(clampedBuckets);

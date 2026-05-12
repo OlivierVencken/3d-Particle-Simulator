@@ -1,9 +1,10 @@
 package com.particle.sim.settings;
 
+import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.particles.ParticleSimulationConfig;
 import com.particle.sim.particles.SpawnMode;
-import com.particle.sim.camera.CameraController;
 import com.particle.sim.ui.SimulationUi;
 
 import java.io.IOException;
@@ -16,19 +17,7 @@ import java.util.Properties;
 public final class AppSettings {
     public static final int VERSION = 1;
 
-    private int particleCount = SimulationDefaults.PARTICLE_COUNT;
-    private float pointSize = SimulationDefaults.POINT_SIZE;
-    private float bounds = SimulationDefaults.BOUNDS;
-    private float forceFactor = SimulationDefaults.FORCE_FACTOR;
-    private float velocityDamping = SimulationDefaults.VELOCITY_DAMPING;
-    private float interactionRange = SimulationDefaults.INTERACTION_RANGE;
-    private float repulsionRadius = SimulationDefaults.REPULSION_RADIUS;
-    private float maxVelocity = SimulationDefaults.MAX_VELOCITY;
-    private float boundaryBounce = SimulationDefaults.BOUNDARY_BOUNCE;
-    private boolean toroidalWrap = SimulationDefaults.TOROIDAL_WRAP;
-    private int groupCount = SimulationDefaults.GROUP_COUNT;
-    private ColorMode colorMode = SimulationDefaults.COLOR_MODE;
-    private SpawnMode spawnMode = SimulationDefaults.SPAWN_MODE;
+    private final ParticleSimulationConfig particleConfig = ParticleSimulationConfig.defaults();
     private float[] attractionMatrix;
 
     private float cameraSensitivity = SimulationDefaults.CAMERA_SENSITIVITY;
@@ -61,26 +50,26 @@ public final class AppSettings {
             return settings;
         }
 
-        settings.particleCount = intProperty(properties, "particleCount", settings.particleCount);
-        settings.pointSize = floatProperty(properties, "pointSize", settings.pointSize);
-        settings.bounds = floatProperty(properties, "bounds", settings.bounds);
-        settings.forceFactor = floatProperty(properties, "forceFactor", settings.forceFactor);
-        settings.velocityDamping = floatProperty(properties, "velocityDamping", settings.velocityDamping);
-        settings.interactionRange = floatProperty(properties, "interactionRange", settings.interactionRange);
-        settings.repulsionRadius = floatProperty(properties, "repulsionRadius", settings.repulsionRadius);
-        settings.maxVelocity = floatProperty(properties, "maxVelocity", settings.maxVelocity);
-        settings.boundaryBounce = floatProperty(properties, "boundaryBounce", settings.boundaryBounce);
-        settings.toroidalWrap = booleanProperty(properties, "toroidalWrap", settings.toroidalWrap);
-        settings.groupCount = intProperty(properties, "groupCount", settings.groupCount);
-        settings.groupCount = Math.max(1, Math.min(SimulationDefaults.MAX_GROUP_COUNT, settings.groupCount));
-        settings.colorMode = enumProperty(properties, "colorMode", ColorMode.class, settings.colorMode);
-        settings.spawnMode = enumProperty(properties, "spawnMode", SpawnMode.class, settings.spawnMode);
+        ParticleSimulationConfig particleConfig = settings.particleConfig;
+        particleConfig.particleCount(intProperty(properties, "particleCount", particleConfig.particleCount()));
+        particleConfig.pointSize(floatProperty(properties, "pointSize", particleConfig.pointSize()));
+        particleConfig.bounds(floatProperty(properties, "bounds", particleConfig.bounds()));
+        particleConfig.forceFactor(floatProperty(properties, "forceFactor", particleConfig.forceFactor()));
+        particleConfig.velocityDamping(floatProperty(properties, "velocityDamping", particleConfig.velocityDamping()));
+        particleConfig.interactionRange(floatProperty(properties, "interactionRange", particleConfig.interactionRange()));
+        particleConfig.repulsionRadius(floatProperty(properties, "repulsionRadius", particleConfig.repulsionRadius()));
+        particleConfig.maxVelocity(floatProperty(properties, "maxVelocity", particleConfig.maxVelocity()));
+        particleConfig.boundaryBounce(floatProperty(properties, "boundaryBounce", particleConfig.boundaryBounce()));
+        particleConfig.toroidalWrap(booleanProperty(properties, "toroidalWrap", particleConfig.toroidalWrap()));
+        particleConfig.groupCount(intProperty(properties, "groupCount", particleConfig.groupCount()));
+        particleConfig.colorMode(enumProperty(properties, "colorMode", ColorMode.class, particleConfig.colorMode()));
+        particleConfig.spawnMode(enumProperty(properties, "spawnMode", SpawnMode.class, particleConfig.spawnMode()));
         settings.cameraSensitivity = floatProperty(properties, "cameraSensitivity", settings.cameraSensitivity);
         settings.paused = booleanProperty(properties, "paused", settings.paused);
         settings.matrixEditStep = floatProperty(properties, "matrixEditStep", settings.matrixEditStep);
         settings.customSpawnAmount = intProperty(properties, "customSpawnAmount", settings.customSpawnAmount);
 
-        int attractionValueCount = settings.groupCount * settings.groupCount;
+        int attractionValueCount = settings.particleConfig.groupCount() * settings.particleConfig.groupCount();
         for (int i = 0; i < attractionValueCount; i++) {
             settings.attractionMatrix[i] = floatProperty(properties, "attraction." + i, settings.attractionMatrix[i]);
         }
@@ -92,25 +81,25 @@ public final class AppSettings {
     public void save(Path path) {
         Properties properties = new Properties();
         properties.setProperty("version", Integer.toString(VERSION));
-        properties.setProperty("particleCount", Integer.toString(particleCount));
-        properties.setProperty("pointSize", Float.toString(pointSize));
-        properties.setProperty("bounds", Float.toString(bounds));
-        properties.setProperty("forceFactor", Float.toString(forceFactor));
-        properties.setProperty("velocityDamping", Float.toString(velocityDamping));
-        properties.setProperty("interactionRange", Float.toString(interactionRange));
-        properties.setProperty("repulsionRadius", Float.toString(repulsionRadius));
-        properties.setProperty("maxVelocity", Float.toString(maxVelocity));
-        properties.setProperty("boundaryBounce", Float.toString(boundaryBounce));
-        properties.setProperty("toroidalWrap", Boolean.toString(toroidalWrap));
-        properties.setProperty("groupCount", Integer.toString(groupCount));
-        properties.setProperty("colorMode", colorMode.name());
-        properties.setProperty("spawnMode", spawnMode.name());
+        properties.setProperty("particleCount", Integer.toString(particleConfig.particleCount()));
+        properties.setProperty("pointSize", Float.toString(particleConfig.pointSize()));
+        properties.setProperty("bounds", Float.toString(particleConfig.bounds()));
+        properties.setProperty("forceFactor", Float.toString(particleConfig.forceFactor()));
+        properties.setProperty("velocityDamping", Float.toString(particleConfig.velocityDamping()));
+        properties.setProperty("interactionRange", Float.toString(particleConfig.interactionRange()));
+        properties.setProperty("repulsionRadius", Float.toString(particleConfig.repulsionRadius()));
+        properties.setProperty("maxVelocity", Float.toString(particleConfig.maxVelocity()));
+        properties.setProperty("boundaryBounce", Float.toString(particleConfig.boundaryBounce()));
+        properties.setProperty("toroidalWrap", Boolean.toString(particleConfig.toroidalWrap()));
+        properties.setProperty("groupCount", Integer.toString(particleConfig.groupCount()));
+        properties.setProperty("colorMode", particleConfig.colorMode().name());
+        properties.setProperty("spawnMode", particleConfig.spawnMode().name());
         properties.setProperty("cameraSensitivity", Float.toString(cameraSensitivity));
         properties.setProperty("paused", Boolean.toString(paused));
         properties.setProperty("matrixEditStep", Float.toString(matrixEditStep));
         properties.setProperty("customSpawnAmount", Integer.toString(customSpawnAmount));
 
-        int attractionValueCount = groupCount * groupCount;
+        int attractionValueCount = particleConfig.groupCount() * particleConfig.groupCount();
         for (int i = 0; i < attractionValueCount; i++) {
             properties.setProperty("attraction." + i, Float.toString(attractionMatrix[i]));
         }
@@ -135,19 +124,7 @@ public final class AppSettings {
 
     public void applySimulationTo(GpuParticleSystem particles, CameraController camera, SimulationUi ui) {
         sanitize();
-        particles.setParticleCount(particleCount);
-        particles.pointSize(pointSize);
-        particles.bounds(bounds);
-        particles.forceFactor(forceFactor);
-        particles.velocityDamping(velocityDamping);
-        particles.interactionRange(interactionRange);
-        particles.repulsionRadius(repulsionRadius);
-        particles.maxVelocity(maxVelocity);
-        particles.boundaryBounce(boundaryBounce);
-        particles.toroidalWrap(toroidalWrap);
-        particles.groupCount(groupCount);
-        particles.colorMode(colorMode);
-        particles.spawnMode(spawnMode);
+        particles.applyConfig(particleConfig);
 
         camera.setSensitivity(cameraSensitivity);
         ui.setPaused(paused);
@@ -157,22 +134,10 @@ public final class AppSettings {
 
     public static AppSettings capture(GpuParticleSystem particles, CameraController camera, SimulationUi ui) {
         AppSettings settings = defaults();
-        settings.particleCount = particles.particleCount();
-        settings.pointSize = particles.pointSize();
-        settings.bounds = particles.bounds();
-        settings.forceFactor = particles.forceFactor();
-        settings.velocityDamping = particles.velocityDamping();
-        settings.interactionRange = particles.interactionRange();
-        settings.repulsionRadius = particles.repulsionRadius();
-        settings.maxVelocity = particles.maxVelocity();
-        settings.boundaryBounce = particles.boundaryBounce();
-        settings.toroidalWrap = particles.toroidalWrap();
-        settings.groupCount = particles.groupCount();
-        settings.colorMode = particles.colorMode();
-        settings.spawnMode = particles.spawnMode();
+        settings.particleConfig.applyFrom(particles.config());
         int attractionIndex = 0;
-        for (int row = 0; row < settings.groupCount; row++) {
-            for (int column = 0; column < settings.groupCount; column++) {
+        for (int row = 0; row < settings.particleConfig.groupCount(); row++) {
+            for (int column = 0; column < settings.particleConfig.groupCount(); column++) {
                 settings.attractionMatrix[attractionIndex] = particles.attraction(row, column);
                 attractionIndex++;
             }
@@ -187,21 +152,12 @@ public final class AppSettings {
     }
 
     private void sanitize() {
-        particleCount = Math.max(0, Math.min(SimulationDefaults.MAX_PARTICLE_COUNT, particleCount));
-        pointSize = clamp(pointSize, 1.0f, 8.0f);
-        bounds = clamp(bounds, 2.0f, 10.0f);
-        forceFactor = clamp(forceFactor, 0.0f, 10.0f);
-        velocityDamping = clamp(velocityDamping, 0.85f, 1.0f);
-        interactionRange = clamp(interactionRange, 0.2f, 3.0f);
-        repulsionRadius = clamp(repulsionRadius, 0.02f, 0.95f);
-        maxVelocity = clamp(maxVelocity, 0.5f, 16.0f);
-        boundaryBounce = clamp(boundaryBounce, 0.0f, 1.0f);
-        groupCount = Math.max(1, Math.min(SimulationDefaults.MAX_GROUP_COUNT, groupCount));
+        particleConfig.sanitize();
         cameraSensitivity = Math.max(0.0001f, cameraSensitivity);
         matrixEditStep = clamp(matrixEditStep, 0.01f, 0.5f);
         customSpawnAmount = Math.max(0, customSpawnAmount);
 
-        int attractionValueCount = groupCount * groupCount;
+        int attractionValueCount = particleConfig.groupCount() * particleConfig.groupCount();
         for (int i = 0; i < attractionValueCount; i++) {
             attractionMatrix[i] = clamp(attractionMatrix[i], -1.0f, 1.0f);
         }

@@ -1,0 +1,166 @@
+package com.particle.sim.particles;
+
+import com.particle.sim.settings.SimulationDefaults;
+
+public final class ParticleSimulationConfig {
+    private int particleCount = SimulationDefaults.PARTICLE_COUNT;
+    private float pointSize = SimulationDefaults.POINT_SIZE;
+    private float bounds = SimulationDefaults.BOUNDS;
+    private float forceFactor = SimulationDefaults.FORCE_FACTOR;
+    private float velocityDamping = SimulationDefaults.VELOCITY_DAMPING;
+    private float interactionRange = SimulationDefaults.INTERACTION_RANGE;
+    private float repulsionRadius = SimulationDefaults.REPULSION_RADIUS;
+    private float maxVelocity = SimulationDefaults.MAX_VELOCITY;
+    private float boundaryBounce = SimulationDefaults.BOUNDARY_BOUNCE;
+    private boolean toroidalWrap = SimulationDefaults.TOROIDAL_WRAP;
+    private int groupCount = SimulationDefaults.GROUP_COUNT;
+    private ColorMode colorMode = SimulationDefaults.COLOR_MODE;
+    private SpawnMode spawnMode = SimulationDefaults.SPAWN_MODE;
+
+    public static ParticleSimulationConfig defaults() {
+        return new ParticleSimulationConfig();
+    }
+
+    public ParticleSimulationConfig copy() {
+        ParticleSimulationConfig copy = defaults();
+        copy.applyFrom(this);
+        return copy;
+    }
+
+    public void applyFrom(ParticleSimulationConfig source) {
+        particleCount(source.particleCount);
+        pointSize(source.pointSize);
+        bounds(source.bounds);
+        forceFactor(source.forceFactor);
+        velocityDamping(source.velocityDamping);
+        interactionRange(source.interactionRange);
+        repulsionRadius(source.repulsionRadius);
+        maxVelocity(source.maxVelocity);
+        boundaryBounce(source.boundaryBounce);
+        toroidalWrap(source.toroidalWrap);
+        groupCount(source.groupCount);
+        colorMode(source.colorMode);
+        spawnMode(source.spawnMode);
+    }
+
+    public int particleCount() {
+        return particleCount;
+    }
+
+    public void particleCount(int particleCount) {
+        this.particleCount = Math.max(0, Math.min(SimulationDefaults.MAX_PARTICLE_COUNT, particleCount));
+    }
+
+    public float pointSize() {
+        return pointSize;
+    }
+
+    public void pointSize(float pointSize) {
+        this.pointSize = pointSize;
+    }
+
+    public float bounds() {
+        return bounds;
+    }
+
+    public void bounds(float bounds) {
+        this.bounds = bounds;
+    }
+
+    public float forceFactor() {
+        return forceFactor;
+    }
+
+    public void forceFactor(float forceFactor) {
+        this.forceFactor = forceFactor;
+    }
+
+    public float velocityDamping() {
+        return velocityDamping;
+    }
+
+    public void velocityDamping(float velocityDamping) {
+        this.velocityDamping = velocityDamping;
+    }
+
+    public float interactionRange() {
+        return interactionRange;
+    }
+
+    public void interactionRange(float interactionRange) {
+        this.interactionRange = interactionRange;
+    }
+
+    public float repulsionRadius() {
+        return repulsionRadius;
+    }
+
+    public void repulsionRadius(float repulsionRadius) {
+        this.repulsionRadius = repulsionRadius;
+    }
+
+    public float maxVelocity() {
+        return maxVelocity;
+    }
+
+    public void maxVelocity(float maxVelocity) {
+        this.maxVelocity = maxVelocity;
+    }
+
+    public float boundaryBounce() {
+        return boundaryBounce;
+    }
+
+    public void boundaryBounce(float boundaryBounce) {
+        this.boundaryBounce = boundaryBounce;
+    }
+
+    public boolean toroidalWrap() {
+        return toroidalWrap;
+    }
+
+    public void toroidalWrap(boolean toroidalWrap) {
+        this.toroidalWrap = toroidalWrap;
+    }
+
+    public int groupCount() {
+        return groupCount;
+    }
+
+    public void groupCount(int groupCount) {
+        this.groupCount = Math.max(1, Math.min(SimulationDefaults.MAX_GROUP_COUNT, groupCount));
+    }
+
+    public ColorMode colorMode() {
+        return colorMode;
+    }
+
+    public void colorMode(ColorMode colorMode) {
+        this.colorMode = colorMode == null ? SimulationDefaults.COLOR_MODE : colorMode;
+    }
+
+    public SpawnMode spawnMode() {
+        return spawnMode;
+    }
+
+    public void spawnMode(SpawnMode spawnMode) {
+        this.spawnMode = spawnMode == null ? SimulationDefaults.SPAWN_MODE : spawnMode;
+    }
+
+    public void sanitize() {
+        particleCount(particleCount);
+        pointSize = clamp(pointSize, 1.0f, 8.0f);
+        bounds = clamp(bounds, 2.0f, 10.0f);
+        forceFactor = clamp(forceFactor, 0.0f, 10.0f);
+        velocityDamping = clamp(velocityDamping, 0.85f, 1.0f);
+        interactionRange = clamp(interactionRange, 0.2f, 3.0f);
+        repulsionRadius = clamp(repulsionRadius, 0.02f, 0.95f);
+        maxVelocity = clamp(maxVelocity, 0.5f, 16.0f);
+        boundaryBounce = clamp(boundaryBounce, 0.0f, 1.0f);
+        groupCount(groupCount);
+    }
+
+    private static float clamp(float value, float min, float max) {
+        return Math.max(min, Math.min(max, value));
+    }
+}
