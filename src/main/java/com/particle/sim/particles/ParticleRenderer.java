@@ -42,8 +42,8 @@ public final class ParticleRenderer {
         uMapSizeLoc = glGetUniformLocation(renderProgram, "uMapSize");
     }
 
-    public void render(int width, int height, float[] viewMatrix, int positionSsbo, int velocitySsbo,
-            int gridCountsSsbo, int gridKeysSsbo, int particleCount, float pointSize, int colorMode, int groupCount,
+    public void render(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
+            SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, int colorMode, int groupCount,
             float maxVelocity, float bounds, float interactionRange, int spatialMapSize) {
         if (particleCount == 0) {
             return;
@@ -51,10 +51,10 @@ public final class ParticleRenderer {
 
         glUseProgram(renderProgram);
         glBindVertexArray(vao);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, positionSsbo);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, velocitySsbo);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, gridCountsSsbo);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, gridKeysSsbo);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particleBuffers.positionSsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, particleBuffers.velocitySsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, spatialGridBuffers.countsSsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, spatialGridBuffers.keysSsbo());
 
         float aspect = width / (float) height;
         float[] viewProjection = Math3d.multiply(
@@ -63,12 +63,18 @@ public final class ParticleRenderer {
 
         glUniformMatrix4fv(uViewProjectionLoc, false, viewProjection);
         glUniform1f(uPointSizeLoc, pointSize);
-        if (uColorModeLoc != -1) glUniform1i(uColorModeLoc, colorMode);
-        if (uGroupCountLoc != -1) glUniform1i(uGroupCountLoc, groupCount);
-        if (uMaxVelocityLoc != -1) glUniform1f(uMaxVelocityLoc, maxVelocity);
-        if (uBoundsLoc != -1) glUniform1f(uBoundsLoc, bounds);
-        if (uInteractionRangeLoc != -1) glUniform1f(uInteractionRangeLoc, interactionRange);
-        if (uMapSizeLoc != -1) glUniform1i(uMapSizeLoc, spatialMapSize);
+        if (uColorModeLoc != -1)
+            glUniform1i(uColorModeLoc, colorMode);
+        if (uGroupCountLoc != -1)
+            glUniform1i(uGroupCountLoc, groupCount);
+        if (uMaxVelocityLoc != -1)
+            glUniform1f(uMaxVelocityLoc, maxVelocity);
+        if (uBoundsLoc != -1)
+            glUniform1f(uBoundsLoc, bounds);
+        if (uInteractionRangeLoc != -1)
+            glUniform1f(uInteractionRangeLoc, interactionRange);
+        if (uMapSizeLoc != -1)
+            glUniform1i(uMapSizeLoc, spatialMapSize);
         glDrawArrays(GL_POINTS, 0, particleCount);
     }
 

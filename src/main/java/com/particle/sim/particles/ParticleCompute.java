@@ -43,13 +43,13 @@ public final class ParticleCompute {
         uAttractionMatrixLoc = glGetUniformLocation(computeProgram, "uAttractionMatrix");
     }
 
-    public void bindBuffers(int positionSsbo, int velocitySsbo, int gridDataSsbo, int gridCountsSsbo, int gridKeysSsbo) {
+    public void bindBuffers(ParticleBuffers particleBuffers, SpatialGridBuffers spatialGridBuffers) {
         glUseProgram(computeProgram);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, positionSsbo);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, velocitySsbo);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, gridDataSsbo);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, gridCountsSsbo);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, gridKeysSsbo);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particleBuffers.positionSsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, particleBuffers.velocitySsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, spatialGridBuffers.dataSsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, spatialGridBuffers.countsSsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, spatialGridBuffers.keysSsbo());
     }
 
     public void setUniforms(GpuParticleSystem system, float deltaTime, int pass) {
