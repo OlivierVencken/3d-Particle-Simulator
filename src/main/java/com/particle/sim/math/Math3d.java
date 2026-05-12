@@ -89,6 +89,32 @@ public final class Math3d {
         return Math.max(min, Math.min(max, value));
     }
 
+    public static int previousPrime(int value) {
+        int candidate = Math.max(3, value | 1);
+        while (!isPrime(candidate)) {
+            candidate -= 2;
+        }
+        return candidate;
+    }
+
+    public static boolean isPrime(int value) {
+        if (value < 2) {
+            return false;
+        }
+        if (value == 2) {
+            return true;
+        }
+        if (value % 2 == 0) {
+            return false;
+        }
+        for (int divisor = 3; (long) divisor * divisor <= value; divisor += 2) {
+            if (value % divisor == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static float length(float x, float y, float z) {
         return (float) Math.sqrt(x * x + y * y + z * z);
     }

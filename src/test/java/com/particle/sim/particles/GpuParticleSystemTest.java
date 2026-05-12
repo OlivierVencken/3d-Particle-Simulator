@@ -82,6 +82,27 @@ class GpuParticleSystemTest {
     }
 
     @Test
+    void spatialMapSizeScalesWithLikelyOccupiedGridCells() {
+        GpuParticleSystem system = new GpuParticleSystem();
+
+        system.bounds(4.0f);
+        system.interactionRange(0.95f);
+
+        assertTrue(system.spatialMapSize() < 2_000);
+    }
+
+    @Test
+    void spatialMapSizeStaysCappedForWorstCaseSettings() {
+        GpuParticleSystem system = new GpuParticleSystem();
+
+        system.setParticleCount(system.maxParticleCount());
+        system.bounds(10.0f);
+        system.interactionRange(0.2f);
+
+        assertEquals(GpuParticleSystem.MAX_SPATIAL_MAP_SIZE, system.spatialMapSize());
+    }
+
+    @Test
     void attractionMatrixOperationsAreExposedThroughSystem() {
         GpuParticleSystem system = new GpuParticleSystem();
 

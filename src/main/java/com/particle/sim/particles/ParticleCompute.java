@@ -64,7 +64,7 @@ public final class ParticleCompute {
         glUniform1f(uBoundaryBounceLoc, system.boundaryBounce());
         glUniform1f(uBoundsLoc, system.bounds());
         glUniform1i(uGridSizeLoc, system.gridSize());
-        glUniform1i(uMapSizeLoc, GpuParticleSystem.SPATIAL_MAP_SIZE);
+        glUniform1i(uMapSizeLoc, system.spatialMapSize());
         glUniform1i(uMaxParticlesPerCellLoc, system.maxParticlesPerCell());
         glUniform1i(uToroidalWrapLoc, system.toroidalWrap() ? 1 : 0);
         glUniform1i(uPassLoc, pass);

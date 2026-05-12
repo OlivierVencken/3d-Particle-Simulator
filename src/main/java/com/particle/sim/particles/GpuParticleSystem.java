@@ -1,6 +1,7 @@
 package com.particle.sim.particles;
 
 import com.particle.sim.settings.SimulationDefaults;
+import com.particle.sim.math.Math3d;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
@@ -24,7 +25,9 @@ import static org.lwjgl.opengl.GL43C.GL_INT;
 
 public final class GpuParticleSystem {
     private static final int WORK_GROUP_SIZE = 256;
-    public static final int SPATIAL_MAP_SIZE = 524287;
+    public static final int MAX_SPATIAL_MAP_SIZE = 524287;
+    private static final int MIN_SPATIAL_MAP_SIZE = 1021;
+    private static final float SPATIAL_GRID_MAX_LOAD = 0.5f;
     private static final int MAX_PARTICLES_PER_CELL = 128;
 
     private int positionSsbo;
@@ -32,6 +35,7 @@ public final class GpuParticleSystem {
     private int gridDataSsbo;
     private int gridCountsSsbo;
     private int gridKeysSsbo;
+    private int spatialMapSize;
 
     private final ParticleRenderer renderer = new ParticleRenderer();
     private final ParticleCompute compute = new ParticleCompute();
@@ -65,18 +69,31 @@ public final class GpuParticleSystem {
 
     private void initSpatialGrid() {
         gridDataSsbo = glGenBuffers();
+        gridCountsSsbo = glGenBuffers();
+        gridKeysSsbo = glGenBuffers();
+        allocateSpatialGrid(desiredSpatialMapSize());
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+
+    private void ensureSpatialGridCapacity() {
+        int desiredMapSize = desiredSpatialMapSize();
+        if (desiredMapSize != spatialMapSize) {
+            allocateSpatialGrid(desiredMapSize);
+        }
+    }
+
+    private void allocateSpatialGrid(int newSpatialMapSize) {
+        spatialMapSize = newSpatialMapSize;
+
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridDataSsbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) SPATIAL_MAP_SIZE * MAX_PARTICLES_PER_CELL * Integer.BYTES,
+        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) spatialMapSize * MAX_PARTICLES_PER_CELL * Integer.BYTES,
                 GL_DYNAMIC_DRAW);
 
-        gridCountsSsbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsSsbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) SPATIAL_MAP_SIZE * Integer.BYTES, GL_STREAM_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) spatialMapSize * Integer.BYTES, GL_STREAM_DRAW);
 
-        gridKeysSsbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridKeysSsbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) SPATIAL_MAP_SIZE * Integer.BYTES, GL_STREAM_DRAW);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) spatialMapSize * Integer.BYTES, GL_STREAM_DRAW);
     }
 
     public void reset() {
@@ -88,6 +105,7 @@ public final class GpuParticleSystem {
             return;
         }
 
+        ensureSpatialGridCapacity();
         compute.bindBuffers(positionSsbo, velocitySsbo, gridDataSsbo, gridCountsSsbo, gridKeysSsbo);
 
         clearSpatialGrid();
@@ -107,7 +125,8 @@ public final class GpuParticleSystem {
 
     public void render(int width, int height, float[] viewMatrix) {
         renderer.render(width, height, viewMatrix, positionSsbo, velocitySsbo, gridCountsSsbo, gridKeysSsbo,
-                particleCount, pointSize, colorMode.ordinal(), groupCount(), maxVelocity, bounds, interactionRange);
+                particleCount, pointSize, colorMode.ordinal(), groupCount(), maxVelocity, bounds, interactionRange,
+                spatialMapSize());
     }
 
     public void dispose() {
@@ -375,6 +394,23 @@ public final class GpuParticleSystem {
 
     public int gridSize() {
         return Math.max(1, (int) Math.ceil((bounds * 2.0f) / interactionRange));
+    }
+
+    public int spatialMapSize() {
+        return initialized ? spatialMapSize : desiredSpatialMapSize();
+    }
+
+    private int desiredSpatialMapSize() {
+        long gridCellCount = gridCellCount();
+        long occupiedCellLimit = Math.max(1L, Math.min((long) Math.max(particleCount, 1), gridCellCount));
+        long targetBuckets = (long) Math.ceil(occupiedCellLimit / SPATIAL_GRID_MAX_LOAD);
+        int clampedBuckets = (int) Math.max(MIN_SPATIAL_MAP_SIZE, Math.min(MAX_SPATIAL_MAP_SIZE, targetBuckets));
+        return Math3d.previousPrime(clampedBuckets);
+    }
+
+    private long gridCellCount() {
+        long size = gridSize();
+        return size * size * size;
     }
 
     public int maxParticlesPerCell() {

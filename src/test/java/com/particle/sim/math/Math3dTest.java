@@ -73,4 +73,19 @@ class Math3dTest {
         assertEquals(0.25f, Math3d.clamp(0.25f, -1.0f, 1.0f), EPSILON);
         assertEquals(1.0f, Math3d.clamp(2.0f, -1.0f, 1.0f), EPSILON);
     }
+
+    @Test
+    void isPrimeIdentifiesPrimeNumbers() {
+        assertEquals(false, Math3d.isPrime(1));
+        assertEquals(true, Math3d.isPrime(2));
+        assertEquals(true, Math3d.isPrime(17));
+        assertEquals(false, Math3d.isPrime(21));
+    }
+
+    @Test
+    void previousPrimeReturnsNearestPrimeAtOrBelowValue() {
+        assertEquals(3, Math3d.previousPrime(3));
+        assertEquals(7, Math3d.previousPrime(8));
+        assertEquals(524287, Math3d.previousPrime(524287));
+    }
 }

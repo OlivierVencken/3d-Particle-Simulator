@@ -44,7 +44,7 @@ public final class ParticleRenderer {
 
     public void render(int width, int height, float[] viewMatrix, int positionSsbo, int velocitySsbo,
             int gridCountsSsbo, int gridKeysSsbo, int particleCount, float pointSize, int colorMode, int groupCount,
-            float maxVelocity, float bounds, float interactionRange) {
+            float maxVelocity, float bounds, float interactionRange, int spatialMapSize) {
         if (particleCount == 0) {
             return;
         }
@@ -68,7 +68,7 @@ public final class ParticleRenderer {
         if (uMaxVelocityLoc != -1) glUniform1f(uMaxVelocityLoc, maxVelocity);
         if (uBoundsLoc != -1) glUniform1f(uBoundsLoc, bounds);
         if (uInteractionRangeLoc != -1) glUniform1f(uInteractionRangeLoc, interactionRange);
-        if (uMapSizeLoc != -1) glUniform1i(uMapSizeLoc, GpuParticleSystem.SPATIAL_MAP_SIZE);
+        if (uMapSizeLoc != -1) glUniform1i(uMapSizeLoc, spatialMapSize);
         glDrawArrays(GL_POINTS, 0, particleCount);
     }
 
