@@ -31,6 +31,7 @@ public final class GpuParticleSystem {
     private int velocitySsbo;
     private int gridDataSsbo;
     private int gridCountsSsbo;
+    private int gridKeysSsbo;
 
     private final ParticleRenderer renderer = new ParticleRenderer();
     private final ParticleCompute compute = new ParticleCompute();
@@ -71,6 +72,10 @@ public final class GpuParticleSystem {
         gridCountsSsbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsSsbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, (long) SPATIAL_MAP_SIZE * Integer.BYTES, GL_STREAM_DRAW);
+
+        gridKeysSsbo = glGenBuffers();
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridKeysSsbo);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) SPATIAL_MAP_SIZE * Integer.BYTES, GL_STREAM_DRAW);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
 
@@ -83,9 +88,9 @@ public final class GpuParticleSystem {
             return;
         }
 
-        compute.bindBuffers(positionSsbo, velocitySsbo, gridDataSsbo, gridCountsSsbo);
+        compute.bindBuffers(positionSsbo, velocitySsbo, gridDataSsbo, gridCountsSsbo, gridKeysSsbo);
 
-        clearGridCounts();
+        clearSpatialGrid();
         compute.setUniforms(this, deltaTime, 0);
         compute.dispatch(particleCount, WORK_GROUP_SIZE, false);
 
@@ -93,14 +98,16 @@ public final class GpuParticleSystem {
         compute.dispatch(particleCount, WORK_GROUP_SIZE, true);
     }
 
-    private void clearGridCounts() {
+    private void clearSpatialGrid() {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsSsbo);
+        glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32I, GL_RED_INTEGER, GL_INT, new int[] { 0 });
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridKeysSsbo);
         glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32I, GL_RED_INTEGER, GL_INT, new int[] { 0 });
     }
 
     public void render(int width, int height, float[] viewMatrix) {
-        renderer.render(width, height, viewMatrix, positionSsbo, velocitySsbo, gridCountsSsbo, particleCount, pointSize,
-                colorMode.ordinal(), groupCount(), maxVelocity, bounds, interactionRange);
+        renderer.render(width, height, viewMatrix, positionSsbo, velocitySsbo, gridCountsSsbo, gridKeysSsbo,
+                particleCount, pointSize, colorMode.ordinal(), groupCount(), maxVelocity, bounds, interactionRange);
     }
 
     public void dispose() {
@@ -108,6 +115,7 @@ public final class GpuParticleSystem {
         glDeleteBuffers(velocitySsbo);
         glDeleteBuffers(gridDataSsbo);
         glDeleteBuffers(gridCountsSsbo);
+        glDeleteBuffers(gridKeysSsbo);
         compute.dispose();
         renderer.dispose();
     }

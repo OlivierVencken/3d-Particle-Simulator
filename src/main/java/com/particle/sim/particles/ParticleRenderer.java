@@ -42,8 +42,9 @@ public final class ParticleRenderer {
         uMapSizeLoc = glGetUniformLocation(renderProgram, "uMapSize");
     }
 
-    public void render(int width, int height, float[] viewMatrix, int positionSsbo, int velocitySsbo, int gridCountsSsbo, int particleCount,
-            float pointSize, int colorMode, int groupCount, float maxVelocity, float bounds, float interactionRange) {
+    public void render(int width, int height, float[] viewMatrix, int positionSsbo, int velocitySsbo,
+            int gridCountsSsbo, int gridKeysSsbo, int particleCount, float pointSize, int colorMode, int groupCount,
+            float maxVelocity, float bounds, float interactionRange) {
         if (particleCount == 0) {
             return;
         }
@@ -53,6 +54,7 @@ public final class ParticleRenderer {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, positionSsbo);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, velocitySsbo);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, gridCountsSsbo);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, gridKeysSsbo);
 
         float aspect = width / (float) height;
         float[] viewProjection = Math3d.multiply(

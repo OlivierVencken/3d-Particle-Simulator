@@ -3,6 +3,9 @@
 layout(local_size_x = 256) in;
 
 #define MAX_GROUPS 16
+#define MAX_GRID_PROBES 32
+#define GRID_KEY_COORD_OFFSET 512
+#define GRID_KEY_COORD_MASK 1023
 
 layout(std430, binding = 0) buffer Positions {
     vec4 positions[];
@@ -18,6 +21,10 @@ layout(std430, binding = 2) buffer GridData {
 
 layout(std430, binding = 3) buffer GridCounts {
     int grid_counts[];
+};
+
+layout(std430, binding = 4) buffer GridKeys {
+    int grid_keys[];
 };
 
 uniform float uDeltaTime;
@@ -53,6 +60,62 @@ int getGridIndex(ivec3 coord) {
     h ^= uint(coord.y) * 19349663u;
     h ^= uint(coord.z) * 83492791u;
     return int(h % uint(uMapSize));
+}
+
+int getGridKey(ivec3 coord) {
+    ivec3 biased = coord + ivec3(GRID_KEY_COORD_OFFSET);
+    if (any(lessThan(biased, ivec3(0))) || any(greaterThan(biased, ivec3(GRID_KEY_COORD_MASK)))) {
+        return -1;
+    }
+
+    return 1
+        + biased.x
+        + biased.y * 1024
+        + biased.z * 1048576;
+}
+
+int probeIndex(int startIndex, int probe) {
+    int index = startIndex + probe;
+    return index >= uMapSize ? index - uMapSize : index;
+}
+
+int findOrCreateGridBucket(ivec3 coord) {
+    int key = getGridKey(coord);
+    if (key < 0) {
+        return -1;
+    }
+
+    int startIndex = getGridIndex(coord);
+    for (int probe = 0; probe < MAX_GRID_PROBES; probe++) {
+        int index = probeIndex(startIndex, probe);
+        int previousKey = atomicCompSwap(grid_keys[index], 0, key);
+        if (previousKey == 0 || previousKey == key) {
+            return index;
+        }
+    }
+
+    return -1;
+}
+
+int findGridBucket(ivec3 coord) {
+    int key = getGridKey(coord);
+    if (key < 0) {
+        return -1;
+    }
+
+    int startIndex = getGridIndex(coord);
+    for (int probe = 0; probe < MAX_GRID_PROBES; probe++) {
+        int index = probeIndex(startIndex, probe);
+        int existingKey = grid_keys[index];
+        if (existingKey == key) {
+            return index;
+        }
+        if (existingKey == 0) {
+            return -1;
+        }
+    }
+
+    return -1;
 }
 
 float calculateForce(float normalizedDistance, float attractionValue) {
@@ -97,7 +160,11 @@ void main() {
     if (uPass == 0) {
         vec3 pos = positions[id].xyz;
         ivec3 gridCoord = getGridCoord(pos);
-        int gridIndex = getGridIndex(gridCoord);
+        int gridIndex = findOrCreateGridBucket(gridCoord);
+        if (gridIndex < 0) {
+            return;
+        }
+
         int cellOffset = atomicAdd(grid_counts[gridIndex], 1);
 
         if (cellOffset < uMaxParticlesPerCell) {
@@ -126,7 +193,11 @@ void main() {
                     neighborGrid = wrapGridCoord(neighborGrid);
                 }
 
-                int neighborIndex = getGridIndex(neighborGrid);
+                int neighborIndex = findGridBucket(neighborGrid);
+                if (neighborIndex < 0) {
+                    continue;
+                }
+
                 int cellParticleCount = min(grid_counts[neighborIndex], uMaxParticlesPerCell);
 
                 for (int i = 0; i < cellParticleCount; i++) {
