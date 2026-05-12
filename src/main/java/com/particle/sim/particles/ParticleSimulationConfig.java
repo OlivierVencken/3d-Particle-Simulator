@@ -5,6 +5,7 @@ import com.particle.sim.settings.SimulationDefaults;
 public final class ParticleSimulationConfig {
     private int particleCount = SimulationDefaults.PARTICLE_COUNT;
     private float pointSize = SimulationDefaults.POINT_SIZE;
+    private boolean fixedParticleScreenSize = SimulationDefaults.FIXED_PARTICLE_SCREEN_SIZE;
     private float bounds = SimulationDefaults.BOUNDS;
     private float forceFactor = SimulationDefaults.FORCE_FACTOR;
     private float velocityDamping = SimulationDefaults.VELOCITY_DAMPING;
@@ -30,6 +31,7 @@ public final class ParticleSimulationConfig {
     public void applyFrom(ParticleSimulationConfig source) {
         particleCount(source.particleCount);
         pointSize(source.pointSize);
+        fixedParticleScreenSize(source.fixedParticleScreenSize);
         bounds(source.bounds);
         forceFactor(source.forceFactor);
         velocityDamping(source.velocityDamping);
@@ -57,6 +59,14 @@ public final class ParticleSimulationConfig {
 
     public void pointSize(float pointSize) {
         this.pointSize = pointSize;
+    }
+
+    public boolean fixedParticleScreenSize() {
+        return fixedParticleScreenSize;
+    }
+
+    public void fixedParticleScreenSize(boolean fixedParticleScreenSize) {
+        this.fixedParticleScreenSize = fixedParticleScreenSize;
     }
 
     public float bounds() {

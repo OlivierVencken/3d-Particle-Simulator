@@ -22,6 +22,7 @@ class GpuParticleSystemTest {
         assertEquals(ColorMode.GROUP, system.colorMode());
         assertEquals(SpawnMode.RANDOM, system.spawnMode());
         assertFalse(system.toroidalWrap());
+        assertFalse(system.fixedParticleScreenSize());
     }
 
     @Test
@@ -43,6 +44,7 @@ class GpuParticleSystemTest {
         GpuParticleSystem system = new GpuParticleSystem();
 
         system.pointSize(3.5f);
+        system.fixedParticleScreenSize(true);
         system.forceFactor(2.0f);
         system.interactionRange(0.5f);
         system.velocityDamping(0.9f);
@@ -55,6 +57,7 @@ class GpuParticleSystemTest {
         system.toroidalWrap(true);
 
         assertEquals(3.5f, system.pointSize(), EPSILON);
+        assertTrue(system.fixedParticleScreenSize());
         assertEquals(2.0f, system.forceFactor(), EPSILON);
         assertEquals(0.5f, system.interactionRange(), EPSILON);
         assertEquals(0.9f, system.velocityDamping(), EPSILON);

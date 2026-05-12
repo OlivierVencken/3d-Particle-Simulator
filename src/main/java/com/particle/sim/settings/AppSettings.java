@@ -53,6 +53,8 @@ public final class AppSettings {
         ParticleSimulationConfig particleConfig = settings.particleConfig;
         particleConfig.particleCount(intProperty(properties, "particleCount", particleConfig.particleCount()));
         particleConfig.pointSize(floatProperty(properties, "pointSize", particleConfig.pointSize()));
+        particleConfig.fixedParticleScreenSize(booleanProperty(properties, "fixedParticleScreenSize",
+                particleConfig.fixedParticleScreenSize()));
         particleConfig.bounds(floatProperty(properties, "bounds", particleConfig.bounds()));
         particleConfig.forceFactor(floatProperty(properties, "forceFactor", particleConfig.forceFactor()));
         particleConfig.velocityDamping(floatProperty(properties, "velocityDamping", particleConfig.velocityDamping()));
@@ -83,6 +85,7 @@ public final class AppSettings {
         properties.setProperty("version", Integer.toString(VERSION));
         properties.setProperty("particleCount", Integer.toString(particleConfig.particleCount()));
         properties.setProperty("pointSize", Float.toString(particleConfig.pointSize()));
+        properties.setProperty("fixedParticleScreenSize", Boolean.toString(particleConfig.fixedParticleScreenSize()));
         properties.setProperty("bounds", Float.toString(particleConfig.bounds()));
         properties.setProperty("forceFactor", Float.toString(particleConfig.forceFactor()));
         properties.setProperty("velocityDamping", Float.toString(particleConfig.velocityDamping()));

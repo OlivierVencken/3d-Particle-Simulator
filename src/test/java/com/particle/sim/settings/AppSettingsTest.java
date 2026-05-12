@@ -28,6 +28,7 @@ class AppSettingsTest {
 
         particles.setParticleCount(1234);
         particles.pointSize(4.5f);
+        particles.fixedParticleScreenSize(true);
         particles.bounds(8.0f);
         particles.forceFactor(3.0f);
         particles.velocityDamping(0.9f);
@@ -55,6 +56,7 @@ class AppSettingsTest {
 
         assertEquals(1234, loadedParticles.particleCount());
         assertEquals(4.5f, loadedParticles.pointSize(), EPSILON);
+        assertEquals(true, loadedParticles.fixedParticleScreenSize());
         assertEquals(8.0f, loadedParticles.bounds(), EPSILON);
         assertEquals(3.0f, loadedParticles.forceFactor(), EPSILON);
         assertEquals(0.9f, loadedParticles.velocityDamping(), EPSILON);
@@ -81,6 +83,7 @@ class AppSettingsTest {
 
         particles.setParticleCount(10);
         particles.pointSize(8.0f);
+        particles.fixedParticleScreenSize(true);
         particles.colorMode(ColorMode.DENSITY);
         particles.groupCount(12);
         particles.spawnMode(SpawnMode.GRID);
@@ -94,6 +97,7 @@ class AppSettingsTest {
 
         assertEquals(SimulationDefaults.PARTICLE_COUNT, particles.particleCount());
         assertEquals(SimulationDefaults.POINT_SIZE, particles.pointSize(), EPSILON);
+        assertFalse(particles.fixedParticleScreenSize());
         assertEquals(SimulationDefaults.COLOR_MODE, particles.colorMode());
         assertEquals(SimulationDefaults.GROUP_COUNT, particles.groupCount());
         assertEquals(SimulationDefaults.SPAWN_MODE, particles.spawnMode());

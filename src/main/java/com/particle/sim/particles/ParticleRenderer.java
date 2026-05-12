@@ -2,6 +2,7 @@ package com.particle.sim.particles;
 
 import com.particle.sim.graphics.ShaderProgram;
 import com.particle.sim.math.Math3d;
+import com.particle.sim.settings.SimulationDefaults;
 
 import static org.lwjgl.opengl.GL43C.GL_POINTS;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
@@ -21,7 +22,10 @@ public final class ParticleRenderer {
     private int renderProgram;
     private int vao;
     private int uViewProjectionLoc;
+    private int uViewLoc;
     private int uPointSizeLoc;
+    private int uFixedParticleScreenSizeLoc;
+    private int uPointSizeReferenceDistanceLoc;
     private int uColorModeLoc;
     private int uGroupCountLoc;
     private int uMaxVelocityLoc;
@@ -33,7 +37,10 @@ public final class ParticleRenderer {
         renderProgram = ShaderProgram.render("/shaders/particle.vert", "/shaders/particle.frag");
         vao = glGenVertexArrays();
         uViewProjectionLoc = glGetUniformLocation(renderProgram, "uViewProjection");
+        uViewLoc = glGetUniformLocation(renderProgram, "uView");
         uPointSizeLoc = glGetUniformLocation(renderProgram, "uPointSize");
+        uFixedParticleScreenSizeLoc = glGetUniformLocation(renderProgram, "uFixedParticleScreenSize");
+        uPointSizeReferenceDistanceLoc = glGetUniformLocation(renderProgram, "uPointSizeReferenceDistance");
         uColorModeLoc = glGetUniformLocation(renderProgram, "uColorMode");
         uGroupCountLoc = glGetUniformLocation(renderProgram, "uGroupCount");
         uMaxVelocityLoc = glGetUniformLocation(renderProgram, "uMaxVelocity");
@@ -43,8 +50,8 @@ public final class ParticleRenderer {
     }
 
     public void render(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
-            SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, int colorMode, int groupCount,
-            float maxVelocity, float bounds, float interactionRange, int spatialMapSize) {
+            SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, boolean fixedParticleScreenSize,
+            int colorMode, int groupCount, float maxVelocity, float bounds, float interactionRange, int spatialMapSize) {
         if (particleCount == 0) {
             return;
         }
@@ -62,7 +69,13 @@ public final class ParticleRenderer {
                 viewMatrix);
 
         glUniformMatrix4fv(uViewProjectionLoc, false, viewProjection);
+        if (uViewLoc != -1)
+            glUniformMatrix4fv(uViewLoc, false, viewMatrix);
         glUniform1f(uPointSizeLoc, pointSize);
+        if (uFixedParticleScreenSizeLoc != -1)
+            glUniform1i(uFixedParticleScreenSizeLoc, fixedParticleScreenSize ? 1 : 0);
+        if (uPointSizeReferenceDistanceLoc != -1)
+            glUniform1f(uPointSizeReferenceDistanceLoc, SimulationDefaults.POINT_SIZE_REFERENCE_DISTANCE);
         if (uColorModeLoc != -1)
             glUniform1i(uColorModeLoc, colorMode);
         if (uGroupCountLoc != -1)

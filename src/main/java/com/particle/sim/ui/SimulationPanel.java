@@ -60,6 +60,11 @@ final class SimulationPanel {
         ImGui.separatorText("Rendering");
         UiControls.settingSlider("Point size", particles.pointSize(), 1.0f, 8.0f, particles::pointSize,
                 settingsChanged);
+        ImBoolean fixedParticleScreenSize = new ImBoolean(particles.fixedParticleScreenSize());
+        if (ImGui.checkbox("Fixed particle size", fixedParticleScreenSize)) {
+            particles.fixedParticleScreenSize(fixedParticleScreenSize.get());
+            settingsChanged.run();
+        }
     }
 
     private void renderParticles(GpuParticleSystem particles, Runnable settingsChanged) {

@@ -13,6 +13,8 @@ public final class SimulationDefaults {
     public static final int MAX_GROUP_COUNT = 16;
 
     public static final float POINT_SIZE = 2.2f;
+    public static final boolean FIXED_PARTICLE_SCREEN_SIZE = false;
+    public static final float POINT_SIZE_REFERENCE_DISTANCE = 16.0f;
     public static final float BOUNDS = 4.0f;
     public static final float FORCE_FACTOR = 1.0f;
     public static final float VELOCITY_DAMPING = 0.965f;

@@ -17,7 +17,10 @@ layout(std430, binding = 3) readonly buffer GridKeys {
 };
 
 uniform mat4 uViewProjection;
+uniform mat4 uView;
 uniform float uPointSize;
+uniform int uFixedParticleScreenSize;
+uniform float uPointSizeReferenceDistance;
 uniform int uColorMode;
 uniform int uGroupCount;
 uniform float uMaxVelocity;
@@ -86,8 +89,16 @@ void main() {
     vec3 position = particle.xyz;
     int group = int(mod(particle.w, float(max(uGroupCount, 1))));
 
-    gl_Position = uViewProjection * vec4(position, 1.0);
-    gl_PointSize = uPointSize;
+    vec4 worldPosition = vec4(position, 1.0);
+    vec4 viewPosition = uView * worldPosition;
+    gl_Position = uViewProjection * worldPosition;
+
+    if (uFixedParticleScreenSize == 1) {
+        gl_PointSize = uPointSize;
+    } else {
+        float cameraDistance = max(0.1, length(viewPosition.xyz));
+        gl_PointSize = clamp(uPointSize * (uPointSizeReferenceDistance / cameraDistance), 1.0, uPointSize * 8.0);
+    }
 
     if (uColorMode == 0) {
         vec3 palette[16] = vec3[](
