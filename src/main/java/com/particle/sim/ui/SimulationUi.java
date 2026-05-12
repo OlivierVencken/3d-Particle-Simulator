@@ -6,6 +6,7 @@ import com.particle.sim.particles.GpuParticleSystem;
 public final class SimulationUi {
     private final SimulationPanel simulationPanel = new SimulationPanel();
     private final AttractionMatrixPanel attractionMatrixPanel = new AttractionMatrixPanel();
+    private final DebugPanel debugPanel = new DebugPanel();
 
     private float currentFps;
     private float fpsTimeAccumulator;
@@ -27,8 +28,9 @@ public final class SimulationUi {
 
     public void render(float deltaTime, GpuParticleSystem particles, CameraController camera) {
         updateFps(deltaTime);
-        simulationPanel.render(deltaTime, currentFps, particles, camera, settingsChanged, resetSettings);
+        simulationPanel.render(particles, camera, settingsChanged, resetSettings);
         attractionMatrixPanel.render(particles, settingsChanged);
+        debugPanel.render(deltaTime, currentFps, particles);
     }
 
     private void updateFps(float deltaTime) {

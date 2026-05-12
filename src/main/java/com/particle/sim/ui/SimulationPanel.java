@@ -13,12 +13,11 @@ final class SimulationPanel {
     private boolean paused;
     private final ImInt customSpawnAmount = new ImInt(SimulationDefaults.CUSTOM_SPAWN_AMOUNT);
 
-    void render(float deltaTime, float currentFps, GpuParticleSystem particles, CameraController camera,
-            Runnable settingsChanged, Runnable resetSettings) {
+    void render(GpuParticleSystem particles, CameraController camera, Runnable settingsChanged,
+            Runnable resetSettings) {
         ImGui.begin("Simulation");
 
-        renderStatus(deltaTime, currentFps);
-        renderConfig(particles);
+        renderStatus(particles);
         renderPhysics(particles, settingsChanged);
         renderRendering(particles, settingsChanged);
         renderParticles(particles, settingsChanged);
@@ -29,17 +28,9 @@ final class SimulationPanel {
         ImGui.end();
     }
 
-    private void renderStatus(float deltaTime, float currentFps) {
+    private void renderStatus(GpuParticleSystem particles) {
         ImGui.separatorText("Status");
-        ImGui.text("FPS: %.0f".formatted(currentFps));
-        ImGui.text("Frame: %.2f ms".formatted(deltaTime * 1000.0f));
-    }
-
-    private void renderConfig(GpuParticleSystem particles) {
-        ImGui.separatorText("Config");
         ImGui.text("Particles: %,d".formatted(particles.particleCount()));
-        ImGui.text("Grid: %d x %d x %d".formatted(particles.gridSize(), particles.gridSize(), particles.gridSize()));
-        ImGui.text("Cell capacity: %d".formatted(particles.maxParticlesPerCell()));
     }
 
     private void renderPhysics(GpuParticleSystem particles, Runnable settingsChanged) {
@@ -82,7 +73,7 @@ final class SimulationPanel {
         }
 
         ImInt currentColorMode = new ImInt(particles.colorMode().ordinal());
-        String[] colorModes = {"Group", "Velocity", "Position", "Distance", "Direction", "Density"};
+        String[] colorModes = { "Group", "Velocity", "Position", "Distance", "Direction", "Density" };
         if (ImGui.combo("Color Mode", currentColorMode, colorModes)) {
             particles.colorMode(ColorMode.values()[currentColorMode.get()]);
             settingsChanged.run();
@@ -128,7 +119,7 @@ final class SimulationPanel {
         }
 
         ImInt currentSpawnMode = new ImInt(particles.spawnMode().ordinal());
-        String[] spawnModes = {"Random", "Spherical", "Grid", "Shell", "Spiral", "Disc", "Clusters", "Point"};
+        String[] spawnModes = { "Random", "Spherical", "Grid", "Shell", "Spiral", "Disc", "Clusters", "Point" };
         if (ImGui.combo("Mode", currentSpawnMode, spawnModes)) {
             particles.spawnMode(SpawnMode.values()[currentSpawnMode.get()]);
             settingsChanged.run();
