@@ -51,12 +51,14 @@ import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.opengl.GL43C.GL_BLEND;
 import static org.lwjgl.opengl.GL43C.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL43C.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL43C.GL_ONE;
+import static org.lwjgl.opengl.GL43C.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL43C.GL_ONE_MINUS_SRC_ALPHA;
 import static org.lwjgl.opengl.GL43C.GL_PROGRAM_POINT_SIZE;
 import static org.lwjgl.opengl.GL43C.GL_SRC_ALPHA;
 import static org.lwjgl.opengl.GL43C.glBlendFunc;
 import static org.lwjgl.opengl.GL43C.glClear;
 import static org.lwjgl.opengl.GL43C.glClearColor;
+import static org.lwjgl.opengl.GL43C.glDepthMask;
 import static org.lwjgl.opengl.GL43C.glEnable;
 import static org.lwjgl.opengl.GL43C.glViewport;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -208,8 +210,9 @@ public final class ParticleSimulatorApp {
     private void initOpenGl() {
         GL.createCapabilities();
         glEnable(GL_PROGRAM_POINT_SIZE);
+        glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     private void initImGui() {
@@ -300,7 +303,12 @@ public final class ParticleSimulatorApp {
         glViewport(0, 0, width, height);
         glClearColor(0.015f, 0.018f, 0.024f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        particles.render(width, height, camera.viewMatrix());
+        glDepthMask(false);
+        try {
+            particles.render(width, height, camera.viewMatrix());
+        } finally {
+            glDepthMask(true);
+        }
     }
 
     private void renderImGui() {
