@@ -6,6 +6,7 @@ public final class ParticleSimulationConfig {
     private int particleCount = SimulationDefaults.PARTICLE_COUNT;
     private float pointSize = SimulationDefaults.POINT_SIZE;
     private boolean fixedParticleScreenSize = SimulationDefaults.FIXED_PARTICLE_SCREEN_SIZE;
+    private EffectMode effectMode = SimulationDefaults.EFFECT_MODE;
     private float bounds = SimulationDefaults.BOUNDS;
     private float forceFactor = SimulationDefaults.FORCE_FACTOR;
     private float velocityDamping = SimulationDefaults.VELOCITY_DAMPING;
@@ -32,6 +33,7 @@ public final class ParticleSimulationConfig {
         particleCount(source.particleCount);
         pointSize(source.pointSize);
         fixedParticleScreenSize(source.fixedParticleScreenSize);
+        effectMode(source.effectMode);
         bounds(source.bounds);
         forceFactor(source.forceFactor);
         velocityDamping(source.velocityDamping);
@@ -67,6 +69,14 @@ public final class ParticleSimulationConfig {
 
     public void fixedParticleScreenSize(boolean fixedParticleScreenSize) {
         this.fixedParticleScreenSize = fixedParticleScreenSize;
+    }
+
+    public EffectMode effectMode() {
+        return effectMode;
+    }
+
+    public void effectMode(EffectMode effectMode) {
+        this.effectMode = effectMode == null ? SimulationDefaults.EFFECT_MODE : effectMode;
     }
 
     public float bounds() {

@@ -15,6 +15,9 @@ class ShaderResourceTest {
         assertShaderContains("/shaders/particle.comp", "layout(local_size_x = 256) in;", "void main()");
         assertShaderContains("/shaders/particle.vert", "uniform mat4 uViewProjection;", "void main()");
         assertShaderContains("/shaders/particle.frag", "out vec4 fragColor;", "void main()");
+        assertShaderContains("/shaders/fullscreen.vert", "out vec2 vUv;", "void main()");
+        assertShaderContains("/shaders/blur.frag", "uniform float uRadius;", "uniform float uFalloff;", "void main()");
+        assertShaderContains("/shaders/bloom_composite.frag", "uniform sampler2D uBloom;", "void main()");
     }
 
     private static void assertShaderContains(String path, String... snippets) throws IOException {

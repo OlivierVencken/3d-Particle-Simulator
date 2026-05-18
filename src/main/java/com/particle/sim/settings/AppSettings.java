@@ -2,6 +2,7 @@ package com.particle.sim.settings;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ColorMode;
+import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.particles.ParticleSimulationConfig;
 import com.particle.sim.particles.SpawnMode;
@@ -55,6 +56,7 @@ public final class AppSettings {
         particleConfig.pointSize(floatProperty(properties, "pointSize", particleConfig.pointSize()));
         particleConfig.fixedParticleScreenSize(booleanProperty(properties, "fixedParticleScreenSize",
                 particleConfig.fixedParticleScreenSize()));
+        particleConfig.effectMode(enumProperty(properties, "effectMode", EffectMode.class, particleConfig.effectMode()));
         particleConfig.bounds(floatProperty(properties, "bounds", particleConfig.bounds()));
         particleConfig.forceFactor(floatProperty(properties, "forceFactor", particleConfig.forceFactor()));
         particleConfig.velocityDamping(floatProperty(properties, "velocityDamping", particleConfig.velocityDamping()));
@@ -86,6 +88,7 @@ public final class AppSettings {
         properties.setProperty("particleCount", Integer.toString(particleConfig.particleCount()));
         properties.setProperty("pointSize", Float.toString(particleConfig.pointSize()));
         properties.setProperty("fixedParticleScreenSize", Boolean.toString(particleConfig.fixedParticleScreenSize()));
+        properties.setProperty("effectMode", particleConfig.effectMode().name());
         properties.setProperty("bounds", Float.toString(particleConfig.bounds()));
         properties.setProperty("forceFactor", Float.toString(particleConfig.forceFactor()));
         properties.setProperty("velocityDamping", Float.toString(particleConfig.velocityDamping()));

@@ -51,7 +51,7 @@ public final class GpuParticleSystem {
 
     public void render(int width, int height, float[] viewMatrix) {
         renderer.render(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount(), pointSize(),
-                fixedParticleScreenSize(), colorMode().ordinal(), groupCount(), maxVelocity(), bounds(),
+                fixedParticleScreenSize(), effectMode(), colorMode().ordinal(), groupCount(), maxVelocity(), bounds(),
                 interactionRange(), spatialMapSize());
     }
 
@@ -82,6 +82,7 @@ public final class GpuParticleSystem {
         setParticleCount(config.particleCount());
         pointSize(config.pointSize());
         fixedParticleScreenSize(config.fixedParticleScreenSize());
+        effectMode(config.effectMode());
         bounds(config.bounds());
         forceFactor(config.forceFactor());
         velocityDamping(config.velocityDamping());
@@ -155,6 +156,14 @@ public final class GpuParticleSystem {
 
     public void fixedParticleScreenSize(boolean fixedParticleScreenSize) {
         config.fixedParticleScreenSize(fixedParticleScreenSize);
+    }
+
+    public EffectMode effectMode() {
+        return config.effectMode();
+    }
+
+    public void effectMode(EffectMode effectMode) {
+        config.effectMode(effectMode);
     }
 
     public float forceFactor() {

@@ -1,6 +1,7 @@
 package com.particle.sim.settings;
 
 import com.particle.sim.particles.ColorMode;
+import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.camera.CameraController;
@@ -39,6 +40,7 @@ class AppSettingsTest {
         particles.toroidalWrap(true);
         particles.groupCount(8);
         particles.colorMode(ColorMode.DENSITY);
+        particles.effectMode(EffectMode.GLOW);
         particles.spawnMode(SpawnMode.SPIRAL);
         particles.zeroAttractionMatrix();
         particles.attraction(2, 3, 0.75f);
@@ -67,6 +69,7 @@ class AppSettingsTest {
         assertEquals(true, loadedParticles.toroidalWrap());
         assertEquals(8, loadedParticles.groupCount());
         assertEquals(ColorMode.DENSITY, loadedParticles.colorMode());
+        assertEquals(EffectMode.GLOW, loadedParticles.effectMode());
         assertEquals(SpawnMode.SPIRAL, loadedParticles.spawnMode());
         assertEquals(0.75f, loadedParticles.attraction(2, 3), EPSILON);
         assertEquals(0.004f, loadedCamera.getSensitivity(), EPSILON);
@@ -85,6 +88,7 @@ class AppSettingsTest {
         particles.pointSize(8.0f);
         particles.fixedParticleScreenSize(true);
         particles.colorMode(ColorMode.DENSITY);
+        particles.effectMode(EffectMode.GLOW);
         particles.groupCount(12);
         particles.spawnMode(SpawnMode.GRID);
         particles.toroidalWrap(true);
@@ -99,6 +103,7 @@ class AppSettingsTest {
         assertEquals(SimulationDefaults.POINT_SIZE, particles.pointSize(), EPSILON);
         assertFalse(particles.fixedParticleScreenSize());
         assertEquals(SimulationDefaults.COLOR_MODE, particles.colorMode());
+        assertEquals(SimulationDefaults.EFFECT_MODE, particles.effectMode());
         assertEquals(SimulationDefaults.GROUP_COUNT, particles.groupCount());
         assertEquals(SimulationDefaults.SPAWN_MODE, particles.spawnMode());
         assertFalse(particles.toroidalWrap());

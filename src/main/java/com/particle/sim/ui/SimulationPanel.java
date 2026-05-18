@@ -2,6 +2,7 @@ package com.particle.sim.ui;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ColorMode;
+import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.settings.SimulationDefaults;
@@ -63,6 +64,14 @@ final class SimulationPanel {
         ImBoolean fixedParticleScreenSize = new ImBoolean(particles.fixedParticleScreenSize());
         if (ImGui.checkbox("Fixed particle size", fixedParticleScreenSize)) {
             particles.fixedParticleScreenSize(fixedParticleScreenSize.get());
+            settingsChanged.run();
+        }
+
+        ImGui.separatorText("Effects");
+        ImInt currentEffect = new ImInt(particles.effectMode().ordinal());
+        String[] effects = { "None", "Glow" };
+        if (ImGui.combo("Effect", currentEffect, effects)) {
+            particles.effectMode(EffectMode.values()[currentEffect.get()]);
             settingsChanged.run();
         }
     }
@@ -183,4 +192,5 @@ final class SimulationPanel {
     void setCustomSpawnAmount(int customSpawnAmount) {
         this.customSpawnAmount.set(Math.max(0, customSpawnAmount));
     }
+
 }
