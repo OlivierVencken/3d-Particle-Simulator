@@ -33,6 +33,7 @@ public final class SimulationDefaults {
     public static final float CAMERA_SENSITIVITY = 0.002f;
 
     public static final boolean PAUSED = false;
+    public static final double SIMULATION_STEP_SECONDS = 1.0 / 60.0;
     public static final int FPS_CAP = 60;
     public static final int MIN_FPS_CAP = 30;
     public static final int MAX_FPS_CAP = 360;

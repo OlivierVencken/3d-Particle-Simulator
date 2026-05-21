@@ -3,6 +3,7 @@ package com.particle.sim;
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.input.AppHotkeys;
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.ImguiLayer;
 import com.particle.sim.ui.SimulationUi;
 import com.particle.sim.window.WindowManager;
@@ -20,6 +21,7 @@ import static org.lwjgl.opengl.GL43C.glViewport;
 
 public final class ApplicationRuntime {
     private static final double FRAME_LIMIT_SPIN_SECONDS = 0.0005;
+    private static final double MAX_FRAME_DELTA_SECONDS = 0.25;
 
     private final WindowManager window;
     private final ImguiLayer imgui;
@@ -28,9 +30,10 @@ public final class ApplicationRuntime {
     private final GpuParticleSystem particles;
     private final SimulationUi ui;
     private final DoubleConsumer saveSettingsIfDue;
+    private final FixedSimulationClock simulationClock = new FixedSimulationClock(
+            SimulationDefaults.SIMULATION_STEP_SECONDS);
 
     private double lastFrameTime;
-    private double startTime;
 
     public ApplicationRuntime(WindowManager window, ImguiLayer imgui, AppHotkeys hotkeys, CameraController camera,
             GpuParticleSystem particles, SimulationUi ui, DoubleConsumer saveSettingsIfDue) {
@@ -45,14 +48,14 @@ public final class ApplicationRuntime {
 
     public void run() {
         lastFrameTime = glfwGetTime();
-        startTime = lastFrameTime;
 
         while (!window.shouldClose()) {
             window.pollEvents();
             hotkeys.update(window.handle());
 
             double now = glfwGetTime();
-            float deltaTime = (float) Math.min(now - lastFrameTime, 1.0 / 30.0);
+            double frameDelta = Math.min(Math.max(now - lastFrameTime, 0.0), MAX_FRAME_DELTA_SECONDS);
+            float deltaTime = (float) frameDelta;
             lastFrameTime = now;
 
             window.updateFramebufferSize();
@@ -60,7 +63,10 @@ public final class ApplicationRuntime {
             camera.update(window.handle(), deltaTime);
 
             if (!ui.isPaused()) {
-                particles.update(deltaTime, (float) (now - startTime));
+                simulationClock.addFrameTime(frameDelta);
+                while (simulationClock.hasStep()) {
+                    particles.update(simulationClock.stepSeconds(), simulationClock.consumeStep());
+                }
             }
 
             renderScene();
