@@ -2,8 +2,13 @@ package com.particle.sim.ui;
 
 import com.particle.sim.AppInfo;
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.settings.SimulationDefaults;
 import imgui.ImGui;
+import imgui.type.ImBoolean;
+import imgui.type.ImInt;
 import org.lwjgl.Version;
+
+import java.util.function.IntConsumer;
 
 import static org.lwjgl.opengl.GL43C.GL_RENDERER;
 import static org.lwjgl.opengl.GL43C.GL_SHADING_LANGUAGE_VERSION;
@@ -17,21 +22,38 @@ final class DebugPanel {
     private String glVersion;
     private String glslVersion;
 
-    void render(float deltaTime, float currentFps, GpuParticleSystem particles) {
+    void render(float deltaTime, float currentFps, int fpsCap, IntConsumer fpsCapChanged, Runnable settingsChanged,
+            GpuParticleSystem particles) {
         cacheOpenGlInfo();
 
         ImGui.begin("Debug");
-        renderPerformance(deltaTime, currentFps);
+        renderPerformance(deltaTime, currentFps, fpsCap, fpsCapChanged, settingsChanged);
         renderSimulationInternals(particles);
         renderRuntime();
         renderGraphics();
         ImGui.end();
     }
 
-    private void renderPerformance(float deltaTime, float currentFps) {
+    private void renderPerformance(float deltaTime, float currentFps, int fpsCap, IntConsumer fpsCapChanged,
+            Runnable settingsChanged) {
         ImGui.separatorText("Performance");
         ImGui.text("FPS: %.0f".formatted(currentFps));
         ImGui.text("Frame time: %.2f ms".formatted(deltaTime * 1000.0f));
+
+        ImBoolean unlimitedFps = new ImBoolean(fpsCap <= 0);
+        if (ImGui.checkbox("Unlimited FPS", unlimitedFps)) {
+            fpsCapChanged.accept(unlimitedFps.get() ? 0 : SimulationDefaults.FPS_CAP);
+            settingsChanged.run();
+        }
+
+        if (!unlimitedFps.get()) {
+            ImInt fpsCapRef = new ImInt(fpsCap);
+            ImGui.setNextItemWidth(120.0f);
+            if (ImGui.inputInt("FPS cap", fpsCapRef, 5, 15)) {
+                fpsCapChanged.accept(fpsCapRef.get());
+                settingsChanged.run();
+            }
+        }
     }
 
     private void renderSimulationInternals(GpuParticleSystem particles) {

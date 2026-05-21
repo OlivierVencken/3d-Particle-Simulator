@@ -8,6 +8,7 @@ import com.particle.sim.ui.SimulationUi;
 import com.particle.sim.window.WindowManager;
 
 import java.util.function.DoubleConsumer;
+import java.util.concurrent.locks.LockSupport;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL43C.GL_COLOR_BUFFER_BIT;
@@ -18,6 +19,8 @@ import static org.lwjgl.opengl.GL43C.glDepthMask;
 import static org.lwjgl.opengl.GL43C.glViewport;
 
 public final class ApplicationRuntime {
+    private static final double FRAME_LIMIT_SPIN_SECONDS = 0.0005;
+
     private final WindowManager window;
     private final ImguiLayer imgui;
     private final AppHotkeys hotkeys;
@@ -66,6 +69,29 @@ public final class ApplicationRuntime {
             saveSettingsIfDue.accept(glfwGetTime());
 
             window.swapBuffers();
+            limitFrameRate(now);
+        }
+    }
+
+    private void limitFrameRate(double frameStartTime) {
+        int fpsCap = ui.fpsCap();
+        if (fpsCap <= 0) {
+            return;
+        }
+
+        double targetFrameSeconds = 1.0 / fpsCap;
+        while (!Thread.currentThread().isInterrupted()) {
+            double remainingSeconds = targetFrameSeconds - (glfwGetTime() - frameStartTime);
+            if (remainingSeconds <= 0.0) {
+                return;
+            }
+
+            if (remainingSeconds > FRAME_LIMIT_SPIN_SECONDS) {
+                long sleepNanos = (long) ((remainingSeconds - FRAME_LIMIT_SPIN_SECONDS) * 1_000_000_000.0);
+                LockSupport.parkNanos(Math.max(1L, sleepNanos));
+            } else {
+                Thread.onSpinWait();
+            }
         }
     }
 

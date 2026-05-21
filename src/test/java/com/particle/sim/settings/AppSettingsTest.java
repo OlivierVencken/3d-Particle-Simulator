@@ -48,6 +48,7 @@ class AppSettingsTest {
         particles.attraction(2, 3, 0.75f);
         camera.setSensitivity(0.004f);
         ui.setPaused(true);
+        ui.setFpsCap(240);
         ui.setMatrixEditStep(0.2f);
         ui.setCustomSpawnAmount(42);
 
@@ -78,6 +79,7 @@ class AppSettingsTest {
         assertEquals(0.75f, loadedParticles.attraction(2, 3), EPSILON);
         assertEquals(0.004f, loadedCamera.getSensitivity(), EPSILON);
         assertEquals(true, loadedUi.isPaused());
+        assertEquals(240, loadedUi.fpsCap());
         assertEquals(0.2f, loadedUi.matrixEditStep(), EPSILON);
         assertEquals(42, loadedUi.customSpawnAmount());
     }
@@ -100,6 +102,7 @@ class AppSettingsTest {
         particles.densityLimit(200.0f);
         camera.setSensitivity(0.007f);
         ui.setPaused(true);
+        ui.setFpsCap(90);
         ui.setMatrixEditStep(0.4f);
         ui.setCustomSpawnAmount(99);
 
@@ -117,6 +120,7 @@ class AppSettingsTest {
         assertEquals(SimulationDefaults.DENSITY_LIMIT, particles.densityLimit(), EPSILON);
         assertEquals(SimulationDefaults.CAMERA_SENSITIVITY, camera.getSensitivity(), EPSILON);
         assertFalse(ui.isPaused());
+        assertEquals(SimulationDefaults.FPS_CAP, ui.fpsCap());
         assertEquals(SimulationDefaults.MATRIX_EDIT_STEP, ui.matrixEditStep(), EPSILON);
         assertEquals(SimulationDefaults.CUSTOM_SPAWN_AMOUNT, ui.customSpawnAmount());
     }
@@ -144,5 +148,27 @@ class AppSettingsTest {
         AppSettings.load(settingsFile).applySimulationTo(particles, new CameraController(), new SimulationUi());
 
         assertEquals(SimulationDefaults.MAX_GROUP_COUNT, particles.groupCount());
+    }
+
+    @Test
+    void clampsLoadedFpsCapToSupportedRange() throws Exception {
+        Path settingsFile = tempDir.resolve("settings.properties");
+        java.nio.file.Files.writeString(settingsFile, "fpsCap=999\n");
+
+        SimulationUi ui = new SimulationUi();
+        AppSettings.load(settingsFile).applySimulationTo(new GpuParticleSystem(), new CameraController(), ui);
+
+        assertEquals(SimulationDefaults.MAX_FPS_CAP, ui.fpsCap());
+    }
+
+    @Test
+    void allowsUnlimitedLoadedFpsCap() throws Exception {
+        Path settingsFile = tempDir.resolve("settings.properties");
+        java.nio.file.Files.writeString(settingsFile, "fpsCap=0\n");
+
+        SimulationUi ui = new SimulationUi();
+        AppSettings.load(settingsFile).applySimulationTo(new GpuParticleSystem(), new CameraController(), ui);
+
+        assertEquals(0, ui.fpsCap());
     }
 }

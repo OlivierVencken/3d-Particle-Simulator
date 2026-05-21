@@ -85,7 +85,7 @@ public final class WindowManager {
         }
 
         glfwMakeContextCurrent(handle);
-        glfwSwapInterval(1);
+        glfwSwapInterval(0);
         glfwShowWindow(handle);
     }
 

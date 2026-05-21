@@ -23,6 +23,7 @@ public final class AppSettings {
 
     private float cameraSensitivity = SimulationDefaults.CAMERA_SENSITIVITY;
     private boolean paused = SimulationDefaults.PAUSED;
+    private int fpsCap = SimulationDefaults.FPS_CAP;
     private float matrixEditStep = SimulationDefaults.MATRIX_EDIT_STEP;
     private int customSpawnAmount = SimulationDefaults.CUSTOM_SPAWN_AMOUNT;
 
@@ -73,6 +74,7 @@ public final class AppSettings {
         particleConfig.spawnMode(enumProperty(properties, "spawnMode", SpawnMode.class, particleConfig.spawnMode()));
         settings.cameraSensitivity = floatProperty(properties, "cameraSensitivity", settings.cameraSensitivity);
         settings.paused = booleanProperty(properties, "paused", settings.paused);
+        settings.fpsCap = intProperty(properties, "fpsCap", settings.fpsCap);
         settings.matrixEditStep = floatProperty(properties, "matrixEditStep", settings.matrixEditStep);
         settings.customSpawnAmount = intProperty(properties, "customSpawnAmount", settings.customSpawnAmount);
 
@@ -108,6 +110,7 @@ public final class AppSettings {
         properties.setProperty("spawnMode", particleConfig.spawnMode().name());
         properties.setProperty("cameraSensitivity", Float.toString(cameraSensitivity));
         properties.setProperty("paused", Boolean.toString(paused));
+        properties.setProperty("fpsCap", Integer.toString(fpsCap));
         properties.setProperty("matrixEditStep", Float.toString(matrixEditStep));
         properties.setProperty("customSpawnAmount", Integer.toString(customSpawnAmount));
 
@@ -140,6 +143,7 @@ public final class AppSettings {
 
         camera.setSensitivity(cameraSensitivity);
         ui.setPaused(paused);
+        ui.setFpsCap(fpsCap);
         ui.setMatrixEditStep(matrixEditStep);
         ui.setCustomSpawnAmount(customSpawnAmount);
     }
@@ -157,6 +161,7 @@ public final class AppSettings {
 
         settings.cameraSensitivity = camera.getSensitivity();
         settings.paused = ui.isPaused();
+        settings.fpsCap = ui.fpsCap();
         settings.matrixEditStep = ui.matrixEditStep();
         settings.customSpawnAmount = ui.customSpawnAmount();
         settings.sanitize();
@@ -166,6 +171,8 @@ public final class AppSettings {
     private void sanitize() {
         particleConfig.sanitize();
         cameraSensitivity = Math.max(0.0001f, cameraSensitivity);
+        fpsCap = fpsCap <= 0 ? 0 : Math.max(SimulationDefaults.MIN_FPS_CAP,
+                Math.min(SimulationDefaults.MAX_FPS_CAP, fpsCap));
         matrixEditStep = clamp(matrixEditStep, 0.01f, 0.5f);
         customSpawnAmount = Math.max(0, customSpawnAmount);
 
