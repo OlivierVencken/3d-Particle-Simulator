@@ -3,6 +3,8 @@ package com.particle.sim.ui;
 import com.particle.sim.AppInfo;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SimulationDefaults;
+import com.particle.sim.system.SystemLoadMonitor;
+import com.particle.sim.system.SystemLoadSnapshot;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
@@ -17,6 +19,8 @@ import static org.lwjgl.opengl.GL43C.GL_VERSION;
 import static org.lwjgl.opengl.GL43C.glGetString;
 
 final class DebugPanel {
+    private final SystemLoadMonitor systemLoadMonitor = new SystemLoadMonitor();
+
     private String glVendor;
     private String glRenderer;
     private String glVersion;
@@ -39,6 +43,7 @@ final class DebugPanel {
         ImGui.separatorText("Performance");
         ImGui.text("FPS: %.0f".formatted(currentFps));
         ImGui.text("Frame time: %.2f ms".formatted(deltaTime * 1000.0f));
+        renderSystemLoad();
 
         ImBoolean unlimitedFps = new ImBoolean(fpsCap <= 0);
         if (ImGui.checkbox("Unlimited FPS", unlimitedFps)) {
@@ -56,6 +61,14 @@ final class DebugPanel {
         }
     }
 
+    private void renderSystemLoad() {
+        SystemLoadSnapshot load = systemLoadMonitor.snapshot();
+
+        ImGui.textUnformatted("CPU load: %s".formatted(formatLoad(load.cpuLoad())));
+        ImGui.textUnformatted("GPU load: %s".formatted(formatLoad(load.gpuLoad())));
+        ImGui.textUnformatted("RAM usage: %s".formatted(formatMemoryUsage(load.usedMemoryBytes(), load.totalMemoryBytes())));
+    }
+
     private void renderSimulationInternals(GpuParticleSystem particles) {
         int gridSize = particles.gridSize();
 
@@ -67,6 +80,9 @@ final class DebugPanel {
         ImGui.text("Groups: %d".formatted(particles.groupCount()));
         ImGui.text("Color mode: %s".formatted(particles.colorMode()));
         ImGui.text("Spawn mode: %s".formatted(particles.spawnMode()));
+        ImGui.text("Simulation step: %.2f ms (%.0f Hz)".formatted(
+                SimulationDefaults.SIMULATION_STEP_SECONDS * 1000.0,
+                1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS));
     }
 
     private void renderRuntime() {
@@ -102,5 +118,27 @@ final class DebugPanel {
 
     private String stringOrUnknown(String value) {
         return value == null || value.isBlank() ? "unknown" : value;
+    }
+
+    private String formatLoad(double load) {
+        return load < 0.0 ? "unknown" : "%.0f%%".formatted(load * 100.0);
+    }
+
+    private String formatMemoryUsage(long usedBytes, long totalBytes) {
+        if (usedBytes < 0L || totalBytes <= 0L) {
+            return "unknown";
+        }
+
+        return "%s / %s".formatted(formatBytes(usedBytes), formatBytes(totalBytes));
+    }
+
+    private String formatBytes(long bytes) {
+        double gib = bytes / 1024.0 / 1024.0 / 1024.0;
+        if (gib >= 1.0) {
+            return "%.1f GB".formatted(gib);
+        }
+
+        double mib = bytes / 1024.0 / 1024.0;
+        return "%.0f MB".formatted(mib);
     }
 }
