@@ -24,9 +24,9 @@ class CameraControllerTest {
 
         assertArrayEquals(new float[] {
                 -1.0f, 0.0f, -0.0f, 0.0f,
-                0.0f, 0.9689124f, -0.2474041f, 0.0f,
-                0.0f, -0.2474041f, -0.9689124f, 0.0f,
-                -0.0f, -4.576976f, -17.924879f, 1.0f
+                0.0f, 1.0f, -0.0f, 0.0f,
+                0.0f, -0.0f, -1.0f, 0.0f,
+                -0.0f, -0.0f, -18.5f, 1.0f
         }, camera.viewMatrix(), EPSILON);
     }
 

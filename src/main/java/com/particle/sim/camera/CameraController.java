@@ -75,7 +75,7 @@ public final class CameraController {
         posY = 0.0f;
         posZ = -18.5f;
         yaw = 0.0f;
-        pitch = 0.25f;
+        pitch = 0.0f;
     }
 
     private void updateMouse(long window, float dx, float dy, float wheel) {
