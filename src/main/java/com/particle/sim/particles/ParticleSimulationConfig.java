@@ -15,6 +15,8 @@ public final class ParticleSimulationConfig {
     private float maxVelocity = SimulationDefaults.MAX_VELOCITY;
     private float boundaryBounce = SimulationDefaults.BOUNDARY_BOUNCE;
     private boolean toroidalWrap = SimulationDefaults.TOROIDAL_WRAP;
+    private boolean densityRegulationEnabled = SimulationDefaults.DENSITY_REGULATION_ENABLED;
+    private float densityLimit = SimulationDefaults.DENSITY_LIMIT;
     private int groupCount = SimulationDefaults.GROUP_COUNT;
     private ColorMode colorMode = SimulationDefaults.COLOR_MODE;
     private SpawnMode spawnMode = SimulationDefaults.SPAWN_MODE;
@@ -42,6 +44,8 @@ public final class ParticleSimulationConfig {
         maxVelocity(source.maxVelocity);
         boundaryBounce(source.boundaryBounce);
         toroidalWrap(source.toroidalWrap);
+        densityRegulationEnabled(source.densityRegulationEnabled);
+        densityLimit(source.densityLimit);
         groupCount(source.groupCount);
         colorMode(source.colorMode);
         spawnMode(source.spawnMode);
@@ -143,6 +147,22 @@ public final class ParticleSimulationConfig {
         this.toroidalWrap = toroidalWrap;
     }
 
+    public boolean densityRegulationEnabled() {
+        return densityRegulationEnabled;
+    }
+
+    public void densityRegulationEnabled(boolean densityRegulationEnabled) {
+        this.densityRegulationEnabled = densityRegulationEnabled;
+    }
+
+    public float densityLimit() {
+        return densityLimit;
+    }
+
+    public void densityLimit(float densityLimit) {
+        this.densityLimit = densityLimit;
+    }
+
     public int groupCount() {
         return groupCount;
     }
@@ -177,6 +197,7 @@ public final class ParticleSimulationConfig {
         repulsionRadius = clamp(repulsionRadius, 0.02f, 0.95f);
         maxVelocity = clamp(maxVelocity, 0.5f, 16.0f);
         boundaryBounce = clamp(boundaryBounce, 0.0f, 1.0f);
+        densityLimit = clamp(densityLimit, 0.0f, 500.0f);
         groupCount(groupCount);
     }
 

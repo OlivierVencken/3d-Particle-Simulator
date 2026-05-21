@@ -55,6 +55,14 @@ final class SimulationPanel {
             particles.toroidalWrap(toroidalWrap.get());
             settingsChanged.run();
         }
+
+        ImBoolean densityRegulationEnabled = new ImBoolean(particles.densityRegulationEnabled());
+        if (ImGui.checkbox("Density regulation", densityRegulationEnabled)) {
+            particles.densityRegulationEnabled(densityRegulationEnabled.get());
+            settingsChanged.run();
+        }
+        UiControls.settingSlider("Density limit", particles.densityLimit(), 0.0f, 500.0f, particles::densityLimit,
+                settingsChanged);
     }
 
     private void renderRendering(GpuParticleSystem particles, Runnable settingsChanged) {

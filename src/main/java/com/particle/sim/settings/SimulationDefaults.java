@@ -25,6 +25,8 @@ public final class SimulationDefaults {
     public static final float MAX_VELOCITY = 4.0f;
     public static final float BOUNDARY_BOUNCE = 0.65f;
     public static final boolean TOROIDAL_WRAP = false;
+    public static final boolean DENSITY_REGULATION_ENABLED = false;
+    public static final float DENSITY_LIMIT = 200.0f;
     public static final ColorMode COLOR_MODE = ColorMode.GROUP;
     public static final SpawnMode SPAWN_MODE = SpawnMode.RANDOM;
 

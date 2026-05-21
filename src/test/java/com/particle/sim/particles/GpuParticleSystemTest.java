@@ -24,6 +24,7 @@ class GpuParticleSystemTest {
         assertEquals(SpawnMode.RANDOM, system.spawnMode());
         assertFalse(system.toroidalWrap());
         assertFalse(system.fixedParticleScreenSize());
+        assertFalse(system.densityRegulationEnabled());
     }
 
     @Test
@@ -57,6 +58,8 @@ class GpuParticleSystemTest {
         system.effectMode(EffectMode.GLOW);
         system.spawnMode(SpawnMode.CLUSTERS);
         system.toroidalWrap(true);
+        system.densityRegulationEnabled(true);
+        system.densityLimit(200.0f);
 
         assertEquals(3.5f, system.pointSize(), EPSILON);
         assertTrue(system.fixedParticleScreenSize());
@@ -71,6 +74,8 @@ class GpuParticleSystemTest {
         assertEquals(EffectMode.GLOW, system.effectMode());
         assertEquals(SpawnMode.CLUSTERS, system.spawnMode());
         assertTrue(system.toroidalWrap());
+        assertTrue(system.densityRegulationEnabled());
+        assertEquals(200.0f, system.densityLimit(), EPSILON);
     }
 
     @Test

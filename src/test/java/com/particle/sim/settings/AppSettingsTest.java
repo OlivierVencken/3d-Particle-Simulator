@@ -38,6 +38,8 @@ class AppSettingsTest {
         particles.maxVelocity(7.0f);
         particles.boundaryBounce(0.25f);
         particles.toroidalWrap(true);
+        particles.densityRegulationEnabled(true);
+        particles.densityLimit(200.0f);
         particles.groupCount(8);
         particles.colorMode(ColorMode.DENSITY);
         particles.effectMode(EffectMode.GLOW);
@@ -67,6 +69,8 @@ class AppSettingsTest {
         assertEquals(7.0f, loadedParticles.maxVelocity(), EPSILON);
         assertEquals(0.25f, loadedParticles.boundaryBounce(), EPSILON);
         assertEquals(true, loadedParticles.toroidalWrap());
+        assertEquals(true, loadedParticles.densityRegulationEnabled());
+        assertEquals(200.0f, loadedParticles.densityLimit(), EPSILON);
         assertEquals(8, loadedParticles.groupCount());
         assertEquals(ColorMode.DENSITY, loadedParticles.colorMode());
         assertEquals(EffectMode.GLOW, loadedParticles.effectMode());
@@ -92,6 +96,8 @@ class AppSettingsTest {
         particles.groupCount(12);
         particles.spawnMode(SpawnMode.GRID);
         particles.toroidalWrap(true);
+        particles.densityRegulationEnabled(true);
+        particles.densityLimit(200.0f);
         camera.setSensitivity(0.007f);
         ui.setPaused(true);
         ui.setMatrixEditStep(0.4f);
@@ -107,6 +113,8 @@ class AppSettingsTest {
         assertEquals(SimulationDefaults.GROUP_COUNT, particles.groupCount());
         assertEquals(SimulationDefaults.SPAWN_MODE, particles.spawnMode());
         assertFalse(particles.toroidalWrap());
+        assertFalse(particles.densityRegulationEnabled());
+        assertEquals(SimulationDefaults.DENSITY_LIMIT, particles.densityLimit(), EPSILON);
         assertEquals(SimulationDefaults.CAMERA_SENSITIVITY, camera.getSensitivity(), EPSILON);
         assertFalse(ui.isPaused());
         assertEquals(SimulationDefaults.MATRIX_EDIT_STEP, ui.matrixEditStep(), EPSILON);

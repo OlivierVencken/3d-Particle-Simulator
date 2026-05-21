@@ -65,6 +65,9 @@ public final class AppSettings {
         particleConfig.maxVelocity(floatProperty(properties, "maxVelocity", particleConfig.maxVelocity()));
         particleConfig.boundaryBounce(floatProperty(properties, "boundaryBounce", particleConfig.boundaryBounce()));
         particleConfig.toroidalWrap(booleanProperty(properties, "toroidalWrap", particleConfig.toroidalWrap()));
+        particleConfig.densityRegulationEnabled(booleanProperty(properties, "densityRegulationEnabled",
+                particleConfig.densityRegulationEnabled()));
+        particleConfig.densityLimit(floatProperty(properties, "densityLimit", particleConfig.densityLimit()));
         particleConfig.groupCount(intProperty(properties, "groupCount", particleConfig.groupCount()));
         particleConfig.colorMode(enumProperty(properties, "colorMode", ColorMode.class, particleConfig.colorMode()));
         particleConfig.spawnMode(enumProperty(properties, "spawnMode", SpawnMode.class, particleConfig.spawnMode()));
@@ -97,6 +100,9 @@ public final class AppSettings {
         properties.setProperty("maxVelocity", Float.toString(particleConfig.maxVelocity()));
         properties.setProperty("boundaryBounce", Float.toString(particleConfig.boundaryBounce()));
         properties.setProperty("toroidalWrap", Boolean.toString(particleConfig.toroidalWrap()));
+        properties.setProperty("densityRegulationEnabled",
+                Boolean.toString(particleConfig.densityRegulationEnabled()));
+        properties.setProperty("densityLimit", Float.toString(particleConfig.densityLimit()));
         properties.setProperty("groupCount", Integer.toString(particleConfig.groupCount()));
         properties.setProperty("colorMode", particleConfig.colorMode().name());
         properties.setProperty("spawnMode", particleConfig.spawnMode().name());

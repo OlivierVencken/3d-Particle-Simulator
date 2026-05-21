@@ -91,6 +91,8 @@ public final class GpuParticleSystem {
         maxVelocity(config.maxVelocity());
         boundaryBounce(config.boundaryBounce());
         toroidalWrap(config.toroidalWrap());
+        densityRegulationEnabled(config.densityRegulationEnabled());
+        densityLimit(config.densityLimit());
         groupCount(config.groupCount());
         colorMode(config.colorMode());
         spawnMode(config.spawnMode());
@@ -236,6 +238,22 @@ public final class GpuParticleSystem {
 
     public void toroidalWrap(boolean toroidalWrap) {
         config.toroidalWrap(toroidalWrap);
+    }
+
+    public boolean densityRegulationEnabled() {
+        return config.densityRegulationEnabled();
+    }
+
+    public void densityRegulationEnabled(boolean densityRegulationEnabled) {
+        config.densityRegulationEnabled(densityRegulationEnabled);
+    }
+
+    public float densityLimit() {
+        return config.densityLimit();
+    }
+
+    public void densityLimit(float densityLimit) {
+        config.densityLimit(densityLimit);
     }
 
     public float attraction(int groupA, int groupB) {
