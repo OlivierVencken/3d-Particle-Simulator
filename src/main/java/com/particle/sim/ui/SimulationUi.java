@@ -9,6 +9,7 @@ public final class SimulationUi {
     private final SettingsSidebar settingsSidebar = new SettingsSidebar();
     private final SimulationMenuBar menuBar = new SimulationMenuBar();
     private final DebugPanel debugPanel = new DebugPanel();
+    private final FpsPanel fpsPanel = new FpsPanel();
     private final ImBoolean showDebugPanel = new ImBoolean(false);
 
     private float currentFps;
@@ -36,9 +37,9 @@ public final class SimulationUi {
 
         settingsSidebar.render(particles, camera, settingsChanged);
         if (showDebugPanel.get()) {
-            debugPanel.render(deltaTime, currentFps, fpsCap, this::setFpsCap, settingsChanged, particles,
-                    showDebugPanel);
+            debugPanel.render(deltaTime, currentFps, fpsCap, this::setFpsCap, settingsChanged, particles, showDebugPanel);
         }
+        fpsPanel.render(currentFps);
     }
 
     private void updateFps(float deltaTime) {
