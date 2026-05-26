@@ -27,14 +27,15 @@ final class DebugPanel {
     private String glslVersion;
 
     void render(float deltaTime, float currentFps, int fpsCap, IntConsumer fpsCapChanged, Runnable settingsChanged,
-            GpuParticleSystem particles) {
+            GpuParticleSystem particles, ImBoolean open) {
         cacheOpenGlInfo();
 
-        ImGui.begin("Debug");
-        renderPerformance(deltaTime, currentFps, fpsCap, fpsCapChanged, settingsChanged);
-        renderSimulationInternals(particles);
-        renderRuntime();
-        renderGraphics();
+        if (ImGui.begin("Debug", open)) {
+            renderPerformance(deltaTime, currentFps, fpsCap, fpsCapChanged, settingsChanged);
+            renderSimulationInternals(particles);
+            renderRuntime();
+            renderGraphics();
+        }
         ImGui.end();
     }
 

@@ -12,6 +12,7 @@ public final class ImguiLayer {
     public void init(long window) {
         ImGui.createContext();
         ImGui.getIO().addConfigFlags(ImGuiConfigFlags.NavEnableKeyboard);
+        UiTheme.applyDarkTheme();
         imGuiGlfw.init(window, true);
         imGuiGl3.init("#version 430");
     }

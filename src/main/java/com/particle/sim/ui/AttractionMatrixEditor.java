@@ -5,24 +5,20 @@ import com.particle.sim.settings.SimulationDefaults;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
+import imgui.flag.ImGuiTableFlags;
 
-final class AttractionMatrixPanel {
+final class AttractionMatrixEditor {
     private static final int LEFT_MOUSE_BUTTON = 0;
     private static final int RIGHT_MOUSE_BUTTON = 1;
 
     private float matrixEditStep = SimulationDefaults.MATRIX_EDIT_STEP;
 
-    void render(GpuParticleSystem particles, Runnable settingsChanged) {
-        ImGui.begin("Attraction Matrix");
-
+    void renderSettings(GpuParticleSystem particles, Runnable settingsChanged) {
         UiControls.settingSlider("Edit step", matrixEditStep, 0.01f, 0.5f, value -> matrixEditStep = value,
                 settingsChanged);
-
         renderMatrixActions(particles, settingsChanged);
         renderMatrixTable(particles, settingsChanged);
         renderLegend();
-
-        ImGui.end();
     }
 
     private void renderMatrixActions(GpuParticleSystem particles, Runnable settingsChanged) {
@@ -51,7 +47,8 @@ final class AttractionMatrixPanel {
         ImGui.spacing();
 
         int groupCount = particles.groupCount();
-        if (ImGui.beginTable("attraction-matrix-table", groupCount + 1)) {
+        int tableFlags = ImGuiTableFlags.RowBg | ImGuiTableFlags.BordersInner | ImGuiTableFlags.SizingFixedFit;
+        if (ImGui.beginTable("attraction-matrix-table", groupCount + 1, tableFlags)) {
             ImGui.tableNextRow();
             ImGui.tableNextColumn();
             ImGui.textUnformatted("A/B");
@@ -77,11 +74,11 @@ final class AttractionMatrixPanel {
 
     private void renderLegend() {
         ImGui.spacing();
-        ImGui.textColored(0.2f, 1.0f, 0.25f, 1.0f, "Green: attraction");
+        textColored(UiPalette.MATRIX_ATTRACTION, "Green: attraction");
         ImGui.sameLine();
-        ImGui.textColored(0.55f, 0.55f, 0.55f, 1.0f, "Grey: zero");
+        textColored(UiPalette.MATRIX_NEUTRAL, "Grey: zero");
         ImGui.sameLine();
-        ImGui.textColored(1.0f, 0.2f, 0.16f, 1.0f, "Red: repulsion");
+        textColored(UiPalette.MATRIX_REPULSION, "Red: repulsion");
     }
 
     private void renderMatrixTile(GpuParticleSystem particles, int row, int column, Runnable settingsChanged) {
@@ -109,22 +106,15 @@ final class AttractionMatrixPanel {
 
     private ImVec4 attractionColor(float value) {
         float strength = Math.min(1.0f, Math.abs(value));
-        float neutral = 0.16f;
         if (value >= 0.0f) {
-            return new ImVec4(
-                    neutral * (1.0f - strength),
-                    neutral * (1.0f - strength) + strength,
-                    neutral * (1.0f - strength),
-                    1.0f
-            );
+            return UiPalette.MATRIX_TILE_NEUTRAL.blend(UiPalette.MATRIX_ATTRACTION, strength).vec4();
         }
 
-        return new ImVec4(
-                neutral * (1.0f - strength) + strength,
-                neutral * (1.0f - strength),
-                neutral * (1.0f - strength),
-                1.0f
-        );
+        return UiPalette.MATRIX_TILE_NEUTRAL.blend(UiPalette.MATRIX_REPULSION, strength).vec4();
+    }
+
+    private void textColored(UiColor color, String text) {
+        ImGui.textColored(color.red(), color.green(), color.blue(), color.alpha(), text);
     }
 
     float matrixEditStep() {

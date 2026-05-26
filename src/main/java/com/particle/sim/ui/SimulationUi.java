@@ -3,11 +3,13 @@ package com.particle.sim.ui;
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SimulationDefaults;
+import imgui.type.ImBoolean;
 
 public final class SimulationUi {
-    private final SimulationPanel simulationPanel = new SimulationPanel();
-    private final AttractionMatrixPanel attractionMatrixPanel = new AttractionMatrixPanel();
+    private final SettingsSidebar settingsSidebar = new SettingsSidebar();
+    private final SimulationMenuBar menuBar = new SimulationMenuBar();
     private final DebugPanel debugPanel = new DebugPanel();
+    private final ImBoolean showDebugPanel = new ImBoolean(false);
 
     private float currentFps;
     private float fpsTimeAccumulator;
@@ -30,9 +32,13 @@ public final class SimulationUi {
 
     public void render(float deltaTime, GpuParticleSystem particles, CameraController camera) {
         updateFps(deltaTime);
-        simulationPanel.render(particles, camera, settingsChanged, resetSettings);
-        attractionMatrixPanel.render(particles, settingsChanged);
-        debugPanel.render(deltaTime, currentFps, fpsCap, this::setFpsCap, settingsChanged, particles);
+        menuBar.render(particles, camera, settingsSidebar, showDebugPanel, settingsChanged, resetSettings);
+
+        settingsSidebar.render(particles, camera, settingsChanged);
+        if (showDebugPanel.get()) {
+            debugPanel.render(deltaTime, currentFps, fpsCap, this::setFpsCap, settingsChanged, particles,
+                    showDebugPanel);
+        }
     }
 
     private void updateFps(float deltaTime) {
@@ -47,27 +53,27 @@ public final class SimulationUi {
     }
 
     public boolean isPaused() {
-        return simulationPanel.isPaused();
+        return settingsSidebar.isPaused();
     }
 
     public void setPaused(boolean paused) {
-        simulationPanel.setPaused(paused);
+        settingsSidebar.setPaused(paused);
     }
 
     public float matrixEditStep() {
-        return attractionMatrixPanel.matrixEditStep();
+        return settingsSidebar.matrixEditStep();
     }
 
     public void setMatrixEditStep(float matrixEditStep) {
-        attractionMatrixPanel.setMatrixEditStep(matrixEditStep);
+        settingsSidebar.setMatrixEditStep(matrixEditStep);
     }
 
     public int customSpawnAmount() {
-        return simulationPanel.customSpawnAmount();
+        return settingsSidebar.customSpawnAmount();
     }
 
     public void setCustomSpawnAmount(int customSpawnAmount) {
-        simulationPanel.setCustomSpawnAmount(customSpawnAmount);
+        settingsSidebar.setCustomSpawnAmount(customSpawnAmount);
     }
 
     public int fpsCap() {
