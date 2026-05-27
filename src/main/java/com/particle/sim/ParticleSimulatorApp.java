@@ -75,6 +75,7 @@ public final class ParticleSimulatorApp {
     private void initSettings() {
         ui.onSettingsChanged(this::requestSettingsSave);
         ui.onResetSettings(this::resetSettings);
+        ui.onExitApplication(window::requestClose);
 
         if (Files.exists(settingsPath)) {
             AppSettings.load(settingsPath).applyTo(particles, camera, ui);

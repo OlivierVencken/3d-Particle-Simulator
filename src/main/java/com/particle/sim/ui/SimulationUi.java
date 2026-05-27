@@ -20,6 +20,8 @@ public final class SimulationUi {
     };
     private Runnable resetSettings = () -> {
     };
+    private Runnable exitApplication = () -> {
+    };
 
     public void onSettingsChanged(Runnable settingsChanged) {
         this.settingsChanged = settingsChanged == null ? () -> {
@@ -31,9 +33,15 @@ public final class SimulationUi {
         } : resetSettings;
     }
 
+    public void onExitApplication(Runnable exitApplication) {
+        this.exitApplication = exitApplication == null ? () -> {
+        } : exitApplication;
+    }
+
     public void render(float deltaTime, GpuParticleSystem particles, CameraController camera) {
         updateFps(deltaTime);
-        menuBar.render(particles, camera, settingsSidebar, showDebugPanel, settingsChanged, resetSettings);
+        menuBar.render(particles, camera, settingsSidebar, showDebugPanel, settingsChanged, resetSettings,
+                exitApplication);
 
         settingsSidebar.render(particles, camera, settingsChanged);
         if (showDebugPanel.get()) {
