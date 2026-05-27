@@ -13,6 +13,7 @@ import org.lwjgl.opengl.GL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static imgui.ImGui.getIO;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL43C.GL_BLEND;
 import static org.lwjgl.opengl.GL43C.GL_DEPTH_TEST;
@@ -34,7 +35,10 @@ public final class ParticleSimulatorApp {
     private final AppHotkeys hotkeys = new AppHotkeys(
             window::toggleFullscreen,
             () -> !camera.isMouseCaptured(),
-            window::requestClose);
+            window::requestClose,
+            () -> !getIO().getWantCaptureKeyboard(),
+            this::togglePause,
+            particles::reset);
     private final Path settingsPath = AppSettings.defaultPath();
     private final DebouncedSettingsSaver settingsSaver = new DebouncedSettingsSaver(
             SETTINGS_SAVE_DEBOUNCE_SECONDS,
@@ -97,6 +101,11 @@ public final class ParticleSimulatorApp {
     private void resetSettings() {
         AppSettings.defaults().applySimulationTo(particles, camera, ui);
         particles.reset();
+        requestSettingsSave();
+    }
+
+    private void togglePause() {
+        ui.setPaused(!ui.isPaused());
         requestSettingsSave();
     }
 

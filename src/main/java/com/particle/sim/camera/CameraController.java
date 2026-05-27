@@ -14,7 +14,6 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_CONTROL;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
@@ -112,8 +111,7 @@ public final class CameraController {
     }
 
     private void updateKeyboard(long window, float deltaTime, float[] forward, float[] right) {
-        float speed = (isPressed(window, GLFW_KEY_LEFT_SHIFT) || isPressed(window, GLFW_KEY_RIGHT_SHIFT)) ? 16.0f
-                : 7.0f;
+        float speed = 7.0f;
         float step = speed * deltaTime;
 
         if (isPressed(window, GLFW_KEY_W)) {
@@ -128,7 +126,7 @@ public final class CameraController {
         if (isPressed(window, GLFW_KEY_A)) {
             move(right, -step);
         }
-        if (isPressed(window, GLFW_KEY_SPACE)) {
+        if (isPressed(window, GLFW_KEY_LEFT_SHIFT) || isPressed(window, GLFW_KEY_RIGHT_SHIFT)) {
             posY += step;
         }
         if (isPressed(window, GLFW_KEY_LEFT_CONTROL) || isPressed(window, GLFW_KEY_RIGHT_CONTROL)) {
