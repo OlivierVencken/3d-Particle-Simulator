@@ -14,12 +14,10 @@ import static org.lwjgl.glfw.GLFW.glfwGetKey;
 public final class AppHotkeys {
     private final List<HotkeyBinding> bindings = new ArrayList<>();
 
-    public AppHotkeys(Runnable toggleFullscreen, BooleanSupplier canCloseWindow, Runnable closeWindow,
-            BooleanSupplier canShowUi, Runnable showUi, BooleanSupplier canUseSimulationHotkeys, Runnable togglePause,
-            Runnable resetParticles) {
+    public AppHotkeys(Runnable toggleFullscreen, BooleanSupplier canShowUi, Runnable showUi,
+            BooleanSupplier canUseSimulationHotkeys, Runnable togglePause, Runnable resetParticles) {
         onPress(GLFW_KEY_F11, toggleFullscreen);
         onPress(GLFW_KEY_ESCAPE, canShowUi, showUi);
-        onPress(GLFW_KEY_ESCAPE, canCloseWindow, closeWindow);
         onPress(GLFW_KEY_SPACE, canUseSimulationHotkeys, togglePause);
         onPress(GLFW_KEY_R, canUseSimulationHotkeys, resetParticles);
     }
