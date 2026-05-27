@@ -31,6 +31,7 @@ public final class SimulationDefaults {
     public static final SpawnMode SPAWN_MODE = SpawnMode.RANDOM;
 
     public static final float CAMERA_SENSITIVITY = 0.002f;
+    public static final float CAMERA_FLY_SPEED = 8.0f;
 
     public static final boolean PAUSED = false;
     public static final double SIMULATION_STEP_SECONDS = 1.0 / 60.0;

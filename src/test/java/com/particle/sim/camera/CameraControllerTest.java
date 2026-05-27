@@ -42,4 +42,17 @@ class CameraControllerTest {
 
         assertEquals(0.005f, camera.getSensitivity(), EPSILON);
     }
+
+    @Test
+    void flySpeedCannotBeSetBelowMinimum() {
+        CameraController camera = new CameraController();
+
+        camera.setFlySpeed(-1.0f);
+
+        assertEquals(0.1f, camera.getFlySpeed(), EPSILON);
+
+        camera.setFlySpeed(12.5f);
+
+        assertEquals(12.5f, camera.getFlySpeed(), EPSILON);
+    }
 }

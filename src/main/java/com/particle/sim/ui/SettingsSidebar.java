@@ -245,6 +245,8 @@ final class SettingsSidebar {
 
         UiControls.settingSlider("Sensitivity", camera.getSensitivity(), 0.0001f, 0.01f, camera::setSensitivity,
                 settingsChanged);
+        UiControls.settingSlider("Fly speed", camera.getFlySpeed(), 0.1f, 30.0f, camera::setFlySpeed,
+                settingsChanged);
         if (ImGui.button("Reset camera")) {
             camera.reset();
         }

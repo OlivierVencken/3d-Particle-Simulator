@@ -47,6 +47,7 @@ class AppSettingsTest {
         particles.zeroAttractionMatrix();
         particles.attraction(2, 3, 0.75f);
         camera.setSensitivity(0.004f);
+        camera.setFlySpeed(12.0f);
         ui.setPaused(true);
         ui.setFpsCap(240);
         ui.setMatrixEditStep(0.2f);
@@ -78,6 +79,7 @@ class AppSettingsTest {
         assertEquals(SpawnMode.SPIRAL, loadedParticles.spawnMode());
         assertEquals(0.75f, loadedParticles.attraction(2, 3), EPSILON);
         assertEquals(0.004f, loadedCamera.getSensitivity(), EPSILON);
+        assertEquals(12.0f, loadedCamera.getFlySpeed(), EPSILON);
         assertEquals(true, loadedUi.isPaused());
         assertEquals(240, loadedUi.fpsCap());
         assertEquals(0.2f, loadedUi.matrixEditStep(), EPSILON);
@@ -101,6 +103,7 @@ class AppSettingsTest {
         particles.densityRegulationEnabled(true);
         particles.densityLimit(200.0f);
         camera.setSensitivity(0.007f);
+        camera.setFlySpeed(14.0f);
         ui.setPaused(true);
         ui.setFpsCap(90);
         ui.setMatrixEditStep(0.4f);
@@ -119,6 +122,7 @@ class AppSettingsTest {
         assertFalse(particles.densityRegulationEnabled());
         assertEquals(SimulationDefaults.DENSITY_LIMIT, particles.densityLimit(), EPSILON);
         assertEquals(SimulationDefaults.CAMERA_SENSITIVITY, camera.getSensitivity(), EPSILON);
+        assertEquals(SimulationDefaults.CAMERA_FLY_SPEED, camera.getFlySpeed(), EPSILON);
         assertFalse(ui.isPaused());
         assertEquals(SimulationDefaults.FPS_CAP, ui.fpsCap());
         assertEquals(SimulationDefaults.MATRIX_EDIT_STEP, ui.matrixEditStep(), EPSILON);

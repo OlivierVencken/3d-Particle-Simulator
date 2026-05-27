@@ -33,6 +33,7 @@ public final class CameraController {
     private float pitch;
 
     private float sensitivity = SimulationDefaults.CAMERA_SENSITIVITY;
+    private float flySpeed = SimulationDefaults.CAMERA_FLY_SPEED;
     private boolean mouseCaptured = false;
 
     public CameraController() {
@@ -106,13 +107,20 @@ public final class CameraController {
         this.sensitivity = Math.max(0.0001f, sensitivity);
     }
 
+    public float getFlySpeed() {
+        return flySpeed;
+    }
+
+    public void setFlySpeed(float flySpeed) {
+        this.flySpeed = Math.max(0.1f, flySpeed);
+    }
+
     public boolean isMouseCaptured() {
         return mouseCaptured;
     }
 
     private void updateKeyboard(long window, float deltaTime, float[] forward, float[] right) {
-        float speed = 7.0f;
-        float step = speed * deltaTime;
+        float step = flySpeed * deltaTime;
 
         if (isPressed(window, GLFW_KEY_W)) {
             move(forward, step);

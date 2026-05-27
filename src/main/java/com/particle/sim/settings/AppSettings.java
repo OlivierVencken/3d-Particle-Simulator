@@ -22,6 +22,7 @@ public final class AppSettings {
     private float[] attractionMatrix;
 
     private float cameraSensitivity = SimulationDefaults.CAMERA_SENSITIVITY;
+    private float cameraFlySpeed = SimulationDefaults.CAMERA_FLY_SPEED;
     private boolean paused = SimulationDefaults.PAUSED;
     private int fpsCap = SimulationDefaults.FPS_CAP;
     private float matrixEditStep = SimulationDefaults.MATRIX_EDIT_STEP;
@@ -73,6 +74,7 @@ public final class AppSettings {
         particleConfig.colorMode(enumProperty(properties, "colorMode", ColorMode.class, particleConfig.colorMode()));
         particleConfig.spawnMode(enumProperty(properties, "spawnMode", SpawnMode.class, particleConfig.spawnMode()));
         settings.cameraSensitivity = floatProperty(properties, "cameraSensitivity", settings.cameraSensitivity);
+        settings.cameraFlySpeed = floatProperty(properties, "cameraFlySpeed", settings.cameraFlySpeed);
         settings.paused = booleanProperty(properties, "paused", settings.paused);
         settings.fpsCap = intProperty(properties, "fpsCap", settings.fpsCap);
         settings.matrixEditStep = floatProperty(properties, "matrixEditStep", settings.matrixEditStep);
@@ -109,6 +111,7 @@ public final class AppSettings {
         properties.setProperty("colorMode", particleConfig.colorMode().name());
         properties.setProperty("spawnMode", particleConfig.spawnMode().name());
         properties.setProperty("cameraSensitivity", Float.toString(cameraSensitivity));
+        properties.setProperty("cameraFlySpeed", Float.toString(cameraFlySpeed));
         properties.setProperty("paused", Boolean.toString(paused));
         properties.setProperty("fpsCap", Integer.toString(fpsCap));
         properties.setProperty("matrixEditStep", Float.toString(matrixEditStep));
@@ -142,6 +145,7 @@ public final class AppSettings {
         particles.applyConfig(particleConfig);
 
         camera.setSensitivity(cameraSensitivity);
+        camera.setFlySpeed(cameraFlySpeed);
         ui.setPaused(paused);
         ui.setFpsCap(fpsCap);
         ui.setMatrixEditStep(matrixEditStep);
@@ -160,6 +164,7 @@ public final class AppSettings {
         }
 
         settings.cameraSensitivity = camera.getSensitivity();
+        settings.cameraFlySpeed = camera.getFlySpeed();
         settings.paused = ui.isPaused();
         settings.fpsCap = ui.fpsCap();
         settings.matrixEditStep = ui.matrixEditStep();
@@ -171,6 +176,7 @@ public final class AppSettings {
     private void sanitize() {
         particleConfig.sanitize();
         cameraSensitivity = Math.max(0.0001f, cameraSensitivity);
+        cameraFlySpeed = Math.max(0.1f, cameraFlySpeed);
         fpsCap = fpsCap <= 0 ? 0 : Math.max(SimulationDefaults.MIN_FPS_CAP,
                 Math.min(SimulationDefaults.MAX_FPS_CAP, fpsCap));
         matrixEditStep = clamp(matrixEditStep, 0.01f, 0.5f);
