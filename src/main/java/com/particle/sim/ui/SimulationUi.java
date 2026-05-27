@@ -16,6 +16,7 @@ public final class SimulationUi {
     private float fpsTimeAccumulator;
     private int fpsFrameAccumulator;
     private int fpsCap = SimulationDefaults.FPS_CAP;
+    private boolean hidden;
     private Runnable settingsChanged = () -> {
     };
     private Runnable resetSettings = () -> {
@@ -40,8 +41,12 @@ public final class SimulationUi {
 
     public void render(float deltaTime, GpuParticleSystem particles, CameraController camera) {
         updateFps(deltaTime);
+        if (hidden) {
+            return;
+        }
+
         menuBar.render(particles, camera, settingsSidebar, showDebugPanel, settingsChanged, resetSettings,
-                exitApplication);
+                exitApplication, this::hide);
 
         settingsSidebar.render(particles, camera, settingsChanged);
         if (showDebugPanel.get()) {
@@ -97,5 +102,17 @@ public final class SimulationUi {
 
         this.fpsCap = Math.max(SimulationDefaults.MIN_FPS_CAP,
                 Math.min(SimulationDefaults.MAX_FPS_CAP, fpsCap));
+    }
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void hide() {
+        hidden = true;
+    }
+
+    public void show() {
+        hidden = false;
     }
 }

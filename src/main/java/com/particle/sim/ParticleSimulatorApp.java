@@ -34,8 +34,10 @@ public final class ParticleSimulatorApp {
     private final SimulationUi ui = new SimulationUi();
     private final AppHotkeys hotkeys = new AppHotkeys(
             window::toggleFullscreen,
-            () -> !camera.isMouseCaptured(),
+            () -> !camera.isMouseCaptured() && !ui.isHidden(),
             window::requestClose,
+            ui::isHidden,
+            ui::show,
             () -> !getIO().getWantCaptureKeyboard(),
             this::togglePause,
             particles::reset);

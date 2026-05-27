@@ -7,13 +7,14 @@ import imgui.type.ImBoolean;
 
 final class SimulationMenuBar {
     void render(GpuParticleSystem particles, CameraController camera, SettingsSidebar settingsSidebar,
-            ImBoolean showDebugPanel, Runnable settingsChanged, Runnable resetSettings, Runnable exitApplication) {
+            ImBoolean showDebugPanel, Runnable settingsChanged, Runnable resetSettings, Runnable exitApplication,
+            Runnable hideUi) {
         if (!ImGui.beginMainMenuBar()) {
             return;
         }
 
         renderSimulationMenu(particles, camera, settingsSidebar, settingsChanged, resetSettings, exitApplication);
-        renderViewMenu(showDebugPanel);
+        renderViewMenu(showDebugPanel, hideUi);
         renderThemeMenu();
 
         ImGui.endMainMenuBar();
@@ -45,9 +46,12 @@ final class SimulationMenuBar {
         ImGui.endMenu();
     }
 
-    private void renderViewMenu(ImBoolean showDebugPanel) {
+    private void renderViewMenu(ImBoolean showDebugPanel, Runnable hideUi) {
         if (ImGui.beginMenu("View")) {
             ImGui.menuItem("Debug", "", showDebugPanel);
+            if (ImGui.menuItem("Hide UI")) {
+                hideUi.run();
+            }
             ImGui.endMenu();
         }
     }
