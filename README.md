@@ -2,6 +2,8 @@
 
 An interactive 3D particle-life sandbox built in Java. It simulates thousands of small particles that attract, repel, cluster, drift apart, and sometimes form surprisingly organic patterns.
 
+![Simulation screenshot](readme_assets/preview.png)
+
 This project is inspired by **Particle Life** by **Tom Mohr**, extended here into 3D.
 
 ## What It Is
@@ -56,7 +58,6 @@ The first launch may take a little longer while Maven downloads the required lib
 - **Space**: pause or resume the simulation
 - **R**: reset the particles
 - **Home**: reset the camera
-- **Esc**: exit application
 
 ## Experimenting
 
