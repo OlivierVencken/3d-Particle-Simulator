@@ -22,6 +22,7 @@ This application takes that idea into 3D. This allows for more complex and inter
 - Live UI controls
 - Wrap-around bounds
 - Density regulation
+- Distance Metrics
 - Visual effects
 
 ## Built With
