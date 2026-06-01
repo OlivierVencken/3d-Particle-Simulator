@@ -6,6 +6,8 @@ layout(local_size_x = 256) in;
 #define MAX_GRID_PROBES 32
 #define GRID_KEY_COORD_OFFSET 512
 #define GRID_KEY_COORD_MASK 1023
+#define DISTANCE_EUCLIDEAN 0
+#define DISTANCE_MANHATTAN 1
 
 layout(std430, binding = 0) buffer Positions {
     vec4 positions[];
@@ -39,6 +41,7 @@ uniform float uBoundaryBounce;
 uniform float uBounds;
 uniform int uDensityRegulationEnabled;
 uniform float uDensityLimit;
+uniform int uDistanceMetric;
 uniform int uGridSize;
 uniform int uMapSize;
 uniform int uMaxParticlesPerCell;
@@ -140,6 +143,15 @@ vec3 toroidalDistance(vec3 from, vec3 to) {
     return diff - worldSize * round(diff / worldSize);
 }
 
+float metricDistance(vec3 direction) {
+    if (uDistanceMetric == DISTANCE_MANHATTAN) {
+        vec3 absoluteDirection = abs(direction);
+        return absoluteDirection.x + absoluteDirection.y + absoluteDirection.z;
+    }
+
+    return length(direction);
+}
+
 ivec3 wrapGridCoord(ivec3 coord) {
     return ivec3(
         (coord.x + uGridSize) % uGridSize,
@@ -222,10 +234,15 @@ void main() {
                     float sqDist = dot(direction, direction);
 
                     if (sqDist > 0.00000001 && sqDist < interactionRangeSq) {
-                        float distance = sqrt(sqDist);
+                        float directionLength = sqrt(sqDist);
+                        float distance = metricDistance(direction);
                         int groupJ = int(round(otherPosition.w));
                         float normalizedDistance = distance * invInteractionRange;
                         float attractionValue = attraction(groupI, groupJ);
+
+                        if (normalizedDistance >= 1.0) {
+                            continue;
+                        }
 
                         if (densityRegulated && localDensity < densityCap) {
                             float densityWeight = 1.0 - normalizedDistance;
@@ -233,7 +250,7 @@ void main() {
                         }
 
                         float forceMagnitude = calculateForce(normalizedDistance, attractionValue);
-                        vec3 forceContribution = (direction / distance) * forceMagnitude * uForceFactor;
+                        vec3 forceContribution = (direction / directionLength) * forceMagnitude * uForceFactor;
                         if (densityRegulated && attractionValue > 0.0 && normalizedDistance >= uRepulsionRadius) {
                             positiveAttractionForce += forceContribution;
                         } else {

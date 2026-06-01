@@ -17,6 +17,7 @@ public final class ParticleSimulationConfig {
     private boolean toroidalWrap = SimulationDefaults.TOROIDAL_WRAP;
     private boolean densityRegulationEnabled = SimulationDefaults.DENSITY_REGULATION_ENABLED;
     private float densityLimit = SimulationDefaults.DENSITY_LIMIT;
+    private DistanceMetric distanceMetric = SimulationDefaults.DISTANCE_METRIC;
     private int groupCount = SimulationDefaults.GROUP_COUNT;
     private ColorMode colorMode = SimulationDefaults.COLOR_MODE;
     private SpawnMode spawnMode = SimulationDefaults.SPAWN_MODE;
@@ -46,6 +47,7 @@ public final class ParticleSimulationConfig {
         toroidalWrap(source.toroidalWrap);
         densityRegulationEnabled(source.densityRegulationEnabled);
         densityLimit(source.densityLimit);
+        distanceMetric(source.distanceMetric);
         groupCount(source.groupCount);
         colorMode(source.colorMode);
         spawnMode(source.spawnMode);
@@ -161,6 +163,14 @@ public final class ParticleSimulationConfig {
 
     public void densityLimit(float densityLimit) {
         this.densityLimit = densityLimit;
+    }
+
+    public DistanceMetric distanceMetric() {
+        return distanceMetric;
+    }
+
+    public void distanceMetric(DistanceMetric distanceMetric) {
+        this.distanceMetric = distanceMetric == null ? SimulationDefaults.DISTANCE_METRIC : distanceMetric;
     }
 
     public int groupCount() {

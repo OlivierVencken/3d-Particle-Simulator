@@ -22,6 +22,7 @@ class GpuParticleSystemTest {
         assertEquals(ColorMode.GROUP, system.colorMode());
         assertEquals(EffectMode.NONE, system.effectMode());
         assertEquals(SpawnMode.RANDOM, system.spawnMode());
+        assertEquals(DistanceMetric.EUCLIDEAN, system.distanceMetric());
         assertFalse(system.toroidalWrap());
         assertFalse(system.fixedParticleScreenSize());
         assertFalse(system.densityRegulationEnabled());
@@ -57,6 +58,7 @@ class GpuParticleSystemTest {
         system.colorMode(ColorMode.DENSITY);
         system.effectMode(EffectMode.GLOW);
         system.spawnMode(SpawnMode.CLUSTERS);
+        system.distanceMetric(DistanceMetric.MANHATTAN);
         system.toroidalWrap(true);
         system.densityRegulationEnabled(true);
         system.densityLimit(200.0f);
@@ -73,6 +75,7 @@ class GpuParticleSystemTest {
         assertEquals(ColorMode.DENSITY, system.colorMode());
         assertEquals(EffectMode.GLOW, system.effectMode());
         assertEquals(SpawnMode.CLUSTERS, system.spawnMode());
+        assertEquals(DistanceMetric.MANHATTAN, system.distanceMetric());
         assertTrue(system.toroidalWrap());
         assertTrue(system.densityRegulationEnabled());
         assertEquals(200.0f, system.densityLimit(), EPSILON);

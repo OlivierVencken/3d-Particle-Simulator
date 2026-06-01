@@ -2,6 +2,7 @@ package com.particle.sim.ui;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ColorMode;
+import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.particles.SpawnMode;
@@ -35,6 +36,7 @@ final class SettingsSidebar {
             | ImGuiWindowFlags.NoScrollbar
             | ImGuiWindowFlags.NoScrollWithMouse;
     private static final String[] COLOR_MODE_LABELS = enumLabels(ColorMode.values());
+    private static final String[] DISTANCE_METRIC_LABELS = enumLabels(DistanceMetric.values());
     private static final String[] EFFECT_MODE_LABELS = enumLabels(EffectMode.values());
     private static final String[] SPAWN_MODE_LABELS = enumLabels(SpawnMode.values());
 
@@ -117,6 +119,13 @@ final class SettingsSidebar {
 
         UiControls.settingSlider("Density limit", particles.densityLimit(), 0.0f, 500.0f, particles::densityLimit,
                 settingsChanged);
+
+        ImInt currentDistanceMetric = new ImInt(particles.distanceMetric().ordinal());
+        if (ImGui.combo("Distance", currentDistanceMetric, DISTANCE_METRIC_LABELS)) {
+            particles.distanceMetric(DistanceMetric.values()[currentDistanceMetric.get()]);
+            settingsChanged.run();
+        }
+
         UiControls.settingSlider("Bounds", particles.bounds(), 2.0f, 10.0f, particles::bounds, settingsChanged);
     }
 

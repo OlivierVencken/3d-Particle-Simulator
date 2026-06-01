@@ -2,6 +2,7 @@ package com.particle.sim.settings;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ColorMode;
+import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.particles.ParticleSimulationConfig;
@@ -70,6 +71,8 @@ public final class AppSettings {
         particleConfig.densityRegulationEnabled(booleanProperty(properties, "densityRegulationEnabled",
                 particleConfig.densityRegulationEnabled()));
         particleConfig.densityLimit(floatProperty(properties, "densityLimit", particleConfig.densityLimit()));
+        particleConfig.distanceMetric(enumProperty(properties, "distanceMetric", DistanceMetric.class,
+                particleConfig.distanceMetric()));
         particleConfig.groupCount(intProperty(properties, "groupCount", particleConfig.groupCount()));
         particleConfig.colorMode(enumProperty(properties, "colorMode", ColorMode.class, particleConfig.colorMode()));
         particleConfig.spawnMode(enumProperty(properties, "spawnMode", SpawnMode.class, particleConfig.spawnMode()));
@@ -107,6 +110,7 @@ public final class AppSettings {
         properties.setProperty("densityRegulationEnabled",
                 Boolean.toString(particleConfig.densityRegulationEnabled()));
         properties.setProperty("densityLimit", Float.toString(particleConfig.densityLimit()));
+        properties.setProperty("distanceMetric", particleConfig.distanceMetric().name());
         properties.setProperty("groupCount", Integer.toString(particleConfig.groupCount()));
         properties.setProperty("colorMode", particleConfig.colorMode().name());
         properties.setProperty("spawnMode", particleConfig.spawnMode().name());

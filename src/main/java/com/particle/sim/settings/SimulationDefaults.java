@@ -1,6 +1,7 @@
 package com.particle.sim.settings;
 
 import com.particle.sim.particles.ColorMode;
+import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
 
@@ -27,6 +28,7 @@ public final class SimulationDefaults {
     public static final boolean TOROIDAL_WRAP = false;
     public static final boolean DENSITY_REGULATION_ENABLED = false;
     public static final float DENSITY_LIMIT = 200.0f;
+    public static final DistanceMetric DISTANCE_METRIC = DistanceMetric.EUCLIDEAN;
     public static final ColorMode COLOR_MODE = ColorMode.GROUP;
     public static final SpawnMode SPAWN_MODE = SpawnMode.RANDOM;
 

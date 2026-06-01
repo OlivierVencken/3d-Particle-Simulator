@@ -1,6 +1,7 @@
 package com.particle.sim.settings;
 
 import com.particle.sim.particles.ColorMode;
+import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.particles.SpawnMode;
@@ -40,6 +41,7 @@ class AppSettingsTest {
         particles.toroidalWrap(true);
         particles.densityRegulationEnabled(true);
         particles.densityLimit(200.0f);
+        particles.distanceMetric(DistanceMetric.MANHATTAN);
         particles.groupCount(8);
         particles.colorMode(ColorMode.DENSITY);
         particles.effectMode(EffectMode.GLOW);
@@ -73,6 +75,7 @@ class AppSettingsTest {
         assertEquals(true, loadedParticles.toroidalWrap());
         assertEquals(true, loadedParticles.densityRegulationEnabled());
         assertEquals(200.0f, loadedParticles.densityLimit(), EPSILON);
+        assertEquals(DistanceMetric.MANHATTAN, loadedParticles.distanceMetric());
         assertEquals(8, loadedParticles.groupCount());
         assertEquals(ColorMode.DENSITY, loadedParticles.colorMode());
         assertEquals(EffectMode.GLOW, loadedParticles.effectMode());
@@ -102,6 +105,7 @@ class AppSettingsTest {
         particles.toroidalWrap(true);
         particles.densityRegulationEnabled(true);
         particles.densityLimit(200.0f);
+        particles.distanceMetric(DistanceMetric.MANHATTAN);
         camera.setSensitivity(0.007f);
         camera.setFlySpeed(14.0f);
         ui.setPaused(true);
@@ -121,6 +125,7 @@ class AppSettingsTest {
         assertFalse(particles.toroidalWrap());
         assertFalse(particles.densityRegulationEnabled());
         assertEquals(SimulationDefaults.DENSITY_LIMIT, particles.densityLimit(), EPSILON);
+        assertEquals(SimulationDefaults.DISTANCE_METRIC, particles.distanceMetric());
         assertEquals(SimulationDefaults.CAMERA_SENSITIVITY, camera.getSensitivity(), EPSILON);
         assertEquals(SimulationDefaults.CAMERA_FLY_SPEED, camera.getFlySpeed(), EPSILON);
         assertFalse(ui.isPaused());

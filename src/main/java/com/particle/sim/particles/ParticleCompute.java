@@ -22,7 +22,7 @@ public final class ParticleCompute {
     private int uMaxVelocityLoc, uBoundaryBounceLoc, uBoundsLoc, uGridSizeLoc;
     private int uMapSizeLoc, uMaxParticlesPerCellLoc, uToroidalWrapLoc, uPassLoc;
     private int uDensityRegulationEnabledLoc, uDensityLimitLoc;
-    private int uAttractionMatrixLoc;
+    private int uDistanceMetricLoc, uAttractionMatrixLoc;
 
     public void init() {
         computeProgram = ShaderProgram.compute("/shaders/particle.comp");
@@ -38,6 +38,7 @@ public final class ParticleCompute {
         uBoundsLoc = glGetUniformLocation(computeProgram, "uBounds");
         uDensityRegulationEnabledLoc = glGetUniformLocation(computeProgram, "uDensityRegulationEnabled");
         uDensityLimitLoc = glGetUniformLocation(computeProgram, "uDensityLimit");
+        uDistanceMetricLoc = glGetUniformLocation(computeProgram, "uDistanceMetric");
         uGridSizeLoc = glGetUniformLocation(computeProgram, "uGridSize");
         uMapSizeLoc = glGetUniformLocation(computeProgram, "uMapSize");
         uMaxParticlesPerCellLoc = glGetUniformLocation(computeProgram, "uMaxParticlesPerCell");
@@ -68,6 +69,7 @@ public final class ParticleCompute {
         glUniform1f(uBoundsLoc, system.bounds());
         glUniform1i(uDensityRegulationEnabledLoc, system.densityRegulationEnabled() ? 1 : 0);
         glUniform1f(uDensityLimitLoc, system.densityLimit());
+        glUniform1i(uDistanceMetricLoc, system.distanceMetric().ordinal());
         glUniform1i(uGridSizeLoc, system.gridSize());
         glUniform1i(uMapSizeLoc, system.spatialMapSize());
         glUniform1i(uMaxParticlesPerCellLoc, system.maxParticlesPerCell());

@@ -93,6 +93,7 @@ public final class GpuParticleSystem {
         toroidalWrap(config.toroidalWrap());
         densityRegulationEnabled(config.densityRegulationEnabled());
         densityLimit(config.densityLimit());
+        distanceMetric(config.distanceMetric());
         groupCount(config.groupCount());
         colorMode(config.colorMode());
         spawnMode(config.spawnMode());
@@ -254,6 +255,14 @@ public final class GpuParticleSystem {
 
     public void densityLimit(float densityLimit) {
         config.densityLimit(densityLimit);
+    }
+
+    public DistanceMetric distanceMetric() {
+        return config.distanceMetric();
+    }
+
+    public void distanceMetric(DistanceMetric distanceMetric) {
+        config.distanceMetric(distanceMetric);
     }
 
     public float attraction(int groupA, int groupB) {
