@@ -8,6 +8,7 @@ layout(local_size_x = 256) in;
 #define GRID_KEY_COORD_MASK 1023
 #define DISTANCE_EUCLIDEAN 0
 #define DISTANCE_MANHATTAN 1
+#define DISTANCE_CHEBYSHEV 2
 
 layout(std430, binding = 0) buffer Positions {
     vec4 positions[];
@@ -144,9 +145,14 @@ vec3 toroidalDistance(vec3 from, vec3 to) {
 }
 
 float metricDistance(vec3 direction) {
+    vec3 absoluteDirection = abs(direction);
+
     if (uDistanceMetric == DISTANCE_MANHATTAN) {
-        vec3 absoluteDirection = abs(direction);
         return absoluteDirection.x + absoluteDirection.y + absoluteDirection.z;
+    }
+
+    if (uDistanceMetric == DISTANCE_CHEBYSHEV) {
+        return max(max(absoluteDirection.x, absoluteDirection.y), absoluteDirection.z);
     }
 
     return length(direction);
