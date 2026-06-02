@@ -52,7 +52,7 @@ public final class GpuParticleSystem {
     public void render(int width, int height, float[] viewMatrix) {
         renderer.render(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount(), pointSize(),
                 fixedParticleScreenSize(), effectMode(), colorMode().ordinal(), groupCount(), maxVelocity(), bounds(),
-                interactionRange(), spatialMapSize());
+                interactionRange(), spatialMapSize(), glowSettings());
     }
 
     public void dispose() {
@@ -83,6 +83,10 @@ public final class GpuParticleSystem {
         pointSize(config.pointSize());
         fixedParticleScreenSize(config.fixedParticleScreenSize());
         effectMode(config.effectMode());
+        glowBlurPasses(config.glowBlurPasses());
+        glowStrength(config.glowStrength());
+        glowRadius(config.glowRadius());
+        glowFalloff(config.glowFalloff());
         bounds(config.bounds());
         forceFactor(config.forceFactor());
         velocityDamping(config.velocityDamping());
@@ -167,6 +171,42 @@ public final class GpuParticleSystem {
 
     public void effectMode(EffectMode effectMode) {
         config.effectMode(effectMode);
+    }
+
+    public GlowSettings glowSettings() {
+        return config.glowSettings();
+    }
+
+    public int glowBlurPasses() {
+        return config.glowBlurPasses();
+    }
+
+    public void glowBlurPasses(int glowBlurPasses) {
+        config.glowBlurPasses(glowBlurPasses);
+    }
+
+    public float glowStrength() {
+        return config.glowStrength();
+    }
+
+    public void glowStrength(float glowStrength) {
+        config.glowStrength(glowStrength);
+    }
+
+    public float glowRadius() {
+        return config.glowRadius();
+    }
+
+    public void glowRadius(float glowRadius) {
+        config.glowRadius(glowRadius);
+    }
+
+    public float glowFalloff() {
+        return config.glowFalloff();
+    }
+
+    public void glowFalloff(float glowFalloff) {
+        config.glowFalloff(glowFalloff);
     }
 
     public float forceFactor() {

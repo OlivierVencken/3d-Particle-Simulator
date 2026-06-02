@@ -17,6 +17,10 @@ public final class SimulationDefaults {
     public static final float POINT_SIZE = 2.2f;
     public static final boolean FIXED_PARTICLE_SCREEN_SIZE = false;
     public static final EffectMode EFFECT_MODE = EffectMode.NONE;
+    public static final int GLOW_BLUR_PASSES = 16;
+    public static final float GLOW_STRENGTH = 1.8f;
+    public static final float GLOW_RADIUS = 3.6f;
+    public static final float GLOW_FALLOFF = 0.90f;
     public static final float POINT_SIZE_REFERENCE_DISTANCE = 16.0f;
     public static final float BOUNDS = 4.0f;
     public static final float FORCE_FACTOR = 1.0f;

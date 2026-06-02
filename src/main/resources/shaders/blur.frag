@@ -10,19 +10,19 @@ uniform float uFalloff;
 
 void main() {
     vec2 texel = 1.0 / vec2(textureSize(uTexture, 0));
-    vec2 stepUv = uDirection * texel * max(uRadius, 0.01);
+    vec2 stepUv = uDirection * texel;
+    float sigma = max(uRadius, 0.5);
     float falloff = max(uFalloff, 0.01);
 
-    float centerWeight = 1.0;
-    float nearWeight = exp(-1.384615 * falloff);
-    float farWeight = exp(-3.230769 * falloff);
-    float totalWeight = centerWeight + nearWeight * 2.0 + farWeight * 2.0;
+    vec4 color = vec4(0.0);
+    float totalWeight = 0.0;
 
-    vec4 color = texture(uTexture, vUv) * centerWeight;
-    color += texture(uTexture, vUv + stepUv * 1.384615) * nearWeight;
-    color += texture(uTexture, vUv - stepUv * 1.384615) * nearWeight;
-    color += texture(uTexture, vUv + stepUv * 3.230769) * farWeight;
-    color += texture(uTexture, vUv - stepUv * 3.230769) * farWeight;
+    for (int offset = -8; offset <= 8; offset++) {
+        float distance = float(offset);
+        float weight = exp(-0.5 * falloff * distance * distance / (sigma * sigma));
+        color += texture(uTexture, vUv + stepUv * distance) * weight;
+        totalWeight += weight;
+    }
 
     fragColor = color / totalWeight;
 }

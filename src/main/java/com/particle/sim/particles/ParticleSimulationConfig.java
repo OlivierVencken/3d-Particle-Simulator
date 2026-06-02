@@ -7,6 +7,10 @@ public final class ParticleSimulationConfig {
     private float pointSize = SimulationDefaults.POINT_SIZE;
     private boolean fixedParticleScreenSize = SimulationDefaults.FIXED_PARTICLE_SCREEN_SIZE;
     private EffectMode effectMode = SimulationDefaults.EFFECT_MODE;
+    private int glowBlurPasses = SimulationDefaults.GLOW_BLUR_PASSES;
+    private float glowStrength = SimulationDefaults.GLOW_STRENGTH;
+    private float glowRadius = SimulationDefaults.GLOW_RADIUS;
+    private float glowFalloff = SimulationDefaults.GLOW_FALLOFF;
     private float bounds = SimulationDefaults.BOUNDS;
     private float forceFactor = SimulationDefaults.FORCE_FACTOR;
     private float velocityDamping = SimulationDefaults.VELOCITY_DAMPING;
@@ -37,6 +41,10 @@ public final class ParticleSimulationConfig {
         pointSize(source.pointSize);
         fixedParticleScreenSize(source.fixedParticleScreenSize);
         effectMode(source.effectMode);
+        glowBlurPasses(source.glowBlurPasses);
+        glowStrength(source.glowStrength);
+        glowRadius(source.glowRadius);
+        glowFalloff(source.glowFalloff);
         bounds(source.bounds);
         forceFactor(source.forceFactor);
         velocityDamping(source.velocityDamping);
@@ -83,6 +91,43 @@ public final class ParticleSimulationConfig {
 
     public void effectMode(EffectMode effectMode) {
         this.effectMode = effectMode == null ? SimulationDefaults.EFFECT_MODE : effectMode;
+    }
+
+    public GlowSettings glowSettings() {
+        return new GlowSettings(glowBlurPasses, glowStrength, glowRadius, glowFalloff);
+    }
+
+    public int glowBlurPasses() {
+        return glowBlurPasses;
+    }
+
+    public void glowBlurPasses(int glowBlurPasses) {
+        this.glowBlurPasses = Math.max(1,
+                Math.min(64, glowBlurPasses));
+    }
+
+    public float glowStrength() {
+        return glowStrength;
+    }
+
+    public void glowStrength(float glowStrength) {
+        this.glowStrength = glowStrength;
+    }
+
+    public float glowRadius() {
+        return glowRadius;
+    }
+
+    public void glowRadius(float glowRadius) {
+        this.glowRadius = glowRadius;
+    }
+
+    public float glowFalloff() {
+        return glowFalloff;
+    }
+
+    public void glowFalloff(float glowFalloff) {
+        this.glowFalloff = glowFalloff;
     }
 
     public float bounds() {
@@ -200,6 +245,10 @@ public final class ParticleSimulationConfig {
     public void sanitize() {
         particleCount(particleCount);
         pointSize = clamp(pointSize, 1.0f, 8.0f);
+        glowBlurPasses(glowBlurPasses);
+        glowStrength = clamp(glowStrength, 0.0f, 6.0f);
+        glowRadius = clamp(glowRadius, 0.5f, 12.0f);
+        glowFalloff = clamp(glowFalloff, 0.05f, 3.0f);
         bounds = clamp(bounds, 2.0f, 10.0f);
         forceFactor = clamp(forceFactor, 0.0f, 10.0f);
         velocityDamping = clamp(velocityDamping, 0.85f, 1.0f);

@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL43C.GL_COLOR_ATTACHMENT0;
 import static org.lwjgl.opengl.GL43C.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL43C.GL_BLEND;
 import static org.lwjgl.opengl.GL43C.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL43C.GL_FLOAT;
 import static org.lwjgl.opengl.GL43C.GL_FRAMEBUFFER;
@@ -37,12 +38,15 @@ import static org.lwjgl.opengl.GL43C.glDeleteFramebuffers;
 import static org.lwjgl.opengl.GL43C.glDeleteProgram;
 import static org.lwjgl.opengl.GL43C.glDeleteTextures;
 import static org.lwjgl.opengl.GL43C.glDeleteVertexArrays;
+import static org.lwjgl.opengl.GL43C.glDisable;
 import static org.lwjgl.opengl.GL43C.glDrawArrays;
+import static org.lwjgl.opengl.GL43C.glEnable;
 import static org.lwjgl.opengl.GL43C.glFramebufferTexture2D;
 import static org.lwjgl.opengl.GL43C.glGenFramebuffers;
 import static org.lwjgl.opengl.GL43C.glGenTextures;
 import static org.lwjgl.opengl.GL43C.glGenVertexArrays;
 import static org.lwjgl.opengl.GL43C.glGetUniformLocation;
+import static org.lwjgl.opengl.GL43C.glIsEnabled;
 import static org.lwjgl.opengl.GL43C.glTexImage2D;
 import static org.lwjgl.opengl.GL43C.glTexParameteri;
 import static org.lwjgl.opengl.GL43C.glUniform1f;
@@ -53,11 +57,6 @@ import static org.lwjgl.opengl.GL43C.glUseProgram;
 import static org.lwjgl.opengl.GL43C.glViewport;
 
 public final class ParticleRenderer {
-    private static final int GLOW_BLUR_PASSES = 32;
-    private static final float GLOW_STRENGTH = 1.8f;
-    private static final float GLOW_RADIUS = 3.6f;
-    private static final float GLOW_FALLOFF = 0.62f;
-
     private int renderProgram;
     private int blurProgram;
     private int glowCompositeProgram;
@@ -124,7 +123,7 @@ public final class ParticleRenderer {
     public void render(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
             SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, boolean fixedParticleScreenSize,
             EffectMode effectMode, int colorMode, int groupCount, float maxVelocity, float bounds,
-            float interactionRange, int spatialMapSize) {
+            float interactionRange, int spatialMapSize, GlowSettings glowSettings) {
         if (particleCount == 0) {
             return;
         }
@@ -132,7 +131,7 @@ public final class ParticleRenderer {
         if (effectMode == EffectMode.GLOW) {
             renderGlow(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
                     fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange,
-                    spatialMapSize);
+                    spatialMapSize, glowSettings);
             return;
         }
 
@@ -143,7 +142,7 @@ public final class ParticleRenderer {
     private void renderGlow(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
             SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, boolean fixedParticleScreenSize,
             int colorMode, int groupCount, float maxVelocity, float bounds, float interactionRange,
-            int spatialMapSize) {
+            int spatialMapSize, GlowSettings glowSettings) {
         ensureGlowTargets(width, height);
 
         glBindFramebuffer(GL_FRAMEBUFFER, sceneFbo);
@@ -153,25 +152,34 @@ public final class ParticleRenderer {
         renderParticles(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
                 fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange, spatialMapSize);
 
+        boolean blendEnabled = glIsEnabled(GL_BLEND);
+        glDisable(GL_BLEND);
         int sourceTexture = sceneTexture;
-        for (int pass = 0; pass < GLOW_BLUR_PASSES; pass++) {
-            int target = pass % 2;
-            blurTo(pingPongFbos[target], sourceTexture, pass % 2 == 0 ? 1.0f : 0.0f, pass % 2 == 0 ? 0.0f : 1.0f);
-            sourceTexture = pingPongTextures[target];
-        }
+        try {
+            for (int pass = 0; pass < glowSettings.blurPasses(); pass++) {
+                int target = pass % 2;
+                blurTo(pingPongFbos[target], sourceTexture, pass % 2 == 0 ? 1.0f : 0.0f,
+                        pass % 2 == 0 ? 0.0f : 1.0f, glowSettings);
+                sourceTexture = pingPongTextures[target];
+            }
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, width, height);
-        glUseProgram(glowCompositeProgram);
-        glBindVertexArray(fullscreenVao);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, sceneTexture);
-        glUniform1i(uGlowSceneLoc, 0);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, sourceTexture);
-        glUniform1i(uGlowTextureLoc, 1);
-        glUniform1f(uGlowStrengthLoc, GLOW_STRENGTH);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glViewport(0, 0, width, height);
+            glUseProgram(glowCompositeProgram);
+            glBindVertexArray(fullscreenVao);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, sceneTexture);
+            glUniform1i(uGlowSceneLoc, 0);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, sourceTexture);
+            glUniform1i(uGlowTextureLoc, 1);
+            glUniform1f(uGlowStrengthLoc, glowSettings.strength());
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+        } finally {
+            if (blendEnabled) {
+                glEnable(GL_BLEND);
+            }
+        }
     }
 
     private void renderParticles(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
@@ -216,7 +224,8 @@ public final class ParticleRenderer {
         glDrawArrays(GL_POINTS, 0, particleCount);
     }
 
-    private void blurTo(int targetFbo, int sourceTexture, float directionX, float directionY) {
+    private void blurTo(int targetFbo, int sourceTexture, float directionX, float directionY,
+            GlowSettings glowSettings) {
         glBindFramebuffer(GL_FRAMEBUFFER, targetFbo);
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(blurProgram);
@@ -225,8 +234,8 @@ public final class ParticleRenderer {
         glBindTexture(GL_TEXTURE_2D, sourceTexture);
         glUniform1i(uBlurTextureLoc, 0);
         glUniform2f(uBlurDirectionLoc, directionX, directionY);
-        glUniform1f(uBlurRadiusLoc, GLOW_RADIUS);
-        glUniform1f(uBlurFalloffLoc, GLOW_FALLOFF);
+        glUniform1f(uBlurRadiusLoc, glowSettings.radius());
+        glUniform1f(uBlurFalloffLoc, glowSettings.falloff());
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 

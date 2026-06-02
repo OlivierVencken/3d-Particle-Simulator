@@ -190,6 +190,21 @@ final class SettingsSidebar {
             particles.effectMode(EffectMode.values()[currentEffect.get()]);
             settingsChanged.run();
         }
+
+        if (particles.effectMode() == EffectMode.GLOW) {
+            renderGlowControls(particles, settingsChanged);
+        }
+    }
+
+    private void renderGlowControls(GpuParticleSystem particles, Runnable settingsChanged) {
+        UiControls.settingIntSlider("Passes", particles.glowBlurPasses(), 1,
+                64, particles::glowBlurPasses, settingsChanged);
+        UiControls.settingSlider("Strength", particles.glowStrength(), 0.0f,
+                6.0f, particles::glowStrength, settingsChanged);
+        UiControls.settingSlider("Radius", particles.glowRadius(), 0.5f,
+                12.0f, particles::glowRadius, settingsChanged);
+        UiControls.settingSlider("Falloff", particles.glowFalloff(), 0.05f,
+                3.0f, particles::glowFalloff, settingsChanged);
     }
 
     private void renderSpawnControls(GpuParticleSystem particles, Runnable settingsChanged) {
