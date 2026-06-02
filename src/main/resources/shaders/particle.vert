@@ -26,6 +26,7 @@ uniform int uGroupCount;
 uniform float uMaxVelocity;
 uniform float uBounds;
 uniform float uInteractionRange;
+uniform int uGridSize;
 uniform int uMapSize;
 
 #define MAX_GRID_PROBES 32
@@ -36,7 +37,7 @@ out vec3 vColor;
 
 ivec3 getGridCoord(vec3 pos) {
     vec3 normalized = (pos + vec3(uBounds)) / uInteractionRange;
-    return ivec3(floor(normalized));
+    return clamp(ivec3(floor(normalized)), ivec3(0), ivec3(max(uGridSize - 1, 0)));
 }
 
 int getGridIndex(ivec3 coord) {

@@ -74,6 +74,7 @@ public final class ParticleRenderer {
     private int uMaxVelocityLoc;
     private int uBoundsLoc;
     private int uInteractionRangeLoc;
+    private int uGridSizeLoc;
     private int uMapSizeLoc;
 
     private int uBlurTextureLoc;
@@ -109,6 +110,7 @@ public final class ParticleRenderer {
         uMaxVelocityLoc = glGetUniformLocation(renderProgram, "uMaxVelocity");
         uBoundsLoc = glGetUniformLocation(renderProgram, "uBounds");
         uInteractionRangeLoc = glGetUniformLocation(renderProgram, "uInteractionRange");
+        uGridSizeLoc = glGetUniformLocation(renderProgram, "uGridSize");
         uMapSizeLoc = glGetUniformLocation(renderProgram, "uMapSize");
 
         uBlurTextureLoc = glGetUniformLocation(blurProgram, "uTexture");
@@ -217,6 +219,9 @@ public final class ParticleRenderer {
         }
         if (uInteractionRangeLoc != -1) {
             glUniform1f(uInteractionRangeLoc, interactionRange);
+        }
+        if (uGridSizeLoc != -1) {
+            glUniform1i(uGridSizeLoc, SpatialGridSizing.gridSize(bounds, interactionRange));
         }
         if (uMapSizeLoc != -1) {
             glUniform1i(uMapSizeLoc, spatialMapSize);

@@ -58,7 +58,7 @@ float attraction(int gi, int gj) {
 
 ivec3 getGridCoord(vec3 pos) {
     vec3 normalized = (pos + vec3(uBounds)) / uInteractionRange;
-    return ivec3(floor(normalized));
+    return clamp(ivec3(floor(normalized)), ivec3(0), ivec3(max(uGridSize - 1, 0)));
 }
 
 int getGridIndex(ivec3 coord) {
