@@ -19,8 +19,8 @@ final class SettingsSidebar {
     private static final float COLLAPSE_BUTTON_WIDTH = 24.0f;
     private static final float COLLAPSE_BUTTON_HEIGHT = 56.0f;
     private static final float MENU_BAR_HEIGHT_FALLBACK = 24.0f;
-    private static final float MIN_SIDEBAR_WIDTH = 280.0f;
-    private static final float MAX_SIDEBAR_WIDTH = 460.0f;
+    private static final float MIN_SIDEBAR_WIDTH = 300.0f;
+    private static final float MAX_SIDEBAR_WIDTH = 560.0f;
     private static final float SIDEBAR_WIDTH_RATIO = 0.28f;
     private static final int SECTION_FLAGS = ImGuiTreeNodeFlags.DefaultOpen;
     private static final int WINDOW_FLAGS = ImGuiWindowFlags.NoMove
@@ -153,7 +153,7 @@ final class SettingsSidebar {
             return;
         }
 
-        ImGui.text("Particle count: %,d / %,d".formatted(particles.particleCount(), particles.maxParticleCount()));
+        ImGui.text("Particle count: %,d".formatted(particles.particleCount()));
 
         ImInt groupCount = new ImInt(particles.groupCount());
         ImGui.setNextItemWidth(120.0f);
@@ -231,7 +231,7 @@ final class SettingsSidebar {
             customSpawnAmount.set(0);
         }
 
-        ImGui.setNextItemWidth(120.0f);
+        ImGui.setNextItemWidth(160.0f);
         if (ImGui.inputInt("Amount", customSpawnAmount, 100, 1_000)) {
             if (customSpawnAmount.get() < 0) {
                 customSpawnAmount.set(0);

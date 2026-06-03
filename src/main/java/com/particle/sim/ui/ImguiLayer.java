@@ -2,8 +2,6 @@ package com.particle.sim.ui;
 
 import static imgui.ImGui.getIO;
 
-import java.nio.ByteBuffer;
-
 import com.particle.sim.util.ResourceLoader;
 
 import imgui.ImFontAtlas;

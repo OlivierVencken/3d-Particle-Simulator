@@ -78,9 +78,6 @@ final class DebugPanel {
         ImGui.text("Grid: %d x %d x %d".formatted(gridSize, gridSize, gridSize));
         ImGui.text("Grid cells: %,d".formatted(gridSize * gridSize * gridSize));
         ImGui.text("Cell capacity: %,d".formatted(particles.maxParticlesPerCell()));
-        ImGui.text("Groups: %d".formatted(particles.groupCount()));
-        ImGui.text("Color mode: %s".formatted(particles.colorMode()));
-        ImGui.text("Spawn mode: %s".formatted(particles.spawnMode()));
         ImGui.text("Simulation step: %.2f ms (%.0f Hz)".formatted(
                 SimulationDefaults.SIMULATION_STEP_SECONDS * 1000.0,
                 1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS));
