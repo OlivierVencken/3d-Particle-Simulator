@@ -1,7 +1,11 @@
 package com.particle.sim.window;
 
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWImage;
+import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
+
+import com.particle.sim.util.ResourceLoader;
 
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR;
@@ -22,6 +26,7 @@ import static org.lwjgl.glfw.GLFW.glfwInit;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowIcon;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowMonitor;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
@@ -33,6 +38,9 @@ import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
+
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 public final class WindowManager {
     private final String title;
@@ -77,6 +85,8 @@ public final class WindowManager {
         if (handle == NULL) {
             throw new IllegalStateException("Could not create the GLFW window.");
         }
+
+        setWindowIcon("/assets/favicon.png");
 
         if (!fullscreen) {
             centerWindow();
@@ -189,6 +199,31 @@ public final class WindowManager {
                         (videoMode.width() - pWidth.get(0)) / 2,
                         (videoMode.height() - pHeight.get(0)) / 2);
             }
+        }
+    }
+
+    private void setWindowIcon(String path) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            ByteBuffer icon = ResourceLoader.loadBytes(path);
+
+            IntBuffer w = stack.mallocInt(1);
+            IntBuffer h = stack.mallocInt(1);
+            IntBuffer channels = stack.mallocInt(1);
+
+            ByteBuffer pixels = STBImage.stbi_load_from_memory(icon, w, h, channels, 4);
+            if (pixels == null) {
+                throw new RuntimeException("Failed to load icon: " + STBImage.stbi_failure_reason());
+            }
+
+            GLFWImage image = GLFWImage.malloc(stack);
+            image.set(w.get(0), h.get(0), pixels);
+
+            GLFWImage.Buffer images = GLFWImage.malloc(1, stack);
+            images.put(0, image);
+
+            glfwSetWindowIcon(handle, images);
+
+            STBImage.stbi_image_free(pixels);
         }
     }
 
