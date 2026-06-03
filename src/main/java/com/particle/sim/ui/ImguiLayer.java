@@ -1,6 +1,15 @@
 package com.particle.sim.ui;
 
+import static imgui.ImGui.getIO;
+
+import java.nio.ByteBuffer;
+
+import com.particle.sim.util.ResourceLoader;
+
+import imgui.ImFontAtlas;
+import imgui.ImFontConfig;
 import imgui.ImGui;
+import imgui.ImGuiIO;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
@@ -11,10 +20,23 @@ public final class ImguiLayer {
 
     public void init(long window) {
         ImGui.createContext();
-        ImGui.getIO().addConfigFlags(ImGuiConfigFlags.NavEnableKeyboard);
+        ImGuiIO io = getIO();
+        io.addConfigFlags(ImGuiConfigFlags.NavEnableKeyboard);
+        initFonts(io);
         UiTheme.applyDarkTheme();
         imGuiGlfw.init(window, true);
         imGuiGl3.init("#version 430");
+    }
+
+    private void initFonts(ImGuiIO io) {
+        ImFontAtlas fontAtlas = io.getFonts();
+        ImFontConfig fontConfig = new ImFontConfig();
+
+        byte[] fontData = ResourceLoader.loadBytesArray("/assets/Futura Heavy font.ttf");
+        fontAtlas.addFontFromMemoryTTF(fontData, 18.0f);
+
+        fontAtlas.build();
+        fontConfig.destroy();
     }
 
     public void beginFrame() {
