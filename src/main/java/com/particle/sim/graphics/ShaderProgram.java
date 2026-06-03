@@ -1,8 +1,6 @@
 package com.particle.sim.graphics;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import com.particle.sim.util.ResourceLoader;
 
 import static org.lwjgl.opengl.GL43C.GL_COMPILE_STATUS;
 import static org.lwjgl.opengl.GL43C.GL_COMPUTE_SHADER;
@@ -28,13 +26,13 @@ public final class ShaderProgram {
     }
 
     public static int compute(String shaderResource) {
-        int shader = compile(GL_COMPUTE_SHADER, loadResource(shaderResource));
+        int shader = compile(GL_COMPUTE_SHADER, ResourceLoader.loadString(shaderResource));
         return link(shader);
     }
 
     public static int render(String vertexResource, String fragmentResource) {
-        int vertexShader = compile(GL_VERTEX_SHADER, loadResource(vertexResource));
-        int fragmentShader = compile(GL_FRAGMENT_SHADER, loadResource(fragmentResource));
+        int vertexShader = compile(GL_VERTEX_SHADER, ResourceLoader.loadString(vertexResource));
+        int fragmentShader = compile(GL_FRAGMENT_SHADER, ResourceLoader.loadString(fragmentResource));
         return link(vertexShader, fragmentShader);
     }
 
@@ -70,16 +68,5 @@ public final class ShaderProgram {
         }
 
         return shader;
-    }
-
-    private static String loadResource(String path) {
-        try (InputStream stream = ShaderProgram.class.getResourceAsStream(path)) {
-            if (stream == null) {
-                throw new IllegalArgumentException("Missing resource: " + path);
-            }
-            return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new IllegalStateException("Could not read resource: " + path, e);
-        }
     }
 }
