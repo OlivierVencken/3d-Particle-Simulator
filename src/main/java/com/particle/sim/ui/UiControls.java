@@ -6,31 +6,33 @@ final class UiControls {
     private UiControls() {
     }
 
-    static void settingSlider(String label, float value, float min, float max, FloatSetter setter,
+    static void settingSlider(String label, float value, float min, float max, int decimals, FloatSetter setter,
             Runnable settingsChanged) {
-        if (slider(label, value, min, max, setter)) {
+        if (slider(label, value, min, max, decimals, setter)) {
             settingsChanged.run();
         }
     }
 
-    static void settingIntSlider(String label, int value, int min, int max, IntSetter setter, Runnable settingsChanged) {
-        if (slider(label, value, min, max, setter)) {
+    static void settingIntSlider(String label, int value, int min, int max, int decimals, IntSetter setter, Runnable settingsChanged) {
+        if (slider(label, value, min, max, decimals, setter)) {
             settingsChanged.run();
         }
     }
 
-    private static boolean slider(String label, float value, float min, float max, FloatSetter setter) {
+    private static boolean slider(String label, float value, float min, float max, int decimals, FloatSetter setter) {
         float[] valueRef = { value };
-        if (ImGui.sliderFloat(label, valueRef, min, max)) {
+        String format = "%." + decimals + "f";
+        if (ImGui.sliderFloat(label, valueRef, min, max, format)) {
             setter.set(valueRef[0]);
             return true;
         }
         return false;
     }
 
-    private static boolean slider(String label, int value, int min, int max, IntSetter setter) {
+    private static boolean slider(String label, int value, int min, int max, int decimals, IntSetter setter) {
         int[] valueRef = { value };
-        if (ImGui.sliderInt(label, valueRef, min, max)) {
+        String format = "%." + decimals + "d";
+        if (ImGui.sliderInt(label, valueRef, min, max, format)) {
             setter.set(valueRef[0]);
             return true;
         }

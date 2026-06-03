@@ -14,7 +14,7 @@ final class AttractionMatrixEditor {
     private float matrixEditStep = SimulationDefaults.MATRIX_EDIT_STEP;
 
     void renderSettings(GpuParticleSystem particles, Runnable settingsChanged) {
-        UiControls.settingSlider("Edit step", matrixEditStep, 0.01f, 0.5f, value -> matrixEditStep = value,
+        UiControls.settingSlider("Edit step", matrixEditStep, 0.01f, 0.5f, 2, value -> matrixEditStep = value,
                 settingsChanged);
         renderMatrixActions(particles, settingsChanged);
         renderMatrixTable(particles, settingsChanged);

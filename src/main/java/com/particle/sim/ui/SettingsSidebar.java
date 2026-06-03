@@ -117,7 +117,7 @@ final class SettingsSidebar {
             settingsChanged.run();
         }
 
-        UiControls.settingSlider("Density limit", particles.densityLimit(), 0.0f, 500.0f, particles::densityLimit,
+        UiControls.settingSlider("Density limit", particles.densityLimit(), 0.0f, 500.0f, 0, particles::densityLimit,
                 settingsChanged);
 
         ImInt currentDistanceMetric = new ImInt(particles.distanceMetric().ordinal());
@@ -126,7 +126,7 @@ final class SettingsSidebar {
             settingsChanged.run();
         }
 
-        UiControls.settingSlider("Bounds", particles.bounds(), 2.0f, 10.0f, particles::bounds, settingsChanged);
+        UiControls.settingSlider("Bounds", particles.bounds(), 2.0f, 10.0f, 1, particles::bounds, settingsChanged);
     }
 
     private void renderPhysics(GpuParticleSystem particles, Runnable settingsChanged) {
@@ -134,17 +134,17 @@ final class SettingsSidebar {
             return;
         }
 
-        UiControls.settingSlider("Force", particles.forceFactor(), 0.0f, 10.0f, particles::forceFactor,
+        UiControls.settingSlider("Force", particles.forceFactor(), 0.0f, 10.0f, 1, particles::forceFactor,
                 settingsChanged);
-        UiControls.settingSlider("Interaction range", particles.interactionRange(), 0.2f, 3.0f,
+        UiControls.settingSlider("Interaction range", particles.interactionRange(), 0.2f, 3.0f, 2,
                 particles::interactionRange, settingsChanged);
-        UiControls.settingSlider("Repulsion radius", particles.repulsionRadius(), 0.02f, 0.95f,
+        UiControls.settingSlider("Repulsion radius", particles.repulsionRadius(), 0.02f, 0.95f, 2,
                 particles::repulsionRadius, settingsChanged);
-        UiControls.settingSlider("Velocity damping", particles.velocityDamping(), 0.85f, 1.0f,
+        UiControls.settingSlider("Velocity damping", particles.velocityDamping(), 0.85f, 1.0f, 3,
                 particles::velocityDamping, settingsChanged);
-        UiControls.settingSlider("Max velocity", particles.maxVelocity(), 0.5f, 16.0f, particles::maxVelocity,
+        UiControls.settingSlider("Max velocity", particles.maxVelocity(), 0.5f, 16.0f, 1, particles::maxVelocity,
                 settingsChanged);
-        UiControls.settingSlider("Boundary bounce", particles.boundaryBounce(), 0.0f, 1.0f,
+        UiControls.settingSlider("Boundary bounce", particles.boundaryBounce(), 0.0f, 1.0f, 2,
                 particles::boundaryBounce, settingsChanged);
     }
 
@@ -170,7 +170,7 @@ final class SettingsSidebar {
             return;
         }
 
-        UiControls.settingSlider("Particle size", particles.pointSize(), 1.0f, 8.0f, particles::pointSize,
+        UiControls.settingSlider("Particle size", particles.pointSize(), 1.0f, 8.0f, 1, particles::pointSize,
                 settingsChanged);
 
         ImBoolean fixedParticleScreenSize = new ImBoolean(particles.fixedParticleScreenSize());
@@ -198,13 +198,13 @@ final class SettingsSidebar {
 
     private void renderGlowControls(GpuParticleSystem particles, Runnable settingsChanged) {
         UiControls.settingIntSlider("Passes", particles.glowBlurPasses(), 1,
-                64, particles::glowBlurPasses, settingsChanged);
+                64,  1, particles::glowBlurPasses, settingsChanged);
         UiControls.settingSlider("Strength", particles.glowStrength(), 0.0f,
-                6.0f, particles::glowStrength, settingsChanged);
+                6.0f, 1, particles::glowStrength, settingsChanged);
         UiControls.settingSlider("Radius", particles.glowRadius(), 0.5f,
-                12.0f, particles::glowRadius, settingsChanged);
+                12.0f, 1, particles::glowRadius, settingsChanged);
         UiControls.settingSlider("Falloff", particles.glowFalloff(), 0.05f,
-                3.0f, particles::glowFalloff, settingsChanged);
+                3.0f, 2, particles::glowFalloff, settingsChanged);
     }
 
     private void renderSpawnControls(GpuParticleSystem particles, Runnable settingsChanged) {
@@ -267,9 +267,9 @@ final class SettingsSidebar {
             return;
         }
 
-        UiControls.settingSlider("Sensitivity", camera.getSensitivity(), 0.0001f, 0.01f, camera::setSensitivity,
+        UiControls.settingSlider("Sensitivity", camera.getSensitivity(), 0.0001f, 0.01f, 4, camera::setSensitivity,
                 settingsChanged);
-        UiControls.settingSlider("Fly speed", camera.getFlySpeed(), 0.1f, 30.0f, camera::setFlySpeed,
+        UiControls.settingSlider("Fly speed", camera.getFlySpeed(), 0.1f, 30.0f, 1, camera::setFlySpeed,
                 settingsChanged);
         if (ImGui.button("Reset camera")) {
             camera.reset();
