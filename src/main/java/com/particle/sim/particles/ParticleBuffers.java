@@ -3,6 +3,8 @@ package com.particle.sim.particles;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Random;
 
 import static org.lwjgl.opengl.GL43C.GL_COPY_READ_BUFFER;
@@ -19,6 +21,8 @@ import static org.lwjgl.opengl.GL43C.glGenBuffers;
 final class ParticleBuffers {
     private int positionSsbo;
     private int velocitySsbo;
+    private final Deque<Snapshot> snapshots = new ArrayDeque<>();
+    private long bufferBytes;
 
     int positionSsbo() {
         return positionSsbo;
@@ -57,10 +61,43 @@ final class ParticleBuffers {
 
         glDeleteBuffers(positionSsbo);
         glDeleteBuffers(velocitySsbo);
+        clearSnapshots();
 
         positionSsbo = newPositionSsbo;
         velocitySsbo = newVelocitySsbo;
+        bufferBytes = newBufferBytes;
+
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+
+    void captureSnapshot() {
+        if (positionSsbo == 0 || velocitySsbo == 0) {
+            return;
+        }
+
+        int snapshotPositionSsbo = glGenBuffers();
+        int snapshotVelocitySsbo = glGenBuffers();
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, snapshotPositionSsbo);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, bufferBytes, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, snapshotVelocitySsbo);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, bufferBytes, GL_DYNAMIC_DRAW);
+
+        copyBufferPrefix(positionSsbo, snapshotPositionSsbo, bufferBytes);
+        copyBufferPrefix(velocitySsbo, snapshotVelocitySsbo, bufferBytes);
+        snapshots.push(new Snapshot(snapshotPositionSsbo, snapshotVelocitySsbo));
+    }
+
+    boolean restoreSnapshot() {
+        if (positionSsbo == 0 || velocitySsbo == 0 || snapshots.isEmpty()) {
+            return false;
+        }
+
+        Snapshot snapshot = snapshots.pop();
+        copyBufferPrefix(snapshot.positionSsbo, positionSsbo, bufferBytes);
+        copyBufferPrefix(snapshot.velocitySsbo, velocitySsbo, bufferBytes);
+        snapshot.dispose();
+        return true;
     }
 
     private void uploadRandomParticles(int targetPositionSsbo, int targetVelocitySsbo, long byteOffset, int count,
@@ -105,5 +142,19 @@ final class ParticleBuffers {
     void dispose() {
         glDeleteBuffers(positionSsbo);
         glDeleteBuffers(velocitySsbo);
+        clearSnapshots();
+    }
+
+    private void clearSnapshots() {
+        while (!snapshots.isEmpty()) {
+            snapshots.pop().dispose();
+        }
+    }
+
+    private record Snapshot(int positionSsbo, int velocitySsbo) {
+        void dispose() {
+            glDeleteBuffers(positionSsbo);
+            glDeleteBuffers(velocitySsbo);
+        }
     }
 }

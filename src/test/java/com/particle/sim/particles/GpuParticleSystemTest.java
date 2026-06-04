@@ -3,6 +3,7 @@ package com.particle.sim.particles;
 import com.particle.sim.settings.SimulationDefaults;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -126,6 +127,17 @@ class GpuParticleSystemTest {
         system.interactionRange(0.2f);
 
         assertEquals(GpuParticleSystem.MAX_SPATIAL_MAP_SIZE, system.spatialMapSize());
+    }
+
+    @Test
+    void stepMethodsAreSafeBeforeInitialization() {
+        GpuParticleSystem system = new GpuParticleSystem();
+
+        assertDoesNotThrow(() -> {
+            system.step();
+            system.stepBack();
+        });
+        assertEquals(65_536, system.particleCount());
     }
 
     @Test

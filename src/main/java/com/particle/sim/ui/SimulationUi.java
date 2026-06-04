@@ -108,6 +108,18 @@ public final class SimulationUi {
         setPaused(!isPaused());
     }
 
+    public void toggleUi() {
+        if (isHidden()) {
+            show();
+        } else {
+            hide();
+        }
+    }
+
+    public void toggleDebug() {
+        showDebugPanel.set(!showDebugPanel.get());
+    }
+
     public boolean isHidden() {
         return hidden;
     }

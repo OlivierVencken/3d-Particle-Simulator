@@ -29,17 +29,35 @@ public final class GpuParticleSystem {
         reset();
     }
 
+    public void step() {
+        advanceSimulation((float) SimulationDefaults.SIMULATION_STEP_SECONDS);
+    }
+
+    public void stepBack() {
+        if (!initialized || !particleBuffers.restoreSnapshot()) {
+            return;
+        }
+
+        rebuildSpatialGrid();
+    }
+
     public void reset() {
         resizeParticles(particleCount(), false);
     }
 
     public void update(float deltaTime, float elapsedTime) {
-        if (particleCount() == 0) {
+        advanceSimulation(deltaTime);
+    }
+
+    private void advanceSimulation(float deltaTime) {
+        if (!initialized || particleCount() == 0) {
             return;
         }
 
         spatialGridBuffers.ensureCapacity(desiredSpatialMapSize());
         compute.bindBuffers(particleBuffers, spatialGridBuffers);
+
+        particleBuffers.captureSnapshot();
 
         spatialGridBuffers.clear();
         compute.setUniforms(this, deltaTime, 0);
@@ -47,6 +65,20 @@ public final class GpuParticleSystem {
 
         compute.setUniforms(this, deltaTime, 1);
         compute.dispatch(particleCount(), WORK_GROUP_SIZE, true);
+    }
+
+    private void rebuildSpatialGrid() {
+        if (particleCount() == 0) {
+            spatialGridBuffers.clear();
+            return;
+        }
+
+        spatialGridBuffers.ensureCapacity(desiredSpatialMapSize());
+        compute.bindBuffers(particleBuffers, spatialGridBuffers);
+
+        spatialGridBuffers.clear();
+        compute.setUniforms(this, 0.0f, 0);
+        compute.dispatch(particleCount(), WORK_GROUP_SIZE, false);
     }
 
     public void render(int width, int height, float[] viewMatrix) {
