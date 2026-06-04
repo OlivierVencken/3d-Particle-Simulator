@@ -2,6 +2,7 @@ package com.particle.sim;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.input.AppHotkeys;
+import com.particle.sim.input.HotkeyManager;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.AppSettings;
 import com.particle.sim.settings.DebouncedSettingsSaver;
@@ -13,7 +14,6 @@ import org.lwjgl.opengl.GL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static imgui.ImGui.getIO;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL43C.GL_BLEND;
 import static org.lwjgl.opengl.GL43C.GL_DEPTH_TEST;
@@ -32,13 +32,7 @@ public final class ParticleSimulatorApp {
     private final CameraController camera = new CameraController();
     private final GpuParticleSystem particles = new GpuParticleSystem();
     private final SimulationUi ui = new SimulationUi();
-    private final AppHotkeys hotkeys = new AppHotkeys(
-            window::toggleFullscreen,
-            ui::isHidden,
-            ui::show,
-            () -> !getIO().getWantCaptureKeyboard(),
-            this::togglePause,
-            particles::reset);
+    private final HotkeyManager hotkeys = new HotkeyManager();
     private final Path settingsPath = AppSettings.defaultPath();
     private final DebouncedSettingsSaver settingsSaver = new DebouncedSettingsSaver(
             SETTINGS_SAVE_DEBOUNCE_SECONDS,
@@ -54,6 +48,7 @@ public final class ParticleSimulatorApp {
         imgui.init(window.handle());
         particles.init();
         initSettings();
+        AppHotkeys.register(hotkeys, this);
 
         new ApplicationRuntime(
                 window,
@@ -62,8 +57,7 @@ public final class ParticleSimulatorApp {
                 camera,
                 particles,
                 ui,
-                this::saveSettingsIfDue)
-                .run();
+                this::saveSettingsIfDue).run();
 
         dispose();
     }
@@ -104,9 +98,16 @@ public final class ParticleSimulatorApp {
         requestSettingsSave();
     }
 
-    private void togglePause() {
-        ui.setPaused(!ui.isPaused());
-        requestSettingsSave();
+    public WindowManager getWindow() {
+        return window;
+    }
+
+    public GpuParticleSystem getParticles() {
+        return particles;
+    }
+
+    public SimulationUi getUi() {
+        return ui;
     }
 
     private void dispose() {

@@ -1,7 +1,8 @@
 package com.particle.sim;
 
 import com.particle.sim.camera.CameraController;
-import com.particle.sim.input.AppHotkeys;
+import com.particle.sim.input.HotkeyContext;
+import com.particle.sim.input.HotkeyManager;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.ImguiLayer;
@@ -11,6 +12,7 @@ import com.particle.sim.window.WindowManager;
 import java.util.function.DoubleConsumer;
 import java.util.concurrent.locks.LockSupport;
 
+import static imgui.ImGui.getIO;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL43C.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL43C.GL_DEPTH_BUFFER_BIT;
@@ -25,7 +27,7 @@ public final class ApplicationRuntime {
 
     private final WindowManager window;
     private final ImguiLayer imgui;
-    private final AppHotkeys hotkeys;
+    private final HotkeyManager hotkeys;
     private final CameraController camera;
     private final GpuParticleSystem particles;
     private final SimulationUi ui;
@@ -35,7 +37,8 @@ public final class ApplicationRuntime {
 
     private double lastFrameTime;
 
-    public ApplicationRuntime(WindowManager window, ImguiLayer imgui, AppHotkeys hotkeys, CameraController camera,
+    public ApplicationRuntime(WindowManager window, ImguiLayer imgui, HotkeyManager hotkeys,
+            CameraController camera,
             GpuParticleSystem particles, SimulationUi ui, DoubleConsumer saveSettingsIfDue) {
         this.window = window;
         this.imgui = imgui;
@@ -51,7 +54,7 @@ public final class ApplicationRuntime {
 
         while (!window.shouldClose()) {
             window.pollEvents();
-            hotkeys.update(window.handle());
+            hotkeys.update(window.handle(), currentHotkeyContext());
 
             double now = glfwGetTime();
             double frameDelta = Math.min(Math.max(now - lastFrameTime, 0.0), MAX_FRAME_DELTA_SECONDS);
@@ -77,6 +80,10 @@ public final class ApplicationRuntime {
             window.swapBuffers();
             limitFrameRate(now);
         }
+    }
+
+    private HotkeyContext currentHotkeyContext() {
+        return getIO().getWantCaptureKeyboard() ? HotkeyContext.GLOBAL : HotkeyContext.SIMULATION;
     }
 
     private void limitFrameRate(double frameStartTime) {

@@ -104,6 +104,10 @@ public final class SimulationUi {
                 Math.min(SimulationDefaults.MAX_FPS_CAP, fpsCap));
     }
 
+    public void togglePause() {
+        setPaused(!isPaused());
+    }
+
     public boolean isHidden() {
         return hidden;
     }

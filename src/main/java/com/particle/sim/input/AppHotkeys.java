@@ -1,59 +1,45 @@
 package com.particle.sim.input;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BooleanSupplier;
+import com.particle.sim.ParticleSimulatorApp;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_F11;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_R;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.glfwGetKey;
 
 public final class AppHotkeys {
-    private final List<HotkeyBinding> bindings = new ArrayList<>();
 
-    public AppHotkeys(Runnable toggleFullscreen, BooleanSupplier canShowUi, Runnable showUi,
-            BooleanSupplier canUseSimulationHotkeys, Runnable togglePause, Runnable resetParticles) {
-        onPress(GLFW_KEY_F11, toggleFullscreen);
-        onPress(GLFW_KEY_ESCAPE, canShowUi, showUi);
-        onPress(GLFW_KEY_SPACE, canUseSimulationHotkeys, togglePause);
-        onPress(GLFW_KEY_R, canUseSimulationHotkeys, resetParticles);
+    private AppHotkeys() {
     }
 
-    public void update(long window) {
-        for (HotkeyBinding binding : bindings) {
-            binding.update(window);
-        }
-    }
+    public static void register(HotkeyManager hotkeyManager, ParticleSimulatorApp app) {
+        hotkeyManager.bind(
+                GLFW_KEY_F11,
+                HotkeyAction.TOGGLE_FULLSCREEN,
+                HotkeyContext.GLOBAL);
 
-    private void onPress(int key, Runnable action) {
-        onPress(key, () -> true, action);
-    }
+        hotkeyManager.bind(
+                GLFW_KEY_ESCAPE,
+                HotkeyAction.SHOW_UI,
+                HotkeyContext.GLOBAL);
 
-    private void onPress(int key, BooleanSupplier enabled, Runnable action) {
-        bindings.add(new HotkeyBinding(key, enabled, action));
-    }
+        hotkeyManager.bind(
+                GLFW_KEY_SPACE,
+                HotkeyAction.TOGGLE_PAUSE,
+                HotkeyContext.SIMULATION);
 
-    private static final class HotkeyBinding {
-        private final int key;
-        private final BooleanSupplier enabled;
-        private final Runnable action;
-        private boolean wasPressed;
+        hotkeyManager.bind(
+                GLFW_KEY_R,
+                HotkeyAction.RESET_PARTICLES,
+                HotkeyContext.SIMULATION);
 
-        private HotkeyBinding(int key, BooleanSupplier enabled, Runnable action) {
-            this.key = key;
-            this.enabled = enabled;
-            this.action = action;
-        }
-
-        private void update(long window) {
-            boolean pressed = glfwGetKey(window, key) == GLFW_PRESS;
-            if (pressed && !wasPressed && enabled.getAsBoolean()) {
-                action.run();
-            }
-            wasPressed = pressed;
-        }
+        hotkeyManager.on(
+                HotkeyAction.TOGGLE_FULLSCREEN, app.getWindow()::toggleFullscreen);
+        hotkeyManager.on(
+                HotkeyAction.TOGGLE_PAUSE, app.getUi()::togglePause);
+        hotkeyManager.on(
+                HotkeyAction.SHOW_UI, app.getUi()::show);
+        hotkeyManager.on(
+                HotkeyAction.RESET_PARTICLES, app.getParticles()::reset);
     }
 }
