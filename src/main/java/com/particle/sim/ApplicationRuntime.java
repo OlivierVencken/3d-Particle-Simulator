@@ -4,12 +4,12 @@ import com.particle.sim.camera.CameraController;
 import com.particle.sim.input.HotkeyContext;
 import com.particle.sim.input.HotkeyManager;
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.settings.SettingsController;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.ImguiLayer;
 import com.particle.sim.ui.SimulationUi;
 import com.particle.sim.window.WindowManager;
 
-import java.util.function.DoubleConsumer;
 import java.util.concurrent.locks.LockSupport;
 
 import static imgui.ImGui.getIO;
@@ -31,7 +31,7 @@ public final class ApplicationRuntime {
     private final CameraController camera;
     private final GpuParticleSystem particles;
     private final SimulationUi ui;
-    private final DoubleConsumer saveSettingsIfDue;
+    private final SettingsController settingsController;
     private final FixedSimulationClock simulationClock = new FixedSimulationClock(
             SimulationDefaults.SIMULATION_STEP_SECONDS);
 
@@ -39,14 +39,14 @@ public final class ApplicationRuntime {
 
     public ApplicationRuntime(WindowManager window, ImguiLayer imgui, HotkeyManager hotkeys,
             CameraController camera,
-            GpuParticleSystem particles, SimulationUi ui, DoubleConsumer saveSettingsIfDue) {
+            GpuParticleSystem particles, SimulationUi ui, SettingsController settingsController) {
         this.window = window;
         this.imgui = imgui;
         this.hotkeys = hotkeys;
         this.camera = camera;
         this.particles = particles;
         this.ui = ui;
-        this.saveSettingsIfDue = saveSettingsIfDue;
+        this.settingsController = settingsController;
     }
 
     public void run() {
@@ -75,7 +75,7 @@ public final class ApplicationRuntime {
             renderScene();
             ui.render(deltaTime, particles, camera);
             imgui.render();
-            saveSettingsIfDue.accept(glfwGetTime());
+            settingsController.tick(now);
 
             window.swapBuffers();
             limitFrameRate(now);

@@ -4,17 +4,12 @@ import com.particle.sim.camera.CameraController;
 import com.particle.sim.input.AppHotkeys;
 import com.particle.sim.input.HotkeyManager;
 import com.particle.sim.particles.GpuParticleSystem;
-import com.particle.sim.settings.AppSettings;
-import com.particle.sim.settings.DebouncedSettingsSaver;
+import com.particle.sim.settings.SettingsController;
 import com.particle.sim.ui.ImguiLayer;
 import com.particle.sim.ui.SimulationUi;
 import com.particle.sim.window.WindowManager;
 import org.lwjgl.opengl.GL;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL43C.GL_BLEND;
 import static org.lwjgl.opengl.GL43C.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL43C.GL_ONE_MINUS_SRC_ALPHA;
@@ -25,7 +20,6 @@ import static org.lwjgl.opengl.GL43C.glEnable;
 
 public final class ParticleSimulatorApp {
     private static final String WINDOW_TITLE = "3D Particle Simulator";
-    private static final double SETTINGS_SAVE_DEBOUNCE_SECONDS = 0.5;
 
     private final WindowManager window = new WindowManager(WINDOW_TITLE);
     private final ImguiLayer imgui = new ImguiLayer();
@@ -33,10 +27,7 @@ public final class ParticleSimulatorApp {
     private final GpuParticleSystem particles = new GpuParticleSystem();
     private final SimulationUi ui = new SimulationUi();
     private final HotkeyManager hotkeys = new HotkeyManager();
-    private final Path settingsPath = AppSettings.defaultPath();
-    private final DebouncedSettingsSaver settingsSaver = new DebouncedSettingsSaver(
-            SETTINGS_SAVE_DEBOUNCE_SECONDS,
-            this::saveSettings);
+    private final SettingsController settingsController = new SettingsController(particles, camera, ui);
 
     public static void main(String[] args) {
         new ParticleSimulatorApp().run();
@@ -57,7 +48,7 @@ public final class ParticleSimulatorApp {
                 camera,
                 particles,
                 ui,
-                this::saveSettingsIfDue).run();
+                settingsController).run();
 
         dispose();
     }
@@ -71,31 +62,14 @@ public final class ParticleSimulatorApp {
     }
 
     private void initSettings() {
-        ui.onSettingsChanged(this::requestSettingsSave);
-        ui.onResetSettings(this::resetSettings);
-        ui.onExitApplication(window::requestClose);
+        ui.onSettingsChanged(settingsController::onSettingsChanged);
+        ui.onResetSettings(settingsController::onResetRequested);
+        ui.onExitApplication(() -> {
+            settingsController.flush();
+            window.requestClose();
+        });
 
-        if (Files.exists(settingsPath)) {
-            AppSettings.load(settingsPath).applyTo(particles, camera, ui);
-        }
-    }
-
-    private void saveSettings() {
-        AppSettings.capture(particles, camera, ui).save(settingsPath);
-    }
-
-    private void requestSettingsSave() {
-        settingsSaver.requestSave(glfwGetTime());
-    }
-
-    private void saveSettingsIfDue(double now) {
-        settingsSaver.saveIfDue(now);
-    }
-
-    private void resetSettings() {
-        AppSettings.defaults().applySimulationTo(particles, camera, ui);
-        particles.reset();
-        requestSettingsSave();
+        settingsController.load();
     }
 
     public WindowManager getWindow() {
@@ -111,7 +85,7 @@ public final class ParticleSimulatorApp {
     }
 
     private void dispose() {
-        settingsSaver.flush();
+        settingsController.flush();
         particles.dispose();
         imgui.dispose();
         window.dispose();
