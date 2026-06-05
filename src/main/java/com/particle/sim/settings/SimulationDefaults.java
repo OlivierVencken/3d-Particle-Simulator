@@ -5,6 +5,8 @@ import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
 
+import imgui.ImVec4;
+
 public final class SimulationDefaults {
     private SimulationDefaults() {
     }
@@ -46,4 +48,23 @@ public final class SimulationDefaults {
     public static final int MAX_FPS_CAP = 360;
     public static final float MATRIX_EDIT_STEP = 0.1f;
     public static final int CUSTOM_SPAWN_AMOUNT = 5_000;
+
+    public static final ImVec4[] GROUP_COLORS = new ImVec4[] {
+            new ImVec4(0.18f, 0.65f, 1.0f, 1.0f),
+            new ImVec4(1.0f, 0.35f, 0.16f, 1.0f),
+            new ImVec4(0.45f, 1.0f, 0.42f, 1.0f),
+            new ImVec4(1.0f, 0.86f, 0.25f, 1.0f),
+            new ImVec4(0.78f, 0.42f, 1.0f, 1.0f),
+            new ImVec4(0.15f, 0.95f, 0.86f, 1.0f),
+            new ImVec4(1.0f, 0.45f, 0.72f, 1.0f),
+            new ImVec4(0.5f, 0.95f, 0.2f, 1.0f),
+            new ImVec4(0.95f, 0.62f, 0.15f, 1.0f),
+            new ImVec4(0.35f, 0.55f, 1.0f, 1.0f),
+            new ImVec4(0.9f, 0.95f, 0.35f, 1.0f),
+            new ImVec4(0.55f, 0.25f, 1.0f, 1.0f),
+            new ImVec4(0.1f, 0.8f, 0.45f, 1.0f),
+            new ImVec4(1.0f, 0.2f, 0.35f, 1.0f),
+            new ImVec4(0.35f, 1.0f, 0.95f, 1.0f),
+            new ImVec4(0.85f, 0.85f, 0.9f, 1.0f)
+    };
 }

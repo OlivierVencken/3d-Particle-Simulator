@@ -2,6 +2,8 @@ package com.particle.sim.particles;
 
 import com.particle.sim.settings.SimulationDefaults;
 
+import imgui.ImVec4;
+
 import java.util.Random;
 
 public final class GpuParticleSystem {
@@ -133,6 +135,7 @@ public final class GpuParticleSystem {
         groupCount(config.groupCount());
         colorMode(config.colorMode());
         spawnMode(config.spawnMode());
+        groupColors(config.groupColors());
     }
 
     public void addParticles(int amount) {
@@ -388,6 +391,14 @@ public final class GpuParticleSystem {
 
     public int maxGroupCount() {
         return attractionMatrix.maxGroups();
+    }
+
+    public ImVec4[] groupColors() {
+        return config.groupColors();
+    }
+
+    public void groupColors(ImVec4[] groupColors) {
+        config.groupColors(groupColors);
     }
 
     public int gridSize() {

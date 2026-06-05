@@ -2,6 +2,8 @@ package com.particle.sim.particles;
 
 import com.particle.sim.settings.SimulationDefaults;
 
+import imgui.ImVec4;
+
 public final class ParticleSimulationConfig {
     private int particleCount = SimulationDefaults.PARTICLE_COUNT;
     private float pointSize = SimulationDefaults.POINT_SIZE;
@@ -25,6 +27,7 @@ public final class ParticleSimulationConfig {
     private int groupCount = SimulationDefaults.GROUP_COUNT;
     private ColorMode colorMode = SimulationDefaults.COLOR_MODE;
     private SpawnMode spawnMode = SimulationDefaults.SPAWN_MODE;
+    private ImVec4[] groupColors = SimulationDefaults.GROUP_COLORS;
 
     public static ParticleSimulationConfig defaults() {
         return new ParticleSimulationConfig();
@@ -242,6 +245,18 @@ public final class ParticleSimulationConfig {
         this.spawnMode = spawnMode == null ? SimulationDefaults.SPAWN_MODE : spawnMode;
     }
 
+    public ImVec4[] groupColors() {
+        return groupColors;
+    }
+
+    public void groupColors(ImVec4[] groupColors) {
+        if (groupColors == null || groupColors.length == 0) {
+            this.groupColors = SimulationDefaults.GROUP_COLORS;
+        } else {
+            this.groupColors = groupColors;
+        }
+    }
+
     public void sanitize() {
         particleCount(particleCount);
         pointSize = clamp(pointSize, 1.0f, 8.0f);
@@ -258,6 +273,7 @@ public final class ParticleSimulationConfig {
         boundaryBounce = clamp(boundaryBounce, 0.0f, 1.0f);
         densityLimit = clamp(densityLimit, 0.0f, 500.0f);
         groupCount(groupCount);
+        groupColors(groupColors);
     }
 
     private static float clamp(float value, float min, float max) {
