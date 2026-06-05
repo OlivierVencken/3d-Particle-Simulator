@@ -1,6 +1,7 @@
 .gradle/
 .github/java-upgrade/
 .m2/
+.images/
 build/
 target/
 out/
