@@ -41,6 +41,21 @@ public class SettingsController {
         onSettingsChanged();
     }
 
+    public void savePresetTo(Path path) {
+        Path target = AppSettings.ensurePresetExtension(path);
+        String presetName = AppSettings.presetNameFromPath(target);
+        AppSettings.capture(particles, camera, ui).savePreset(target, presetName);
+    }
+
+    public void loadPresetFrom(Path path) {
+        if (!Files.isRegularFile(path)) {
+            return;
+        }
+
+        AppSettings.load(path).applyTo(particles, camera, ui);
+        onSettingsChanged();
+    }
+
     public void tick(double now) {
         settingsSaver.saveIfDue(now);
     }

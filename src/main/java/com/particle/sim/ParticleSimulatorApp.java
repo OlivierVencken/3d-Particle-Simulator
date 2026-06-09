@@ -6,6 +6,7 @@ import com.particle.sim.input.HotkeyManager;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SettingsController;
 import com.particle.sim.ui.ImguiLayer;
+import com.particle.sim.ui.PresetFileDialog;
 import com.particle.sim.ui.SimulationUi;
 import com.particle.sim.window.WindowManager;
 import org.lwjgl.opengl.GL;
@@ -35,6 +36,7 @@ public final class ParticleSimulatorApp {
 
     private void run() {
         window.init();
+        PresetFileDialog.init();
         initOpenGl();
         imgui.init(window.handle());
         particles.init();
@@ -64,6 +66,10 @@ public final class ParticleSimulatorApp {
     private void initSettings() {
         ui.onSettingsChanged(settingsController::onSettingsChanged);
         ui.onResetSettings(settingsController::onResetRequested);
+        ui.onSavePreset(() -> PresetFileDialog.showSaveDialog()
+                .ifPresent(settingsController::savePresetTo));
+        ui.onLoadPreset(() -> PresetFileDialog.showOpenDialog()
+                .ifPresent(settingsController::loadPresetFrom));
         ui.onExitApplication(() -> {
             settingsController.flush();
             window.requestClose();
@@ -89,5 +95,6 @@ public final class ParticleSimulatorApp {
         particles.dispose();
         imgui.dispose();
         window.dispose();
+        PresetFileDialog.shutdown();
     }
 }

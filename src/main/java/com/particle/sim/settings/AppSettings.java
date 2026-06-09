@@ -14,10 +14,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Properties;
 
 public final class AppSettings {
     public static final int VERSION = 1;
+    public static final String PRESET_EXTENSION = ".3dps";
 
     private final ParticleSimulationConfig particleConfig = ParticleSimulationConfig.defaults();
     private float[] attractionMatrix;
@@ -97,8 +99,38 @@ public final class AppSettings {
     }
 
     public void save(Path path) {
+        save(path, "3D Particle Simulator settings", null);
+    }
+
+    public void savePreset(Path path, String presetName) {
+        save(path, "3D Particle Simulator preset", presetName);
+    }
+
+    public static Path ensurePresetExtension(Path path) {
+        String fileName = path.getFileName().toString();
+        if (fileName.toLowerCase(Locale.ROOT).endsWith(PRESET_EXTENSION)) {
+            return path;
+        }
+        return path.resolveSibling(fileName + PRESET_EXTENSION);
+    }
+
+    public static String presetNameFromPath(Path path) {
+        String fileName = path.getFileName().toString();
+        if (fileName.toLowerCase(Locale.ROOT).endsWith(PRESET_EXTENSION)) {
+            fileName = fileName.substring(0, fileName.length() - PRESET_EXTENSION.length());
+        }
+        if (fileName.isBlank()) {
+            return "Untitled preset";
+        }
+        return fileName;
+    }
+
+    private void save(Path path, String comment, String presetName) {
         Properties properties = new Properties();
         properties.setProperty("version", Integer.toString(VERSION));
+        if (presetName != null && !presetName.isBlank()) {
+            properties.setProperty("presetName", presetName.trim());
+        }
         properties.setProperty("particleCount", Integer.toString(particleConfig.particleCount()));
         properties.setProperty("pointSize", Float.toString(particleConfig.pointSize()));
         properties.setProperty("fixedParticleScreenSize", Boolean.toString(particleConfig.fixedParticleScreenSize()));
@@ -140,7 +172,7 @@ public final class AppSettings {
                 Files.createDirectories(parent);
             }
             try (OutputStream stream = Files.newOutputStream(path)) {
-                properties.store(stream, "3D Particle Simulator settings");
+                properties.store(stream, comment);
             }
         } catch (IOException e) {
             throw new IllegalStateException("Could not save settings to " + path, e);

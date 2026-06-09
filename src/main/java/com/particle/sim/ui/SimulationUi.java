@@ -21,6 +21,10 @@ public final class SimulationUi {
     };
     private Runnable resetSettings = () -> {
     };
+    private Runnable savePreset = () -> {
+    };
+    private Runnable loadPreset = () -> {
+    };
     private Runnable exitApplication = () -> {
     };
 
@@ -32,6 +36,16 @@ public final class SimulationUi {
     public void onResetSettings(Runnable resetSettings) {
         this.resetSettings = resetSettings == null ? () -> {
         } : resetSettings;
+    }
+
+    public void onSavePreset(Runnable savePreset) {
+        this.savePreset = savePreset == null ? () -> {
+        } : savePreset;
+    }
+
+    public void onLoadPreset(Runnable loadPreset) {
+        this.loadPreset = loadPreset == null ? () -> {
+        } : loadPreset;
     }
 
     public void onExitApplication(Runnable exitApplication) {
@@ -46,7 +60,7 @@ public final class SimulationUi {
         }
 
         menuBar.render(particles, camera, settingsSidebar, showDebugPanel, settingsChanged, resetSettings,
-                exitApplication, this::hide);
+                savePreset, loadPreset, exitApplication, this::hide);
 
         settingsSidebar.render(particles, camera, settingsChanged);
         if (showDebugPanel.get()) {

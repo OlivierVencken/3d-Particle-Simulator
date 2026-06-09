@@ -7,13 +7,14 @@ import imgui.type.ImBoolean;
 
 final class SimulationMenuBar {
     void render(GpuParticleSystem particles, CameraController camera, SettingsSidebar settingsSidebar,
-            ImBoolean showDebugPanel, Runnable settingsChanged, Runnable resetSettings, Runnable exitApplication,
-            Runnable hideUi) {
+            ImBoolean showDebugPanel, Runnable settingsChanged, Runnable resetSettings, Runnable savePreset,
+            Runnable loadPreset, Runnable exitApplication, Runnable hideUi) {
         if (!ImGui.beginMainMenuBar()) {
             return;
         }
 
-        renderSimulationMenu(particles, camera, settingsSidebar, settingsChanged, resetSettings, exitApplication);
+        renderSimulationMenu(particles, camera, settingsSidebar, settingsChanged, resetSettings, savePreset, loadPreset,
+                exitApplication);
         renderViewMenu(showDebugPanel, hideUi);
         renderThemeMenu();
 
@@ -21,7 +22,8 @@ final class SimulationMenuBar {
     }
 
     private void renderSimulationMenu(GpuParticleSystem particles, CameraController camera,
-            SettingsSidebar settingsSidebar, Runnable settingsChanged, Runnable resetSettings, Runnable exitApplication) {
+            SettingsSidebar settingsSidebar, Runnable settingsChanged, Runnable resetSettings, Runnable savePreset,
+            Runnable loadPreset, Runnable exitApplication) {
         if (!ImGui.beginMenu("Simulation")) {
             return;
         }
@@ -38,6 +40,13 @@ final class SimulationMenuBar {
         }
         if (ImGui.menuItem("Reset simulation settings")) {
             resetSettings.run();
+        }
+        ImGui.separator();
+        if (ImGui.menuItem("Save...")) {
+            savePreset.run();
+        }
+        if (ImGui.menuItem("Load...")) {
+            loadPreset.run();
         }
         ImGui.separator();
         if (ImGui.menuItem("Exit")) {
