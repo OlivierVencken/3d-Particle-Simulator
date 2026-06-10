@@ -111,22 +111,12 @@ final class SettingsSidebar {
             settingsChanged.run();
         }
 
-        ImBoolean densityRegulationEnabled = new ImBoolean(particles.densityRegulationEnabled());
-        if (ImGui.checkbox("Density regulation", densityRegulationEnabled)) {
-            particles.densityRegulationEnabled(densityRegulationEnabled.get());
-            settingsChanged.run();
-        }
-
-        UiControls.settingSlider("Density limit", particles.densityLimit(), 0.0f, 500.0f, 0, particles::densityLimit,
-                settingsChanged);
-
-        ImInt currentDistanceMetric = new ImInt(particles.distanceMetric().ordinal());
-        if (ImGui.combo("Distance", currentDistanceMetric, DISTANCE_METRIC_LABELS)) {
-            particles.distanceMetric(DistanceMetric.values()[currentDistanceMetric.get()]);
-            settingsChanged.run();
-        }
-
         UiControls.settingSlider("Bounds", particles.bounds(), 2.0f, 10.0f, 1, particles::bounds, settingsChanged);
+
+        if (!particles.toroidalWrap()) {
+            UiControls.settingSlider("Boundary bounce", particles.boundaryBounce(), 0.0f, 1.0f, 2,
+                    particles::boundaryBounce, settingsChanged);
+        }
     }
 
     private void renderPhysics(GpuParticleSystem particles, Runnable settingsChanged) {
@@ -144,8 +134,25 @@ final class SettingsSidebar {
                 particles::velocityDamping, settingsChanged);
         UiControls.settingSlider("Max velocity", particles.maxVelocity(), 0.5f, 16.0f, 1, particles::maxVelocity,
                 settingsChanged);
-        UiControls.settingSlider("Boundary bounce", particles.boundaryBounce(), 0.0f, 1.0f, 2,
-                particles::boundaryBounce, settingsChanged);
+
+        ImBoolean densityRegulationEnabled = new ImBoolean(particles.densityRegulationEnabled());
+        if (ImGui.checkbox("Density regulation", densityRegulationEnabled)) {
+            particles.densityRegulationEnabled(densityRegulationEnabled.get());
+            settingsChanged.run();
+        }
+
+        if (particles.densityRegulationEnabled()) {
+            UiControls.settingSlider("Density limit", particles.densityLimit(), 0.0f, 500.0f, 0,
+                    particles::densityLimit,
+                    settingsChanged);
+        }
+
+        ImInt currentDistanceMetric = new ImInt(particles.distanceMetric().ordinal());
+        if (ImGui.combo("Distance", currentDistanceMetric, DISTANCE_METRIC_LABELS)) {
+            particles.distanceMetric(DistanceMetric.values()[currentDistanceMetric.get()]);
+            settingsChanged.run();
+        }
+
     }
 
     private void renderParticles(GpuParticleSystem particles, Runnable settingsChanged) {
@@ -198,7 +205,7 @@ final class SettingsSidebar {
 
     private void renderGlowControls(GpuParticleSystem particles, Runnable settingsChanged) {
         UiControls.settingIntSlider("Passes", particles.glowBlurPasses(), 1,
-                64,  1, particles::glowBlurPasses, settingsChanged);
+                64, 1, particles::glowBlurPasses, settingsChanged);
         UiControls.settingSlider("Strength", particles.glowStrength(), 0.0f,
                 6.0f, 1, particles::glowStrength, settingsChanged);
         UiControls.settingSlider("Radius", particles.glowRadius(), 0.5f,
