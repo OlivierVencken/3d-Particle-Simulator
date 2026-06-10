@@ -5,11 +5,11 @@ import com.particle.sim.input.AppHotkeys;
 import com.particle.sim.input.HotkeyManager;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SettingsController;
+import com.particle.sim.system.StartupFailureException;
 import com.particle.sim.ui.ImguiLayer;
 import com.particle.sim.ui.PresetFileDialog;
 import com.particle.sim.ui.SimulationUi;
 import com.particle.sim.window.WindowManager;
-import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.opengl.GL43C.GL_BLEND;
 import static org.lwjgl.opengl.GL43C.GL_DEPTH_TEST;
@@ -31,7 +31,11 @@ public final class ParticleSimulatorApp {
     private final SettingsController settingsController = new SettingsController(particles, camera, ui);
 
     public static void main(String[] args) {
-        new ParticleSimulatorApp().run();
+        try {
+            new ParticleSimulatorApp().run();
+        } catch (StartupFailureException ignored) {
+            System.exit(1);
+        }
     }
 
     private void run() {
@@ -56,7 +60,6 @@ public final class ParticleSimulatorApp {
     }
 
     private void initOpenGl() {
-        GL.createCapabilities();
         glEnable(GL_PROGRAM_POINT_SIZE);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);

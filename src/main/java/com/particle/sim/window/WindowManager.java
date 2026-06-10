@@ -6,10 +6,16 @@ import java.nio.IntBuffer;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
+import com.particle.sim.system.StartupFailureException;
+import com.particle.sim.system.StartupValidationResult;
+import com.particle.sim.system.StartupValidator;
 import com.particle.sim.util.ResourceLoader;
+
+import javax.swing.JOptionPane;
 
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR;
@@ -96,7 +102,12 @@ public final class WindowManager {
 
         handle = glfwCreateWindow(width, height, title, NULL, NULL);
         if (handle == NULL) {
-            throw new IllegalStateException("Could not create the GLFW window.");
+            StartupValidationResult validation = StartupValidationResult.fail(
+                    "Unsupported graphics driver",
+                    "This application requires OpenGL 4.3+ with compute shader support.\n\n"
+                            + "Could not create a compatible OpenGL context.\n\n"
+                            + "Please update your graphics driver or use a system with a newer GPU.");
+            abortStartup(validation);
         }
 
         setWindowIcon("/assets/favicon.png");
@@ -110,6 +121,13 @@ public final class WindowManager {
         }
 
         glfwMakeContextCurrent(handle);
+        GL.createCapabilities();
+
+        StartupValidationResult validation = StartupValidator.validate();
+        if (!validation.ok) {
+            abortStartup(validation);
+        }
+
         glfwSwapInterval(0);
         glfwShowWindow(handle);
     }
@@ -262,8 +280,29 @@ public final class WindowManager {
         }
     }
 
+    private void abortStartup(StartupValidationResult validation) {
+        showStartupError(validation);
+        dispose();
+        throw new StartupFailureException(validation.message);
+    }
+
+    private void showStartupError(StartupValidationResult validation) {
+        System.err.println(validation.title + ": " + validation.message);
+        try {
+            JOptionPane.showMessageDialog(
+                    null,
+                    validation.message,
+                    validation.title,
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (RuntimeException | Error ignored) {
+        }
+    }
+
     public void dispose() {
-        glfwDestroyWindow(handle);
+        if (handle != NULL) {
+            glfwDestroyWindow(handle);
+            handle = NULL;
+        }
         glfwTerminate();
 
         var callback = glfwSetErrorCallback(null);
