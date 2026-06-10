@@ -24,14 +24,7 @@ This application takes that idea into 3D. This allows for more complex and inter
 - Density regulation
 - Distance Metrics
 - Visual effects
-
-## Built With
-
-- **Java 21** as the main programming language
-- **Maven** for building and running the project
-- **OpenGL** for computing and rendering the particles
-- **imgui-java** for the settings UI
-- **JUnit 5** for automated tests
+- Preset saving/loading
 
 ## Requirements
 
@@ -51,13 +44,20 @@ The first launch may take a little longer while Maven downloads the required lib
 
 ## Controls
 
-- **Left-click**: enter free-look camera mode
+### Moving
+- **Left-click**: enter simulation focus
 - **Right-click** or **Esc**: leave simulation focus
 - **W / A / S / D**: move through the scene
 - **Shift**: move up
 - **Ctrl**: move down
+
+### Hotkeys
 - **Space**: pause or resume the simulation
+- **Left arrow**: Move one step backward
+- **Right arrow**: Move one step forward
+- **F**: hide ui
 - **R**: reset the particles
+- **F11**: toggle fullscreen
 - **Home**: reset the camera
 
 ## Experimenting
