@@ -32,7 +32,7 @@ This application takes that idea into 3D. This allows for more complex and inter
 - Maven
 - A GPU and driver with OpenGL 4.3 support
 
-## How To Run
+## How To Run from source
 
 From the project folder, run:
 
