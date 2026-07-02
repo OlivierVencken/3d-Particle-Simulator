@@ -6,10 +6,14 @@ import imgui.ImGui;
 import imgui.type.ImBoolean;
 
 final class SimulationMenuBar {
+    private final ImBoolean showHotkeyPopup = new ImBoolean(false);
+    private final HotkeyPopup hotkeyPopup = new HotkeyPopup();
+
     void render(GpuParticleSystem particles, CameraController camera, SettingsSidebar settingsSidebar,
             ImBoolean showDebugPanel, Runnable settingsChanged, Runnable resetSettings, Runnable savePreset,
             Runnable loadPreset, Runnable exitApplication, Runnable hideUi) {
         if (!ImGui.beginMainMenuBar()) {
+            hotkeyPopup.render(showHotkeyPopup);
             return;
         }
 
@@ -17,8 +21,10 @@ final class SimulationMenuBar {
                 exitApplication);
         renderViewMenu(showDebugPanel, hideUi);
         renderThemeMenu();
+        renderInfoMenu();
 
         ImGui.endMainMenuBar();
+        hotkeyPopup.render(showHotkeyPopup);
     }
 
     private void renderSimulationMenu(GpuParticleSystem particles, CameraController camera,
@@ -68,6 +74,15 @@ final class SimulationMenuBar {
     private void renderThemeMenu() {
         if (ImGui.beginMenu("Theme")) {
             ImGui.menuItem("Dark", "", true, false);
+            ImGui.endMenu();
+        }
+    }
+
+    private void renderInfoMenu() {
+        if (ImGui.beginMenu("Info")) {
+            if (ImGui.menuItem("Hotkeys")) {
+                showHotkeyPopup.set(true);
+            }
             ImGui.endMenu();
         }
     }
