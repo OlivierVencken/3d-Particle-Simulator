@@ -18,6 +18,11 @@ class ShaderResourceTest {
         assertShaderContains("/shaders/fullscreen.vert", "out vec2 vUv;", "void main()");
         assertShaderContains("/shaders/blur.frag", "uniform float uRadius;", "uniform float uFalloff;", "void main()");
         assertShaderContains("/shaders/bloom_composite.frag", "uniform sampler2D uBloom;", "void main()");
+        assertShaderContains("/shaders/trail.vert", "layout(std430, binding = 4) readonly buffer TrailHistory",
+                "uniform float uTrailThickness;", "void main()");
+        assertShaderContains("/shaders/trail.geom", "layout(lines) in;", "layout(triangle_strip, max_vertices = 4) out;",
+                "void main()");
+        assertShaderContains("/shaders/trail.frag", "out vec4 fragColor;", "void main()");
     }
 
     private static void assertShaderContains(String path, String... snippets) throws IOException {

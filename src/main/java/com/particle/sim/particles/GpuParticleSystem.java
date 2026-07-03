@@ -11,6 +11,7 @@ public final class GpuParticleSystem {
     public static final int MAX_SPATIAL_MAP_SIZE = SpatialGridSizing.MAX_SPATIAL_MAP_SIZE;
 
     private final ParticleBuffers particleBuffers = new ParticleBuffers();
+    private final TrailHistoryBuffers trailHistoryBuffers = new TrailHistoryBuffers();
     private final SpatialGridBuffers spatialGridBuffers = new SpatialGridBuffers();
     private final ParticleRenderer renderer = new ParticleRenderer();
     private final ParticleCompute compute = new ParticleCompute();
@@ -40,6 +41,7 @@ public final class GpuParticleSystem {
             return;
         }
 
+        trailHistoryBuffers.clear();
         rebuildSpatialGrid();
     }
 
@@ -67,6 +69,10 @@ public final class GpuParticleSystem {
 
         compute.setUniforms(this, deltaTime, 1);
         compute.dispatch(particleCount(), WORK_GROUP_SIZE, true);
+
+        if (effectMode() == EffectMode.TRAILS) {
+            trailHistoryBuffers.capture(particleBuffers, particleCount(), trailLength());
+        }
     }
 
     private void rebuildSpatialGrid() {
@@ -86,11 +92,12 @@ public final class GpuParticleSystem {
     public void render(int width, int height, float[] viewMatrix) {
         renderer.render(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount(), pointSize(),
                 fixedParticleScreenSize(), effectMode(), colorMode().ordinal(), groupCount(), maxVelocity(), bounds(),
-                interactionRange(), spatialMapSize(), glowSettings());
+                interactionRange(), spatialMapSize(), glowSettings(), trailSettings(), trailHistoryBuffers);
     }
 
     public void dispose() {
         particleBuffers.dispose();
+        trailHistoryBuffers.dispose();
         spatialGridBuffers.dispose();
         compute.dispose();
         renderer.dispose();
@@ -121,6 +128,8 @@ public final class GpuParticleSystem {
         glowStrength(config.glowStrength());
         glowRadius(config.glowRadius());
         glowFalloff(config.glowFalloff());
+        trailLength(config.trailLength());
+        trailThickness(config.trailThickness());
         bounds(config.bounds());
         forceFactor(config.forceFactor());
         velocityDamping(config.velocityDamping());
@@ -181,6 +190,7 @@ public final class GpuParticleSystem {
         int oldParticleCount = particleCount();
         int newParticleCount = Math.max(0, Math.min(SimulationDefaults.MAX_PARTICLE_COUNT, requestedParticleCount));
         particleBuffers.resize(oldParticleCount, newParticleCount, preserveExisting, config, particleRandom);
+        trailHistoryBuffers.clear();
         config.particleCount(newParticleCount);
     }
 
@@ -242,6 +252,26 @@ public final class GpuParticleSystem {
 
     public void glowFalloff(float glowFalloff) {
         config.glowFalloff(glowFalloff);
+    }
+
+    public TrailSettings trailSettings() {
+        return config.trailSettings();
+    }
+
+    public int trailLength() {
+        return config.trailLength();
+    }
+
+    public void trailLength(int trailLength) {
+        config.trailLength(trailLength);
+    }
+
+    public float trailThickness() {
+        return config.trailThickness();
+    }
+
+    public void trailThickness(float trailThickness) {
+        config.trailThickness(trailThickness);
     }
 
     public float forceFactor() {

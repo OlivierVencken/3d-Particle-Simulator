@@ -88,6 +88,13 @@ final class ParticleBuffers {
         snapshots.push(new Snapshot(snapshotPositionSsbo, snapshotVelocitySsbo));
     }
 
+    void copyPositionsTo(int targetSsbo, long targetByteOffset, int particleCount) {
+        long byteCount = particleBufferBytes(particleCount);
+        glBindBuffer(GL_COPY_READ_BUFFER, positionSsbo);
+        glBindBuffer(GL_COPY_WRITE_BUFFER, targetSsbo);
+        glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, targetByteOffset, byteCount);
+    }
+
     boolean restoreSnapshot() {
         if (positionSsbo == 0 || velocitySsbo == 0 || snapshots.isEmpty()) {
             return false;

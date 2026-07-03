@@ -49,6 +49,8 @@ class AppSettingsTest {
         particles.glowStrength(3.5f);
         particles.glowRadius(6.25f);
         particles.glowFalloff(1.2f);
+        particles.trailLength(20);
+        particles.trailThickness(2.1f);
         particles.spawnMode(SpawnMode.SPIRAL);
         particles.zeroAttractionMatrix();
         particles.attraction(2, 3, 0.75f);
@@ -87,6 +89,8 @@ class AppSettingsTest {
         assertEquals(3.5f, loadedParticles.glowStrength(), EPSILON);
         assertEquals(6.25f, loadedParticles.glowRadius(), EPSILON);
         assertEquals(1.2f, loadedParticles.glowFalloff(), EPSILON);
+        assertEquals(20, loadedParticles.trailLength());
+        assertEquals(2.1f, loadedParticles.trailThickness(), EPSILON);
         assertEquals(SpawnMode.SPIRAL, loadedParticles.spawnMode());
         assertEquals(0.75f, loadedParticles.attraction(2, 3), EPSILON);
         assertEquals(0.004f, loadedCamera.getSensitivity(), EPSILON);
@@ -112,6 +116,8 @@ class AppSettingsTest {
         particles.glowStrength(3.5f);
         particles.glowRadius(6.25f);
         particles.glowFalloff(1.2f);
+        particles.trailLength(20);
+        particles.trailThickness(2.1f);
         particles.groupCount(12);
         particles.spawnMode(SpawnMode.GRID);
         particles.toroidalWrap(true);
@@ -136,6 +142,8 @@ class AppSettingsTest {
         assertEquals(SimulationDefaults.GLOW_STRENGTH, particles.glowStrength(), EPSILON);
         assertEquals(SimulationDefaults.GLOW_RADIUS, particles.glowRadius(), EPSILON);
         assertEquals(SimulationDefaults.GLOW_FALLOFF, particles.glowFalloff(), EPSILON);
+        assertEquals(SimulationDefaults.TRAIL_LENGTH, particles.trailLength());
+        assertEquals(SimulationDefaults.TRAIL_THICKNESS, particles.trailThickness(), EPSILON);
         assertEquals(SimulationDefaults.GROUP_COUNT, particles.groupCount());
         assertEquals(SimulationDefaults.SPAWN_MODE, particles.spawnMode());
         assertFalse(particles.toroidalWrap());

@@ -66,6 +66,8 @@ public final class AppSettings {
         particleConfig.glowStrength(floatProperty(properties, "glowStrength", particleConfig.glowStrength()));
         particleConfig.glowRadius(floatProperty(properties, "glowRadius", particleConfig.glowRadius()));
         particleConfig.glowFalloff(floatProperty(properties, "glowFalloff", particleConfig.glowFalloff()));
+        particleConfig.trailLength(intProperty(properties, "trailLength", particleConfig.trailLength()));
+        particleConfig.trailThickness(floatProperty(properties, "trailThickness", particleConfig.trailThickness()));
         particleConfig.bounds(floatProperty(properties, "bounds", particleConfig.bounds()));
         particleConfig.forceFactor(floatProperty(properties, "forceFactor", particleConfig.forceFactor()));
         particleConfig.velocityDamping(floatProperty(properties, "velocityDamping", particleConfig.velocityDamping()));
@@ -139,6 +141,8 @@ public final class AppSettings {
         properties.setProperty("glowStrength", Float.toString(particleConfig.glowStrength()));
         properties.setProperty("glowRadius", Float.toString(particleConfig.glowRadius()));
         properties.setProperty("glowFalloff", Float.toString(particleConfig.glowFalloff()));
+        properties.setProperty("trailLength", Integer.toString(particleConfig.trailLength()));
+        properties.setProperty("trailThickness", Float.toString(particleConfig.trailThickness()));
         properties.setProperty("bounds", Float.toString(particleConfig.bounds()));
         properties.setProperty("forceFactor", Float.toString(particleConfig.forceFactor()));
         properties.setProperty("velocityDamping", Float.toString(particleConfig.velocityDamping()));

@@ -200,6 +200,8 @@ final class SettingsSidebar {
 
         if (particles.effectMode() == EffectMode.GLOW) {
             renderGlowControls(particles, settingsChanged);
+        } else if (particles.effectMode() == EffectMode.TRAILS) {
+            renderTrailControls(particles, settingsChanged);
         }
     }
 
@@ -212,6 +214,13 @@ final class SettingsSidebar {
                 12.0f, 1, particles::glowRadius, settingsChanged);
         UiControls.settingSlider("Falloff", particles.glowFalloff(), 0.05f,
                 3.0f, 2, particles::glowFalloff, settingsChanged);
+    }
+
+    private void renderTrailControls(GpuParticleSystem particles, Runnable settingsChanged) {
+        UiControls.settingIntSlider("Trail length", particles.trailLength(), SimulationDefaults.MIN_TRAIL_LENGTH,
+                SimulationDefaults.MAX_TRAIL_LENGTH, 0, particles::trailLength, settingsChanged);
+        UiControls.settingSlider("Thickness", particles.trailThickness(), SimulationDefaults.MIN_TRAIL_THICKNESS,
+                particles.pointSize(), 1, particles::trailThickness, settingsChanged);
     }
 
     private void renderSpawnControls(GpuParticleSystem particles, Runnable settingsChanged) {

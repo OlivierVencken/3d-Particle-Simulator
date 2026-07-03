@@ -23,6 +23,11 @@ public final class SimulationDefaults {
     public static final float GLOW_STRENGTH = 1.8f;
     public static final float GLOW_RADIUS = 3.6f;
     public static final float GLOW_FALLOFF = 0.90f;
+    public static final int TRAIL_LENGTH = 14;
+    public static final int MIN_TRAIL_LENGTH = 2;
+    public static final int MAX_TRAIL_LENGTH = 256;
+    public static final float TRAIL_THICKNESS = 1.2f;
+    public static final float MIN_TRAIL_THICKNESS = 0.1f;
     public static final float POINT_SIZE_REFERENCE_DISTANCE = 16.0f;
     public static final float BOUNDS = 4.0f;
     public static final float FORCE_FACTOR = 1.0f;

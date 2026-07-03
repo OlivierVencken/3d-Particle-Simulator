@@ -13,6 +13,8 @@ public final class ParticleSimulationConfig {
     private float glowStrength = SimulationDefaults.GLOW_STRENGTH;
     private float glowRadius = SimulationDefaults.GLOW_RADIUS;
     private float glowFalloff = SimulationDefaults.GLOW_FALLOFF;
+    private int trailLength = SimulationDefaults.TRAIL_LENGTH;
+    private float trailThickness = SimulationDefaults.TRAIL_THICKNESS;
     private float bounds = SimulationDefaults.BOUNDS;
     private float forceFactor = SimulationDefaults.FORCE_FACTOR;
     private float velocityDamping = SimulationDefaults.VELOCITY_DAMPING;
@@ -48,6 +50,8 @@ public final class ParticleSimulationConfig {
         glowStrength(source.glowStrength);
         glowRadius(source.glowRadius);
         glowFalloff(source.glowFalloff);
+        trailLength(source.trailLength);
+        trailThickness(source.trailThickness);
         bounds(source.bounds);
         forceFactor(source.forceFactor);
         velocityDamping(source.velocityDamping);
@@ -78,6 +82,7 @@ public final class ParticleSimulationConfig {
 
     public void pointSize(float pointSize) {
         this.pointSize = pointSize;
+        trailThickness(trailThickness);
     }
 
     public boolean fixedParticleScreenSize() {
@@ -131,6 +136,27 @@ public final class ParticleSimulationConfig {
 
     public void glowFalloff(float glowFalloff) {
         this.glowFalloff = glowFalloff;
+    }
+
+    public TrailSettings trailSettings() {
+        return new TrailSettings(trailLength, trailThickness);
+    }
+
+    public int trailLength() {
+        return trailLength;
+    }
+
+    public void trailLength(int trailLength) {
+        this.trailLength = Math.max(SimulationDefaults.MIN_TRAIL_LENGTH,
+                Math.min(SimulationDefaults.MAX_TRAIL_LENGTH, trailLength));
+    }
+
+    public float trailThickness() {
+        return trailThickness;
+    }
+
+    public void trailThickness(float trailThickness) {
+        this.trailThickness = clamp(trailThickness, SimulationDefaults.MIN_TRAIL_THICKNESS, pointSize);
     }
 
     public float bounds() {
@@ -264,6 +290,8 @@ public final class ParticleSimulationConfig {
         glowStrength = clamp(glowStrength, 0.0f, 6.0f);
         glowRadius = clamp(glowRadius, 0.5f, 12.0f);
         glowFalloff = clamp(glowFalloff, 0.05f, 3.0f);
+        trailLength(trailLength);
+        trailThickness(trailThickness);
         bounds = clamp(bounds, 2.0f, 10.0f);
         forceFactor = clamp(forceFactor, 0.0f, 10.0f);
         velocityDamping = clamp(velocityDamping, 0.85f, 1.0f);

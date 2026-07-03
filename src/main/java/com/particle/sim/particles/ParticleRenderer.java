@@ -14,6 +14,7 @@ import static org.lwjgl.opengl.GL43C.GL_FLOAT;
 import static org.lwjgl.opengl.GL43C.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL43C.GL_FRAMEBUFFER_COMPLETE;
 import static org.lwjgl.opengl.GL43C.GL_LINEAR;
+import static org.lwjgl.opengl.GL43C.GL_LINES;
 import static org.lwjgl.opengl.GL43C.GL_POINTS;
 import static org.lwjgl.opengl.GL43C.GL_RGBA;
 import static org.lwjgl.opengl.GL43C.GL_RGBA16F;
@@ -58,6 +59,7 @@ import static org.lwjgl.opengl.GL43C.glViewport;
 
 public final class ParticleRenderer {
     private int renderProgram;
+    private int trailProgram;
     private int blurProgram;
     private int glowCompositeProgram;
 
@@ -77,6 +79,26 @@ public final class ParticleRenderer {
     private int uGridSizeLoc;
     private int uMapSizeLoc;
 
+    private int uTrailViewProjectionLoc;
+    private int uTrailViewLoc;
+    private int uTrailViewportLoc;
+    private int uTrailPointSizeLoc;
+    private int uTrailFixedParticleScreenSizeLoc;
+    private int uTrailPointSizeReferenceDistanceLoc;
+    private int uTrailThicknessLoc;
+    private int uTrailParticleCountLoc;
+    private int uTrailParticleCapacityLoc;
+    private int uTrailSampleCapacityLoc;
+    private int uTrailNewestSampleIndexLoc;
+    private int uTrailSampleCountLoc;
+    private int uTrailColorModeLoc;
+    private int uTrailGroupCountLoc;
+    private int uTrailMaxVelocityLoc;
+    private int uTrailBoundsLoc;
+    private int uTrailInteractionRangeLoc;
+    private int uTrailGridSizeLoc;
+    private int uTrailMapSizeLoc;
+
     private int uBlurTextureLoc;
     private int uBlurDirectionLoc;
     private int uBlurRadiusLoc;
@@ -94,6 +116,7 @@ public final class ParticleRenderer {
 
     public void init() {
         renderProgram = ShaderProgram.render("/shaders/particle.vert", "/shaders/particle.frag");
+        trailProgram = ShaderProgram.render("/shaders/trail.vert", "/shaders/trail.geom", "/shaders/trail.frag");
         blurProgram = ShaderProgram.render("/shaders/fullscreen.vert", "/shaders/blur.frag");
         glowCompositeProgram = ShaderProgram.render("/shaders/fullscreen.vert", "/shaders/bloom_composite.frag");
 
@@ -113,6 +136,26 @@ public final class ParticleRenderer {
         uGridSizeLoc = glGetUniformLocation(renderProgram, "uGridSize");
         uMapSizeLoc = glGetUniformLocation(renderProgram, "uMapSize");
 
+        uTrailViewProjectionLoc = glGetUniformLocation(trailProgram, "uViewProjection");
+        uTrailViewLoc = glGetUniformLocation(trailProgram, "uView");
+        uTrailViewportLoc = glGetUniformLocation(trailProgram, "uViewport");
+        uTrailPointSizeLoc = glGetUniformLocation(trailProgram, "uPointSize");
+        uTrailFixedParticleScreenSizeLoc = glGetUniformLocation(trailProgram, "uFixedParticleScreenSize");
+        uTrailPointSizeReferenceDistanceLoc = glGetUniformLocation(trailProgram, "uPointSizeReferenceDistance");
+        uTrailThicknessLoc = glGetUniformLocation(trailProgram, "uTrailThickness");
+        uTrailParticleCountLoc = glGetUniformLocation(trailProgram, "uParticleCount");
+        uTrailParticleCapacityLoc = glGetUniformLocation(trailProgram, "uParticleCapacity");
+        uTrailSampleCapacityLoc = glGetUniformLocation(trailProgram, "uSampleCapacity");
+        uTrailNewestSampleIndexLoc = glGetUniformLocation(trailProgram, "uNewestSampleIndex");
+        uTrailSampleCountLoc = glGetUniformLocation(trailProgram, "uSampleCount");
+        uTrailColorModeLoc = glGetUniformLocation(trailProgram, "uColorMode");
+        uTrailGroupCountLoc = glGetUniformLocation(trailProgram, "uGroupCount");
+        uTrailMaxVelocityLoc = glGetUniformLocation(trailProgram, "uMaxVelocity");
+        uTrailBoundsLoc = glGetUniformLocation(trailProgram, "uBounds");
+        uTrailInteractionRangeLoc = glGetUniformLocation(trailProgram, "uInteractionRange");
+        uTrailGridSizeLoc = glGetUniformLocation(trailProgram, "uGridSize");
+        uTrailMapSizeLoc = glGetUniformLocation(trailProgram, "uMapSize");
+
         uBlurTextureLoc = glGetUniformLocation(blurProgram, "uTexture");
         uBlurDirectionLoc = glGetUniformLocation(blurProgram, "uDirection");
         uBlurRadiusLoc = glGetUniformLocation(blurProgram, "uRadius");
@@ -125,7 +168,8 @@ public final class ParticleRenderer {
     public void render(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
             SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, boolean fixedParticleScreenSize,
             EffectMode effectMode, int colorMode, int groupCount, float maxVelocity, float bounds,
-            float interactionRange, int spatialMapSize, GlowSettings glowSettings) {
+            float interactionRange, int spatialMapSize, GlowSettings glowSettings, TrailSettings trailSettings,
+            TrailHistoryBuffers trailHistoryBuffers) {
         if (particleCount == 0) {
             return;
         }
@@ -135,6 +179,12 @@ public final class ParticleRenderer {
                     fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange,
                     spatialMapSize, glowSettings);
             return;
+        }
+
+        if (effectMode == EffectMode.TRAILS) {
+            renderTrails(width, height, viewMatrix, particleBuffers, spatialGridBuffers, trailHistoryBuffers,
+                    particleCount, pointSize, fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds,
+                    interactionRange, spatialMapSize, trailSettings);
         }
 
         renderParticles(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
@@ -229,6 +279,47 @@ public final class ParticleRenderer {
         glDrawArrays(GL_POINTS, 0, particleCount);
     }
 
+    private void renderTrails(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
+            SpatialGridBuffers spatialGridBuffers, TrailHistoryBuffers trailHistoryBuffers, int particleCount,
+            float pointSize, boolean fixedParticleScreenSize, int colorMode, int groupCount, float maxVelocity,
+            float bounds, float interactionRange, int spatialMapSize, TrailSettings trailSettings) {
+        int activeSamples = Math.min(trailSettings.length(), trailHistoryBuffers.sampleCount());
+        if (activeSamples < 2 || trailHistoryBuffers.historySsbo() == 0) {
+            return;
+        }
+
+        glUseProgram(trailProgram);
+        glBindVertexArray(particleVao);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particleBuffers.positionSsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, particleBuffers.velocitySsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, spatialGridBuffers.countsSsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, spatialGridBuffers.keysSsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, trailHistoryBuffers.historySsbo());
+
+        glUniformMatrix4fv(uTrailViewProjectionLoc, false, viewProjection(width, height, viewMatrix));
+        glUniformMatrix4fv(uTrailViewLoc, false, viewMatrix);
+        glUniform2f(uTrailViewportLoc, width, height);
+        glUniform1f(uTrailPointSizeLoc, pointSize);
+        glUniform1i(uTrailFixedParticleScreenSizeLoc, fixedParticleScreenSize ? 1 : 0);
+        glUniform1f(uTrailPointSizeReferenceDistanceLoc, SimulationDefaults.POINT_SIZE_REFERENCE_DISTANCE);
+        glUniform1f(uTrailThicknessLoc, Math.min(trailSettings.thickness(), pointSize));
+        glUniform1i(uTrailParticleCountLoc, particleCount);
+        glUniform1i(uTrailParticleCapacityLoc, trailHistoryBuffers.particleCapacity());
+        glUniform1i(uTrailSampleCapacityLoc, trailHistoryBuffers.sampleCapacity());
+        glUniform1i(uTrailNewestSampleIndexLoc, trailHistoryBuffers.newestSampleIndex());
+        glUniform1i(uTrailSampleCountLoc, activeSamples);
+        glUniform1i(uTrailColorModeLoc, colorMode);
+        glUniform1i(uTrailGroupCountLoc, groupCount);
+        glUniform1f(uTrailMaxVelocityLoc, maxVelocity);
+        glUniform1f(uTrailBoundsLoc, bounds);
+        glUniform1f(uTrailInteractionRangeLoc, interactionRange);
+        glUniform1i(uTrailGridSizeLoc, SpatialGridSizing.gridSize(bounds, interactionRange));
+        glUniform1i(uTrailMapSizeLoc, spatialMapSize);
+
+        int vertexCount = particleCount * (activeSamples - 1) * 2;
+        glDrawArrays(GL_LINES, 0, vertexCount);
+    }
+
     private void blurTo(int targetFbo, int sourceTexture, float directionX, float directionY,
             GlowSettings glowSettings) {
         glBindFramebuffer(GL_FRAMEBUFFER, targetFbo);
@@ -310,6 +401,7 @@ public final class ParticleRenderer {
         glDeleteVertexArrays(particleVao);
         glDeleteVertexArrays(fullscreenVao);
         glDeleteProgram(renderProgram);
+        glDeleteProgram(trailProgram);
         glDeleteProgram(blurProgram);
         glDeleteProgram(glowCompositeProgram);
     }

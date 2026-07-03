@@ -6,6 +6,7 @@ import static org.lwjgl.opengl.GL43C.GL_COMPILE_STATUS;
 import static org.lwjgl.opengl.GL43C.GL_COMPUTE_SHADER;
 import static org.lwjgl.opengl.GL43C.GL_FALSE;
 import static org.lwjgl.opengl.GL43C.GL_FRAGMENT_SHADER;
+import static org.lwjgl.opengl.GL43C.GL_GEOMETRY_SHADER;
 import static org.lwjgl.opengl.GL43C.GL_LINK_STATUS;
 import static org.lwjgl.opengl.GL43C.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL43C.glAttachShader;
@@ -34,6 +35,13 @@ public final class ShaderProgram {
         int vertexShader = compile(GL_VERTEX_SHADER, ResourceLoader.loadString(vertexResource));
         int fragmentShader = compile(GL_FRAGMENT_SHADER, ResourceLoader.loadString(fragmentResource));
         return link(vertexShader, fragmentShader);
+    }
+
+    public static int render(String vertexResource, String geometryResource, String fragmentResource) {
+        int vertexShader = compile(GL_VERTEX_SHADER, ResourceLoader.loadString(vertexResource));
+        int geometryShader = compile(GL_GEOMETRY_SHADER, ResourceLoader.loadString(geometryResource));
+        int fragmentShader = compile(GL_FRAGMENT_SHADER, ResourceLoader.loadString(fragmentResource));
+        return link(vertexShader, geometryShader, fragmentShader);
     }
 
     private static int link(int... shaders) {

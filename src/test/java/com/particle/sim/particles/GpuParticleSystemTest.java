@@ -28,6 +28,8 @@ class GpuParticleSystemTest {
         assertEquals(SimulationDefaults.GLOW_STRENGTH, system.glowStrength(), EPSILON);
         assertEquals(SimulationDefaults.GLOW_RADIUS, system.glowRadius(), EPSILON);
         assertEquals(SimulationDefaults.GLOW_FALLOFF, system.glowFalloff(), EPSILON);
+        assertEquals(SimulationDefaults.TRAIL_LENGTH, system.trailLength());
+        assertEquals(SimulationDefaults.TRAIL_THICKNESS, system.trailThickness(), EPSILON);
         assertFalse(system.toroidalWrap());
         assertFalse(system.fixedParticleScreenSize());
         assertFalse(system.densityRegulationEnabled());
@@ -66,6 +68,8 @@ class GpuParticleSystemTest {
         system.glowStrength(3.5f);
         system.glowRadius(6.25f);
         system.glowFalloff(1.2f);
+        system.trailLength(20);
+        system.trailThickness(2.1f);
         system.spawnMode(SpawnMode.CLUSTERS);
         system.distanceMetric(DistanceMetric.MANHATTAN);
         system.toroidalWrap(true);
@@ -87,11 +91,27 @@ class GpuParticleSystemTest {
         assertEquals(3.5f, system.glowStrength(), EPSILON);
         assertEquals(6.25f, system.glowRadius(), EPSILON);
         assertEquals(1.2f, system.glowFalloff(), EPSILON);
+        assertEquals(20, system.trailLength());
+        assertEquals(2.1f, system.trailThickness(), EPSILON);
         assertEquals(SpawnMode.CLUSTERS, system.spawnMode());
         assertEquals(DistanceMetric.MANHATTAN, system.distanceMetric());
         assertTrue(system.toroidalWrap());
         assertTrue(system.densityRegulationEnabled());
         assertEquals(200.0f, system.densityLimit(), EPSILON);
+    }
+
+    @Test
+    void trailThicknessCannotExceedParticleSize() {
+        GpuParticleSystem system = new GpuParticleSystem();
+
+        system.pointSize(3.0f);
+        system.trailThickness(8.0f);
+
+        assertEquals(3.0f, system.trailThickness(), EPSILON);
+
+        system.pointSize(1.5f);
+
+        assertEquals(1.5f, system.trailThickness(), EPSILON);
     }
 
     @Test
