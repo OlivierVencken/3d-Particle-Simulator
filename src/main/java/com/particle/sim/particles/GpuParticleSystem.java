@@ -4,6 +4,7 @@ import com.particle.sim.settings.SimulationDefaults;
 
 import imgui.ImVec4;
 
+import java.util.Set;
 import java.util.Random;
 
 public final class GpuParticleSystem {
@@ -70,7 +71,7 @@ public final class GpuParticleSystem {
         compute.setUniforms(this, deltaTime, 1);
         compute.dispatch(particleCount(), WORK_GROUP_SIZE, true);
 
-        if (effectMode() == EffectMode.TRAILS) {
+        if (effectEnabled(EffectMode.TRAILS)) {
             trailHistoryBuffers.capture(particleBuffers, particleCount(), trailLength());
         }
     }
@@ -91,8 +92,9 @@ public final class GpuParticleSystem {
 
     public void render(int width, int height, float[] viewMatrix) {
         renderer.render(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount(), pointSize(),
-                fixedParticleScreenSize(), effectMode(), colorMode().ordinal(), groupCount(), maxVelocity(), bounds(),
-                interactionRange(), spatialMapSize(), glowSettings(), trailSettings(), trailHistoryBuffers);
+                fixedParticleScreenSize(), effectEnabled(EffectMode.GLOW), effectEnabled(EffectMode.TRAILS),
+                colorMode().ordinal(), groupCount(), maxVelocity(), bounds(), interactionRange(), spatialMapSize(),
+                glowSettings(), trailSettings(), trailHistoryBuffers);
     }
 
     public void dispose() {
@@ -123,7 +125,7 @@ public final class GpuParticleSystem {
         setParticleCount(config.particleCount());
         pointSize(config.pointSize());
         fixedParticleScreenSize(config.fixedParticleScreenSize());
-        effectMode(config.effectMode());
+        effectModes(config.effectModes());
         glowBlurPasses(config.glowBlurPasses());
         glowStrength(config.glowStrength());
         glowRadius(config.glowRadius());
@@ -210,12 +212,20 @@ public final class GpuParticleSystem {
         config.fixedParticleScreenSize(fixedParticleScreenSize);
     }
 
-    public EffectMode effectMode() {
-        return config.effectMode();
+    public Set<EffectMode> effectModes() {
+        return config.effectModes();
     }
 
-    public void effectMode(EffectMode effectMode) {
-        config.effectMode(effectMode);
+    public void effectModes(Set<EffectMode> effectModes) {
+        config.effectModes(effectModes);
+    }
+
+    public boolean effectEnabled(EffectMode effectMode) {
+        return config.effectEnabled(effectMode);
+    }
+
+    public void effectEnabled(EffectMode effectMode, boolean enabled) {
+        config.effectEnabled(effectMode, enabled);
     }
 
     public GlowSettings glowSettings() {

@@ -14,8 +14,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class AppSettings {
     public static final int VERSION = 1;
@@ -61,7 +64,7 @@ public final class AppSettings {
         particleConfig.pointSize(floatProperty(properties, "pointSize", particleConfig.pointSize()));
         particleConfig.fixedParticleScreenSize(booleanProperty(properties, "fixedParticleScreenSize",
                 particleConfig.fixedParticleScreenSize()));
-        particleConfig.effectMode(enumProperty(properties, "effectMode", EffectMode.class, particleConfig.effectMode()));
+        particleConfig.effectModes(effectModesProperty(properties.getProperty("effectModes")));
         particleConfig.glowBlurPasses(intProperty(properties, "glowBlurPasses", particleConfig.glowBlurPasses()));
         particleConfig.glowStrength(floatProperty(properties, "glowStrength", particleConfig.glowStrength()));
         particleConfig.glowRadius(floatProperty(properties, "glowRadius", particleConfig.glowRadius()));
@@ -136,7 +139,7 @@ public final class AppSettings {
         properties.setProperty("particleCount", Integer.toString(particleConfig.particleCount()));
         properties.setProperty("pointSize", Float.toString(particleConfig.pointSize()));
         properties.setProperty("fixedParticleScreenSize", Boolean.toString(particleConfig.fixedParticleScreenSize()));
-        properties.setProperty("effectMode", particleConfig.effectMode().name());
+        properties.setProperty("effectModes", effectModesString(particleConfig.effectModes()));
         properties.setProperty("glowBlurPasses", Integer.toString(particleConfig.glowBlurPasses()));
         properties.setProperty("glowStrength", Float.toString(particleConfig.glowStrength()));
         properties.setProperty("glowRadius", Float.toString(particleConfig.glowRadius()));
@@ -263,6 +266,29 @@ public final class AppSettings {
         } catch (IllegalArgumentException e) {
             return fallback;
         }
+    }
+
+    private static Set<EffectMode> effectModesProperty(String value) {
+        EnumSet<EffectMode> effectModes = EnumSet.noneOf(EffectMode.class);
+        if (value == null || value.isBlank()) {
+            return effectModes;
+        }
+
+        for (String token : value.split(",")) {
+            try {
+                EffectMode effectMode = EffectMode.valueOf(token.trim());
+                effectModes.add(effectMode);
+            } catch (IllegalArgumentException e) {
+                // Ignore unknown future effect names so older builds can still load the rest of the preset.
+            }
+        }
+        return effectModes;
+    }
+
+    private static String effectModesString(Set<EffectMode> effectModes) {
+        return effectModes.stream()
+                .map(EffectMode::name)
+                .collect(Collectors.joining(","));
     }
 
     private static float clamp(float value, float min, float max) {

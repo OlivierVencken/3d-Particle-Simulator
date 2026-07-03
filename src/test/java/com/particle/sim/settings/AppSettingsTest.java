@@ -14,6 +14,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppSettingsTest {
     private static final float EPSILON = 0.0001f;
@@ -44,7 +45,8 @@ class AppSettingsTest {
         particles.distanceMetric(DistanceMetric.MANHATTAN);
         particles.groupCount(8);
         particles.colorMode(ColorMode.DENSITY);
-        particles.effectMode(EffectMode.GLOW);
+        particles.effectEnabled(EffectMode.GLOW, true);
+        particles.effectEnabled(EffectMode.TRAILS, true);
         particles.glowBlurPasses(24);
         particles.glowStrength(3.5f);
         particles.glowRadius(6.25f);
@@ -84,7 +86,8 @@ class AppSettingsTest {
         assertEquals(DistanceMetric.MANHATTAN, loadedParticles.distanceMetric());
         assertEquals(8, loadedParticles.groupCount());
         assertEquals(ColorMode.DENSITY, loadedParticles.colorMode());
-        assertEquals(EffectMode.GLOW, loadedParticles.effectMode());
+        assertTrue(loadedParticles.effectEnabled(EffectMode.GLOW));
+        assertTrue(loadedParticles.effectEnabled(EffectMode.TRAILS));
         assertEquals(24, loadedParticles.glowBlurPasses());
         assertEquals(3.5f, loadedParticles.glowStrength(), EPSILON);
         assertEquals(6.25f, loadedParticles.glowRadius(), EPSILON);
@@ -111,7 +114,7 @@ class AppSettingsTest {
         particles.pointSize(8.0f);
         particles.fixedParticleScreenSize(true);
         particles.colorMode(ColorMode.DENSITY);
-        particles.effectMode(EffectMode.GLOW);
+        particles.effectEnabled(EffectMode.GLOW, true);
         particles.glowBlurPasses(24);
         particles.glowStrength(3.5f);
         particles.glowRadius(6.25f);
@@ -137,7 +140,9 @@ class AppSettingsTest {
         assertEquals(SimulationDefaults.POINT_SIZE, particles.pointSize(), EPSILON);
         assertFalse(particles.fixedParticleScreenSize());
         assertEquals(SimulationDefaults.COLOR_MODE, particles.colorMode());
-        assertEquals(SimulationDefaults.EFFECT_MODE, particles.effectMode());
+        assertTrue(particles.effectModes().isEmpty());
+        assertFalse(particles.effectEnabled(EffectMode.GLOW));
+        assertFalse(particles.effectEnabled(EffectMode.TRAILS));
         assertEquals(SimulationDefaults.GLOW_BLUR_PASSES, particles.glowBlurPasses());
         assertEquals(SimulationDefaults.GLOW_STRENGTH, particles.glowStrength(), EPSILON);
         assertEquals(SimulationDefaults.GLOW_RADIUS, particles.glowRadius(), EPSILON);

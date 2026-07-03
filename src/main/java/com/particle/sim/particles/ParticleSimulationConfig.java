@@ -4,11 +4,14 @@ import com.particle.sim.settings.SimulationDefaults;
 
 import imgui.ImVec4;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 public final class ParticleSimulationConfig {
     private int particleCount = SimulationDefaults.PARTICLE_COUNT;
     private float pointSize = SimulationDefaults.POINT_SIZE;
     private boolean fixedParticleScreenSize = SimulationDefaults.FIXED_PARTICLE_SCREEN_SIZE;
-    private EffectMode effectMode = SimulationDefaults.EFFECT_MODE;
+    private EnumSet<EffectMode> effectModes = EnumSet.noneOf(EffectMode.class);
     private int glowBlurPasses = SimulationDefaults.GLOW_BLUR_PASSES;
     private float glowStrength = SimulationDefaults.GLOW_STRENGTH;
     private float glowRadius = SimulationDefaults.GLOW_RADIUS;
@@ -45,7 +48,7 @@ public final class ParticleSimulationConfig {
         particleCount(source.particleCount);
         pointSize(source.pointSize);
         fixedParticleScreenSize(source.fixedParticleScreenSize);
-        effectMode(source.effectMode);
+        effectModes(source.effectModes());
         glowBlurPasses(source.glowBlurPasses);
         glowStrength(source.glowStrength);
         glowRadius(source.glowRadius);
@@ -93,12 +96,38 @@ public final class ParticleSimulationConfig {
         this.fixedParticleScreenSize = fixedParticleScreenSize;
     }
 
-    public EffectMode effectMode() {
-        return effectMode;
+    public Set<EffectMode> effectModes() {
+        return effectModes.isEmpty() ? EnumSet.noneOf(EffectMode.class) : EnumSet.copyOf(effectModes);
     }
 
-    public void effectMode(EffectMode effectMode) {
-        this.effectMode = effectMode == null ? SimulationDefaults.EFFECT_MODE : effectMode;
+    public void effectModes(Set<EffectMode> effectModes) {
+        EnumSet<EffectMode> updatedEffectModes = EnumSet.noneOf(EffectMode.class);
+        if (effectModes == null) {
+            this.effectModes = updatedEffectModes;
+            return;
+        }
+        for (EffectMode effectMode : effectModes) {
+            if (effectMode != null) {
+                updatedEffectModes.add(effectMode);
+            }
+        }
+        this.effectModes = updatedEffectModes;
+    }
+
+    public boolean effectEnabled(EffectMode effectMode) {
+        return effectMode != null && effectModes.contains(effectMode);
+    }
+
+    public void effectEnabled(EffectMode effectMode, boolean enabled) {
+        if (effectMode == null) {
+            return;
+        }
+
+        if (enabled) {
+            effectModes.add(effectMode);
+        } else {
+            effectModes.remove(effectMode);
+        }
     }
 
     public GlowSettings glowSettings() {
@@ -285,6 +314,7 @@ public final class ParticleSimulationConfig {
 
     public void sanitize() {
         particleCount(particleCount);
+        effectModes(effectModes);
         pointSize = clamp(pointSize, 1.0f, 8.0f);
         glowBlurPasses(glowBlurPasses);
         glowStrength = clamp(glowStrength, 0.0f, 6.0f);

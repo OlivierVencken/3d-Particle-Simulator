@@ -2,7 +2,6 @@ package com.particle.sim.settings;
 
 import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
-import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
 
 import imgui.ImVec4;
@@ -18,7 +17,6 @@ public final class SimulationDefaults {
 
     public static final float POINT_SIZE = 2.2f;
     public static final boolean FIXED_PARTICLE_SCREEN_SIZE = false;
-    public static final EffectMode EFFECT_MODE = EffectMode.NONE;
     public static final int GLOW_BLUR_PASSES = 16;
     public static final float GLOW_STRENGTH = 1.8f;
     public static final float GLOW_RADIUS = 3.6f;

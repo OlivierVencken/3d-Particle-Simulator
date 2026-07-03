@@ -37,7 +37,6 @@ final class SettingsSidebar {
             | ImGuiWindowFlags.NoScrollWithMouse;
     private static final String[] COLOR_MODE_LABELS = enumLabels(ColorMode.values());
     private static final String[] DISTANCE_METRIC_LABELS = enumLabels(DistanceMetric.values());
-    private static final String[] EFFECT_MODE_LABELS = enumLabels(EffectMode.values());
     private static final String[] SPAWN_MODE_LABELS = enumLabels(SpawnMode.values());
 
     private final AttractionMatrixEditor attractionMatrixEditor = new AttractionMatrixEditor();
@@ -192,16 +191,24 @@ final class SettingsSidebar {
             settingsChanged.run();
         }
 
-        ImInt currentEffect = new ImInt(particles.effectMode().ordinal());
-        if (ImGui.combo("Effect", currentEffect, EFFECT_MODE_LABELS)) {
-            particles.effectMode(EffectMode.values()[currentEffect.get()]);
-            settingsChanged.run();
-        }
+        renderEffectToggle("Glow", EffectMode.GLOW, particles, settingsChanged);
+        ImGui.sameLine();
+        renderEffectToggle("Trails", EffectMode.TRAILS, particles, settingsChanged);
 
-        if (particles.effectMode() == EffectMode.GLOW) {
+        if (particles.effectEnabled(EffectMode.GLOW)) {
             renderGlowControls(particles, settingsChanged);
-        } else if (particles.effectMode() == EffectMode.TRAILS) {
+        }
+        if (particles.effectEnabled(EffectMode.TRAILS)) {
             renderTrailControls(particles, settingsChanged);
+        }
+    }
+
+    private void renderEffectToggle(String label, EffectMode effectMode, GpuParticleSystem particles,
+            Runnable settingsChanged) {
+        ImBoolean enabled = new ImBoolean(particles.effectEnabled(effectMode));
+        if (ImGui.checkbox(label, enabled)) {
+            particles.effectEnabled(effectMode, enabled.get());
+            settingsChanged.run();
         }
     }
 

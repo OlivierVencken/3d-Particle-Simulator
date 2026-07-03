@@ -21,7 +21,9 @@ class GpuParticleSystemTest {
         assertEquals(6, system.groupCount());
         assertEquals(128, system.maxParticlesPerCell());
         assertEquals(ColorMode.GROUP, system.colorMode());
-        assertEquals(EffectMode.NONE, system.effectMode());
+        assertTrue(system.effectModes().isEmpty());
+        assertFalse(system.effectEnabled(EffectMode.GLOW));
+        assertFalse(system.effectEnabled(EffectMode.TRAILS));
         assertEquals(SpawnMode.RANDOM, system.spawnMode());
         assertEquals(DistanceMetric.EUCLIDEAN, system.distanceMetric());
         assertEquals(SimulationDefaults.GLOW_BLUR_PASSES, system.glowBlurPasses());
@@ -63,7 +65,8 @@ class GpuParticleSystemTest {
         system.boundaryBounce(0.4f);
         system.bounds(7.0f);
         system.colorMode(ColorMode.DENSITY);
-        system.effectMode(EffectMode.GLOW);
+        system.effectEnabled(EffectMode.GLOW, true);
+        system.effectEnabled(EffectMode.TRAILS, true);
         system.glowBlurPasses(24);
         system.glowStrength(3.5f);
         system.glowRadius(6.25f);
@@ -86,7 +89,8 @@ class GpuParticleSystemTest {
         assertEquals(0.4f, system.boundaryBounce(), EPSILON);
         assertEquals(7.0f, system.bounds(), EPSILON);
         assertEquals(ColorMode.DENSITY, system.colorMode());
-        assertEquals(EffectMode.GLOW, system.effectMode());
+        assertTrue(system.effectEnabled(EffectMode.GLOW));
+        assertTrue(system.effectEnabled(EffectMode.TRAILS));
         assertEquals(24, system.glowBlurPasses());
         assertEquals(3.5f, system.glowStrength(), EPSILON);
         assertEquals(6.25f, system.glowRadius(), EPSILON);

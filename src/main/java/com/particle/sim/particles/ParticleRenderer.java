@@ -167,21 +167,21 @@ public final class ParticleRenderer {
 
     public void render(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
             SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, boolean fixedParticleScreenSize,
-            EffectMode effectMode, int colorMode, int groupCount, float maxVelocity, float bounds,
+            boolean glowEnabled, boolean trailsEnabled, int colorMode, int groupCount, float maxVelocity, float bounds,
             float interactionRange, int spatialMapSize, GlowSettings glowSettings, TrailSettings trailSettings,
             TrailHistoryBuffers trailHistoryBuffers) {
         if (particleCount == 0) {
             return;
         }
 
-        if (effectMode == EffectMode.GLOW) {
+        if (glowEnabled) {
             renderGlow(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
                     fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange,
-                    spatialMapSize, glowSettings);
+                    spatialMapSize, glowSettings, trailsEnabled, trailSettings, trailHistoryBuffers);
             return;
         }
 
-        if (effectMode == EffectMode.TRAILS) {
+        if (trailsEnabled) {
             renderTrails(width, height, viewMatrix, particleBuffers, spatialGridBuffers, trailHistoryBuffers,
                     particleCount, pointSize, fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds,
                     interactionRange, spatialMapSize, trailSettings);
@@ -194,13 +194,19 @@ public final class ParticleRenderer {
     private void renderGlow(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
             SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, boolean fixedParticleScreenSize,
             int colorMode, int groupCount, float maxVelocity, float bounds, float interactionRange,
-            int spatialMapSize, GlowSettings glowSettings) {
+            int spatialMapSize, GlowSettings glowSettings, boolean trailsEnabled, TrailSettings trailSettings,
+            TrailHistoryBuffers trailHistoryBuffers) {
         ensureGlowTargets(width, height);
 
         glBindFramebuffer(GL_FRAMEBUFFER, sceneFbo);
         glViewport(0, 0, width, height);
         glClearColor(0.015f, 0.018f, 0.024f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        if (trailsEnabled) {
+            renderTrails(width, height, viewMatrix, particleBuffers, spatialGridBuffers, trailHistoryBuffers,
+                    particleCount, pointSize, fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds,
+                    interactionRange, spatialMapSize, trailSettings);
+        }
         renderParticles(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
                 fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange, spatialMapSize);
 
