@@ -184,8 +184,7 @@ final class AttractionMatrixEditor {
             ImGui.setTooltip("G%d → G%d: %.2f".formatted(row, column, value));
         }
 
-        String marker = value > 0.005f ? "+" : value < -0.005f ? "-" : "0";
-        String display = marker + " " + "%.1f".formatted(value);
+        String display = "%.1f".formatted(value);
         float textWidth = ImGui.calcTextSize(display).x;
         int textColor = ImGui.getColorU32(UiPalette.TEXT.vec4());
         drawList.addText(x + Math.max(2.0f, (size - textWidth) * 0.5f),
