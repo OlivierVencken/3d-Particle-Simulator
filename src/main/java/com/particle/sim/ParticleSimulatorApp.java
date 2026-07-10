@@ -31,6 +31,10 @@ public final class ParticleSimulatorApp {
     private final SettingsController settingsController = new SettingsController(particles, camera, ui);
 
     public static void main(String[] args) {
+        if (ParticleBenchmarkRunner.requested(args)) {
+            ParticleBenchmarkRunner.run(args);
+            return;
+        }
         try {
             new ParticleSimulatorApp().run();
         } catch (StartupFailureException ignored) {

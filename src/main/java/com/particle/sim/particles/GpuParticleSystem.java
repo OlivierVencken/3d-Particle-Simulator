@@ -378,6 +378,10 @@ public final class GpuParticleSystem {
         attractionMatrix.randomize();
     }
 
+    public void randomSeed(long seed) {
+        particleRandom.setSeed(seed);
+    }
+
     public void zeroAttractionMatrix() {
         attractionMatrix.zero();
     }
