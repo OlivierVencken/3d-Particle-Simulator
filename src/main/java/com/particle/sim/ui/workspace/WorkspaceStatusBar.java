@@ -1,7 +1,8 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
 
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SimulationDefaults;
+import com.particle.sim.ui.theme.UIColors;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
@@ -21,7 +22,8 @@ final class WorkspaceStatusBar {
                     paused ? "Paused" : "Running", 1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS);
             ImGui.setCursorPosX(12.0f);
             ImGui.setCursorPosY(Math.max(0.0f, (panel.height() - ImGui.getTextLineHeight()) * 0.5f));
-            ImGui.pushStyleColor(ImGuiCol.Text, paused ? UiPalette.TEXT_DISABLED.vec4() : UiPalette.SUCCESS.vec4());
+            ImGui.pushStyleColor(ImGuiCol.Text,
+                    paused ? UIColors.TEXT_MUTED.vec4() : UIColors.STATUS_SUCCESS.vec4());
             ImGui.textUnformatted(status);
             ImGui.popStyleColor();
             String qualityMessage = qualityMessage(particles);

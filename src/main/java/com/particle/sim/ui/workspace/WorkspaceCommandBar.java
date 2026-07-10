@@ -1,6 +1,8 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
 
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.ui.theme.UIColors;
+import com.particle.sim.ui.theme.UIFonts;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
@@ -37,14 +39,14 @@ final class WorkspaceCommandBar {
 
     private void renderLeft(float width, float height, Runnable loadPreset, Runnable savePreset) {
         String title = width >= 900.0f ? "3D Particle Simulator" : "3DPS";
-        ImGui.pushFont(UiFonts.title());
+        ImGui.pushFont(UIFonts.title());
         float titleWidth = ImGui.calcTextSize(title).x;
         ImGui.popFont();
         ImGui.setCursorPosX(12.0f);
         ImGui.setCursorPosY(6.0f);
         ImGui.invisibleButton("##application-title", titleWidth, 32.0f);
-        int titleColor = ImGui.getColorU32(UiPalette.TEXT.vec4());
-        ImGui.getWindowDrawList().addText(UiFonts.title(), 20,
+        int titleColor = ImGui.getColorU32(UIColors.TEXT_PRIMARY.vec4());
+        ImGui.getWindowDrawList().addText(UIFonts.title(), 20,
                 ImGui.getWindowPosX() + 12.0f,
                 ImGui.getWindowPosY() + Math.max(0.0f, (height - 20.0f) * 0.5f),
                 titleColor, title);
@@ -138,7 +140,7 @@ final class WorkspaceCommandBar {
             ImGui.textUnformatted("Restore every simulation setting to its default value?");
             ImGui.textDisabled("This does not reset the current particle positions.");
             ImGui.spacing();
-            ImGui.pushStyleColor(ImGuiCol.Button, UiPalette.DESTRUCTIVE.vec4());
+            ImGui.pushStyleColor(ImGuiCol.Button, UIColors.STATUS_DANGER.vec4());
             if (ImGui.button("Reset settings", 128.0f, 32.0f)) {
                 resetSettings.run();
                 ImGui.closeCurrentPopup();

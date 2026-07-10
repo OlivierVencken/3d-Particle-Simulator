@@ -1,4 +1,4 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
 
 import com.particle.sim.AppInfo;
 import com.particle.sim.particles.GpuParticleSystem;

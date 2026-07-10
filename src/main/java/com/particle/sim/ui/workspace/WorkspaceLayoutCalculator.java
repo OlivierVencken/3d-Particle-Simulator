@@ -1,4 +1,4 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
 
 final class WorkspaceLayoutCalculator {
     static final float COMMAND_BAR_HEIGHT = 44.0f;
@@ -7,7 +7,7 @@ final class WorkspaceLayoutCalculator {
     private WorkspaceLayoutCalculator() {
     }
 
-    static WorkspaceLayout calculate(float displayWidth, float displayHeight, UiSection section,
+    static WorkspaceLayout calculate(float displayWidth, float displayHeight, UISection section,
             boolean inspectorVisible) {
         float width = Math.max(0.0f, displayWidth);
         float height = Math.max(0.0f, displayHeight);

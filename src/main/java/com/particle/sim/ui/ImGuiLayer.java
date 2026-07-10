@@ -3,6 +3,8 @@ package com.particle.sim.ui;
 import static imgui.ImGui.getIO;
 
 import com.particle.sim.util.ResourceLoader;
+import com.particle.sim.ui.theme.UIFonts;
+import com.particle.sim.ui.theme.UITheme;
 
 import imgui.ImFontAtlas;
 import imgui.ImFontConfig;
@@ -12,7 +14,7 @@ import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 
-public final class ImguiLayer {
+public final class ImGuiLayer {
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
 
@@ -21,7 +23,7 @@ public final class ImguiLayer {
         ImGuiIO io = getIO();
         io.addConfigFlags(ImGuiConfigFlags.NavEnableKeyboard);
         initFonts(io);
-        UiTheme.applyDarkTheme();
+        UITheme.applyDarkTheme();
         imGuiGlfw.init(window, true);
         imGuiGl3.init("#version 430");
     }
@@ -33,10 +35,10 @@ public final class ImguiLayer {
         byte[] regular = ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Regular.ttf");
         byte[] medium = ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Medium.ttf");
         fontAtlas.addFontFromMemoryTTF(regular, 16.0f);
-        UiFonts.setMedium(fontAtlas.addFontFromMemoryTTF(medium, 16.0f));
-        UiFonts.setSection(fontAtlas.addFontFromMemoryTTF(
+        UIFonts.setMedium(fontAtlas.addFontFromMemoryTTF(medium, 16.0f));
+        UIFonts.setSection(fontAtlas.addFontFromMemoryTTF(
                 ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Medium.ttf"), 18.0f));
-        UiFonts.setTitle(fontAtlas.addFontFromMemoryTTF(
+        UIFonts.setTitle(fontAtlas.addFontFromMemoryTTF(
                 ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Medium.ttf"), 20.0f));
 
         fontAtlas.build();

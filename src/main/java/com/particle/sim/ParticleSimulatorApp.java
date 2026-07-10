@@ -6,9 +6,9 @@ import com.particle.sim.input.HotkeyManager;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SettingsController;
 import com.particle.sim.system.StartupFailureException;
-import com.particle.sim.ui.ImguiLayer;
+import com.particle.sim.ui.ImGuiLayer;
 import com.particle.sim.ui.PresetFileDialog;
-import com.particle.sim.ui.SimulationUi;
+import com.particle.sim.ui.SimulationUI;
 import com.particle.sim.window.WindowManager;
 
 import static org.lwjgl.opengl.GL43C.GL_BLEND;
@@ -23,10 +23,10 @@ public final class ParticleSimulatorApp {
     private static final String WINDOW_TITLE = "3D Particle Simulator";
 
     private final WindowManager window = new WindowManager(WINDOW_TITLE);
-    private final ImguiLayer imgui = new ImguiLayer();
+    private final ImGuiLayer imgui = new ImGuiLayer();
     private final CameraController camera = new CameraController();
     private final GpuParticleSystem particles = new GpuParticleSystem();
-    private final SimulationUi ui = new SimulationUi();
+    private final SimulationUI ui = new SimulationUI();
     private final HotkeyManager hotkeys = new HotkeyManager();
     private final SettingsController settingsController = new SettingsController(particles, camera, ui);
     private boolean windowInitialized;
@@ -103,7 +103,7 @@ public final class ParticleSimulatorApp {
         return particles;
     }
 
-    public SimulationUi getUi() {
+    public SimulationUI getUi() {
         return ui;
     }
 

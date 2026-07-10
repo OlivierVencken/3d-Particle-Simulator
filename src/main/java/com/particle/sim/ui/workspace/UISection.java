@@ -1,6 +1,6 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
 
-enum UiSection {
+enum UISection {
     SIMULATION("Simulation"),
     PARTICLES("Particles"),
     APPEARANCE("Appearance"),
@@ -9,7 +9,7 @@ enum UiSection {
 
     private final String label;
 
-    UiSection(String label) {
+    UISection(String label) {
         this.label = label;
     }
 

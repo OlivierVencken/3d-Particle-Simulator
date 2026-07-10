@@ -1,14 +1,15 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.ui.theme.UIFonts;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImInt;
 
 final class WorkspaceInspector {
-    private static final String[] SECTION_LABELS = java.util.Arrays.stream(UiSection.values())
-            .map(UiSection::label).toArray(String[]::new);
+    private static final String[] SECTION_LABELS = java.util.Arrays.stream(UISection.values())
+            .map(UISection::label).toArray(String[]::new);
     private static final int WINDOW_FLAGS = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove
             | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoSavedSettings;
 
@@ -39,17 +40,17 @@ final class WorkspaceInspector {
             ImInt selected = new ImInt(state.activeSection().ordinal());
             ImGui.setNextItemWidth(-1.0f);
             if (ImGui.combo("##section-selector", selected, SECTION_LABELS)) {
-                state.select(UiSection.values()[selected.get()]);
+                state.select(UISection.values()[selected.get()]);
             }
         } else {
-            ImGui.pushFont(UiFonts.section());
+            ImGui.pushFont(UIFonts.section());
             ImGui.textUnformatted(state.activeSection().label());
             ImGui.popFont();
             ImGui.textDisabled(sectionDescription(state.activeSection()));
         }
     }
 
-    private String sectionDescription(UiSection section) {
+    private String sectionDescription(UISection section) {
         return switch (section) {
             case SIMULATION -> "World boundaries and motion";
             case PARTICLES -> "Population and spawning";

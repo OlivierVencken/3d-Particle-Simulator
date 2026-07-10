@@ -6,7 +6,7 @@ import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.camera.CameraController;
-import com.particle.sim.ui.SimulationUi;
+import com.particle.sim.ui.SimulationUI;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -26,7 +26,7 @@ class AppSettingsTest {
     void savesAndLoadsCurrentApplicationSettings() {
         GpuParticleSystem particles = new GpuParticleSystem();
         CameraController camera = new CameraController();
-        SimulationUi ui = new SimulationUi();
+        SimulationUI ui = new SimulationUI();
         Path settingsFile = tempDir.resolve("settings.properties");
 
         particles.setParticleCount(1234);
@@ -67,7 +67,7 @@ class AppSettingsTest {
 
         GpuParticleSystem loadedParticles = new GpuParticleSystem();
         CameraController loadedCamera = new CameraController();
-        SimulationUi loadedUi = new SimulationUi();
+        SimulationUI loadedUi = new SimulationUI();
         AppSettings.load(settingsFile).applyTo(loadedParticles, loadedCamera, loadedUi);
 
         assertEquals(1234, loadedParticles.particleCount());
@@ -108,7 +108,7 @@ class AppSettingsTest {
     void defaultsResetSettingsBackToKnownValues() {
         GpuParticleSystem particles = new GpuParticleSystem();
         CameraController camera = new CameraController();
-        SimulationUi ui = new SimulationUi();
+        SimulationUI ui = new SimulationUI();
 
         particles.setParticleCount(10);
         particles.pointSize(8.0f);
@@ -167,7 +167,7 @@ class AppSettingsTest {
     void simulationDefaultsPreserveAttractionMatrix() {
         GpuParticleSystem particles = new GpuParticleSystem();
         CameraController camera = new CameraController();
-        SimulationUi ui = new SimulationUi();
+        SimulationUI ui = new SimulationUI();
 
         particles.zeroAttractionMatrix();
         particles.attraction(1, 4, 0.65f);
@@ -183,7 +183,7 @@ class AppSettingsTest {
         java.nio.file.Files.writeString(settingsFile, "groupCount=99\n");
 
         GpuParticleSystem particles = new GpuParticleSystem();
-        AppSettings.load(settingsFile).applySimulationTo(particles, new CameraController(), new SimulationUi());
+        AppSettings.load(settingsFile).applySimulationTo(particles, new CameraController(), new SimulationUI());
 
         assertEquals(SimulationDefaults.MAX_GROUP_COUNT, particles.groupCount());
     }
@@ -193,7 +193,7 @@ class AppSettingsTest {
         Path settingsFile = tempDir.resolve("settings.properties");
         java.nio.file.Files.writeString(settingsFile, "fpsCap=999\n");
 
-        SimulationUi ui = new SimulationUi();
+        SimulationUI ui = new SimulationUI();
         AppSettings.load(settingsFile).applySimulationTo(new GpuParticleSystem(), new CameraController(), ui);
 
         assertEquals(SimulationDefaults.MAX_FPS_CAP, ui.fpsCap());
@@ -204,7 +204,7 @@ class AppSettingsTest {
         Path settingsFile = tempDir.resolve("settings.properties");
         java.nio.file.Files.writeString(settingsFile, "fpsCap=0\n");
 
-        SimulationUi ui = new SimulationUi();
+        SimulationUI ui = new SimulationUI();
         AppSettings.load(settingsFile).applySimulationTo(new GpuParticleSystem(), new CameraController(), ui);
 
         assertEquals(0, ui.fpsCap());

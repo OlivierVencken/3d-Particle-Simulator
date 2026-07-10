@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class SimulationUiTest {
+class SimulationUITest {
     @Test
     void uiCanBeHiddenAndShown() {
-        SimulationUi ui = new SimulationUi();
+        SimulationUI ui = new SimulationUI();
 
         ui.hide();
 

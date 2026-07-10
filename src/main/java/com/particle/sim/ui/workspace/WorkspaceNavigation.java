@@ -1,4 +1,8 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
+
+import com.particle.sim.ui.theme.UIColor;
+import com.particle.sim.ui.theme.UIColors;
+import com.particle.sim.ui.theme.UIFonts;
 
 import imgui.ImGui;
 import imgui.ImVec2;
@@ -19,29 +23,29 @@ final class WorkspaceNavigation {
         if (ImGui.begin("##workspace-navigation", WINDOW_FLAGS)) {
             centerText("WORKSPACE");
             ImGui.dummy(0.0f, 8.0f);
-            for (UiSection section : UiSection.values()) {
+            for (UISection section : UISection.values()) {
                 boolean selected = state.activeSection() == section;
                 ImVec2 itemOrigin = ImGui.getCursorScreenPos();
                 float itemWidth = ImGui.getContentRegionAvailX();
                 boolean hovered = ImGui.isMouseHoveringRect(
                         itemOrigin.x + 4.0f, itemOrigin.y,
                         itemOrigin.x + itemWidth - 4.0f, itemOrigin.y + 44.0f);
-                ImGui.pushFont(UiFonts.section());
+                ImGui.pushFont(UIFonts.section());
                 ImGui.pushStyleVar(ImGuiStyleVar.SelectableTextAlign, 0.5f, 0.5f);
                 if (selected || hovered) {
-                    UiColor background = selected || ImGui.isMouseDown(0)
-                            ? UiPalette.SURFACE_ACTIVE
-                            : UiPalette.SURFACE_HOVERED;
+                    UIColor background = selected || ImGui.isMouseDown(0)
+                            ? UIColors.SURFACE_ACTIVE
+                            : UIColors.SURFACE_HOVER;
                     ImGui.getWindowDrawList().addRectFilled(
                             itemOrigin.x + 4.0f, itemOrigin.y,
                             itemOrigin.x + itemWidth - 4.0f, itemOrigin.y + 44.0f,
                             ImGui.getColorU32(background.vec4()), 5.0f);
                 }
-                ImGui.pushStyleColor(ImGuiCol.Header, UiPalette.CLEAR.vec4());
-                ImGui.pushStyleColor(ImGuiCol.HeaderHovered, UiPalette.CLEAR.vec4());
-                ImGui.pushStyleColor(ImGuiCol.HeaderActive, UiPalette.CLEAR.vec4());
+                ImGui.pushStyleColor(ImGuiCol.Header, UIColors.TRANSPARENT.vec4());
+                ImGui.pushStyleColor(ImGuiCol.HeaderHovered, UIColors.TRANSPARENT.vec4());
+                ImGui.pushStyleColor(ImGuiCol.HeaderActive, UIColors.TRANSPARENT.vec4());
                 if (selected) {
-                    ImGui.pushStyleColor(ImGuiCol.Text, UiPalette.ACCENT_BRIGHT.vec4());
+                    ImGui.pushStyleColor(ImGuiCol.Text, UIColors.ACCENT_BRIGHT.vec4());
                 }
                 if (ImGui.selectable(section.label() + "##navigation-" + section.name(),
                         selected, 0, itemWidth, 44.0f)) {

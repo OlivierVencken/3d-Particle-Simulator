@@ -1,4 +1,4 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -17,7 +17,7 @@ class WorkspaceLayoutCalculatorTest {
     })
     void calculatesResponsivePanels(float width, float height, WorkspaceLayout.Mode mode,
             float navigationWidth, float inspectorWidth) {
-        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(width, height, UiSection.SIMULATION, true);
+        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(width, height, UISection.SIMULATION, true);
 
         assertEquals(mode, layout.mode());
         assertEquals(navigationWidth, layout.navigation().width());
@@ -34,7 +34,7 @@ class WorkspaceLayoutCalculatorTest {
             "700, 600, 700"
     })
     void interactionsUseTheSameInspectorWidthAsOtherSections(float width, float height, float inspectorWidth) {
-        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(width, height, UiSection.INTERACTIONS, true);
+        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(width, height, UISection.INTERACTIONS, true);
 
         assertEquals(inspectorWidth, layout.inspector().width());
         assertPanelsStayInBounds(layout, width, height);
@@ -42,7 +42,7 @@ class WorkspaceLayoutCalculatorTest {
 
     @org.junit.jupiter.api.Test
     void commandControlsCenterOnVisibleSimulationInsteadOfWholeDisplay() {
-        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(2560.0f, 1440.0f, UiSection.SIMULATION, true);
+        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(2560.0f, 1440.0f, UISection.SIMULATION, true);
 
         float controlsWidth = 246.0f;
         float x = WorkspaceCommandBar.centeredControlsX(layout.simulation(), controlsWidth);

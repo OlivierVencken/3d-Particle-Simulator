@@ -1,4 +1,4 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
 
 import org.junit.jupiter.api.Test;
 
@@ -12,9 +12,9 @@ class WorkspaceStateTest {
         WorkspaceState state = new WorkspaceState();
         state.setInspectorVisible(false);
 
-        state.select(UiSection.CAMERA);
+        state.select(UISection.CAMERA);
 
-        assertEquals(UiSection.CAMERA, state.activeSection());
+        assertEquals(UISection.CAMERA, state.activeSection());
         assertTrue(state.inspectorVisible());
     }
 

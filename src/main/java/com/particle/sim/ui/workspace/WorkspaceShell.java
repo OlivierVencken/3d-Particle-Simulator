@@ -1,11 +1,11 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 
-final class WorkspaceShell {
+public final class WorkspaceShell {
     private final WorkspaceState state = new WorkspaceState();
     private final WorkspaceCommandBar commandBar = new WorkspaceCommandBar();
     private final WorkspaceNavigation navigation = new WorkspaceNavigation();
@@ -14,7 +14,7 @@ final class WorkspaceShell {
     private final DebugPanel debugPanel = new DebugPanel();
     private final ImBoolean showDebug = new ImBoolean(false);
 
-    void render(float deltaTime, float fps, int fpsCap, GpuParticleSystem particles, CameraController camera,
+    public void render(float deltaTime, float fps, int fpsCap, GpuParticleSystem particles, CameraController camera,
             boolean paused, Runnable togglePause, Runnable settingsChanged, Runnable resetSettings,
             Runnable savePreset, Runnable loadPreset, Runnable exitApplication, Runnable hideUi,
             java.util.function.IntConsumer fpsCapChanged) {
@@ -32,9 +32,9 @@ final class WorkspaceShell {
         }
     }
 
-    int customSpawnAmount() { return inspector.customSpawnAmount(); }
-    void setCustomSpawnAmount(int amount) { inspector.setCustomSpawnAmount(amount); }
-    float matrixEditStep() { return inspector.matrixEditStep(); }
-    void setMatrixEditStep(float step) { inspector.setMatrixEditStep(step); }
-    void toggleDebug() { showDebug.set(!showDebug.get()); }
+    public int customSpawnAmount() { return inspector.customSpawnAmount(); }
+    public void setCustomSpawnAmount(int amount) { inspector.setCustomSpawnAmount(amount); }
+    public float matrixEditStep() { return inspector.matrixEditStep(); }
+    public void setMatrixEditStep(float step) { inspector.setMatrixEditStep(step); }
+    public void toggleDebug() { showDebug.set(!showDebug.get()); }
 }

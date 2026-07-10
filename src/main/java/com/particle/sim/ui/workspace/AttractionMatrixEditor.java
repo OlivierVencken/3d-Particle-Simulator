@@ -1,4 +1,7 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
+
+import com.particle.sim.ui.theme.UIColor;
+import com.particle.sim.ui.theme.UIColors;
 
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SimulationDefaults;
@@ -23,7 +26,7 @@ final class AttractionMatrixEditor {
 
 
     void renderSettings(GpuParticleSystem particles, Runnable settingsChanged) {
-        UiControls.settingSlider(
+        UIControls.settingSlider(
                 "Edit step",
                 matrixEditStep, 0.01f,
                 0.5f,
@@ -32,7 +35,7 @@ final class AttractionMatrixEditor {
                 settingsChanged);
 
         renderMatrixActions(particles, settingsChanged);
-        ImGui.pushStyleColor(ImGuiCol.ChildBg, UiPalette.CLEAR.vec4());
+        ImGui.pushStyleColor(ImGuiCol.ChildBg, UIColors.TRANSPARENT.vec4());
         ImGui.beginChild("matrix-scroll", 0.0f, Math.max(180.0f, ImGui.getContentRegionAvailY() - 34.0f), false,
                 imgui.flag.ImGuiWindowFlags.HorizontalScrollbar);
         renderMatrix(particles, settingsChanged);
@@ -186,7 +189,7 @@ final class AttractionMatrixEditor {
 
         String display = "%.1f".formatted(value);
         float textWidth = ImGui.calcTextSize(display).x;
-        int textColor = ImGui.getColorU32(UiPalette.TEXT.vec4());
+        int textColor = ImGui.getColorU32(UIColors.TEXT_PRIMARY.vec4());
         drawList.addText(x + Math.max(2.0f, (size - textWidth) * 0.5f),
                 y + Math.max(2.0f, (size - ImGui.getTextLineHeight()) * 0.5f), textColor, display);
 
@@ -213,11 +216,11 @@ final class AttractionMatrixEditor {
 
         ImGui.setCursorPosX(ImGui.getCursorPosX() + offset);
 
-        textColored(UiPalette.MATRIX_ATTRACTION, attraction);
+        textColored(UIColors.INTERACTION_ATTRACTION, attraction);
         ImGui.sameLine();
-        textColored(UiPalette.MATRIX_NEUTRAL, neutral);
+        textColored(UIColors.INTERACTION_NEUTRAL, neutral);
         ImGui.sameLine();
-        textColored(UiPalette.MATRIX_REPULSION, repulsion);
+        textColored(UIColors.INTERACTION_REPULSION, repulsion);
     }
 
     private ImVec4 groupColor(GpuParticleSystem particles, int group) {
@@ -228,13 +231,13 @@ final class AttractionMatrixEditor {
     private ImVec4 attractionColor(float value) {
         float strength = Math.min(1.0f, Math.abs(value));
         if (value >= 0.0f) {
-            return UiPalette.MATRIX_TILE_NEUTRAL.blend(UiPalette.MATRIX_ATTRACTION, strength).vec4();
+            return UIColors.INTERACTION_NEUTRAL_SURFACE.blend(UIColors.INTERACTION_ATTRACTION, strength).vec4();
         }
 
-        return UiPalette.MATRIX_TILE_NEUTRAL.blend(UiPalette.MATRIX_REPULSION, strength).vec4();
+        return UIColors.INTERACTION_NEUTRAL_SURFACE.blend(UIColors.INTERACTION_REPULSION, strength).vec4();
     }
 
-    private void textColored(UiColor color, String text) {
+    private void textColored(UIColor color, String text) {
         ImGui.textColored(color.red(), color.green(), color.blue(), color.alpha(), text);
     }
 

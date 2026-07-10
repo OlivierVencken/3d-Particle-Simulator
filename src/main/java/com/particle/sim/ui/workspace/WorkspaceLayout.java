@@ -1,4 +1,4 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
 
 record WorkspaceLayout(
         Mode mode,

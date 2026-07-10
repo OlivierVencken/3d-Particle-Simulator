@@ -1,4 +1,7 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
+
+import com.particle.sim.ui.theme.UIColors;
+import com.particle.sim.ui.theme.UIFonts;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ColorMode;
@@ -21,7 +24,7 @@ final class InspectorSections {
     private final AttractionMatrixEditor matrixEditor = new AttractionMatrixEditor();
     private final ImInt customSpawnAmount = new ImInt(SimulationDefaults.CUSTOM_SPAWN_AMOUNT);
 
-    void render(UiSection section, GpuParticleSystem particles, CameraController camera, Runnable settingsChanged) {
+    void render(UISection section, GpuParticleSystem particles, CameraController camera, Runnable settingsChanged) {
         switch (section) {
             case SIMULATION -> renderSimulation(particles, settingsChanged);
             case PARTICLES -> renderParticles(particles, settingsChanged);
@@ -34,28 +37,28 @@ final class InspectorSections {
     private void renderSimulation(GpuParticleSystem particles, Runnable changed) {
         section("World");
         checkbox("Wrap boundaries", "world-wrap", particles.toroidalWrap(), particles::toroidalWrap, changed);
-        UiControls.settingSlider("Bounds", "world-bounds", particles.bounds(), 2.0f, 10.0f, 1,
+        UIControls.settingSlider("Bounds", "world-bounds", particles.bounds(), 2.0f, 10.0f, 1,
                 particles::bounds, changed);
         if (!particles.toroidalWrap()) {
-            UiControls.settingSlider("Boundary bounce", "world-bounce", particles.boundaryBounce(), 0.0f, 1.0f, 2,
+            UIControls.settingSlider("Boundary bounce", "world-bounce", particles.boundaryBounce(), 0.0f, 1.0f, 2,
                     particles::boundaryBounce, changed);
         }
 
         section("Dynamics");
-        UiControls.settingSlider("Force", "dynamics-force", particles.forceFactor(), 0.0f, 10.0f, 1,
+        UIControls.settingSlider("Force", "dynamics-force", particles.forceFactor(), 0.0f, 10.0f, 1,
                 particles::forceFactor, changed);
-        UiControls.settingSlider("Interaction range", "dynamics-range", particles.interactionRange(), 0.2f, 3.0f, 2,
+        UIControls.settingSlider("Interaction range", "dynamics-range", particles.interactionRange(), 0.2f, 3.0f, 2,
                 particles::interactionRange, changed);
-        UiControls.settingSlider("Repulsion radius", "dynamics-repulsion", particles.repulsionRadius(), 0.02f, 0.95f,
+        UIControls.settingSlider("Repulsion radius", "dynamics-repulsion", particles.repulsionRadius(), 0.02f, 0.95f,
                 2, particles::repulsionRadius, changed);
-        UiControls.settingSlider("Velocity damping", "dynamics-damping", particles.velocityDamping(), 0.85f, 1.0f,
+        UIControls.settingSlider("Velocity damping", "dynamics-damping", particles.velocityDamping(), 0.85f, 1.0f,
                 3, particles::velocityDamping, changed);
-        UiControls.settingSlider("Max velocity", "dynamics-max-velocity", particles.maxVelocity(), 0.5f, 16.0f, 1,
+        UIControls.settingSlider("Max velocity", "dynamics-max-velocity", particles.maxVelocity(), 0.5f, 16.0f, 1,
                 particles::maxVelocity, changed);
         checkbox("Density regulation", "dynamics-density", particles.densityRegulationEnabled(),
                 particles::densityRegulationEnabled, changed);
         if (particles.densityRegulationEnabled()) {
-            UiControls.settingSlider("Density limit", "dynamics-density-limit", particles.densityLimit(), 0.0f,
+            UIControls.settingSlider("Density limit", "dynamics-density-limit", particles.densityLimit(), 0.0f,
                     500.0f, 0, particles::densityLimit, changed);
         }
         enumCombo("Distance metric", "dynamics-distance", particles.distanceMetric().ordinal(), DISTANCE_METRICS,
@@ -107,7 +110,7 @@ final class InspectorSections {
             changed.run();
         }
         ImGui.spacing();
-        ImGui.pushStyleColor(ImGuiCol.Text, UiPalette.DESTRUCTIVE.vec4());
+        ImGui.pushStyleColor(ImGuiCol.Text, UIColors.STATUS_DANGER.vec4());
         if (ImGui.button("Clear particles##clear-particles")) {
             particles.clearParticles();
             changed.run();
@@ -117,7 +120,7 @@ final class InspectorSections {
 
     private void renderAppearance(GpuParticleSystem particles, Runnable changed) {
         section("Particle rendering");
-        UiControls.settingSlider("Particle size", "appearance-size", particles.pointSize(), 1.0f, 8.0f, 1,
+        UIControls.settingSlider("Particle size", "appearance-size", particles.pointSize(), 1.0f, 8.0f, 1,
                 particles::pointSize, changed);
         checkbox("Fixed screen size", "appearance-fixed-size", particles.fixedParticleScreenSize(),
                 particles::fixedParticleScreenSize, changed);
@@ -126,23 +129,23 @@ final class InspectorSections {
 
         effectHeader("Glow", EffectMode.GLOW, particles, changed);
         if (particles.effectEnabled(EffectMode.GLOW)) {
-            UiControls.settingIntSlider("Passes", "glow-passes", particles.glowBlurPasses(), 1, 64, 0,
+            UIControls.settingIntSlider("Passes", "glow-passes", particles.glowBlurPasses(), 1, 64, 0,
                     particles::glowBlurPasses, changed);
-            UiControls.settingSlider("Strength", "glow-strength", particles.glowStrength(), 0.0f, 6.0f, 1,
+            UIControls.settingSlider("Strength", "glow-strength", particles.glowStrength(), 0.0f, 6.0f, 1,
                     particles::glowStrength, changed);
-            UiControls.settingSlider("Radius", "glow-radius", particles.glowRadius(), 0.5f, 12.0f, 1,
+            UIControls.settingSlider("Radius", "glow-radius", particles.glowRadius(), 0.5f, 12.0f, 1,
                     particles::glowRadius, changed);
-            UiControls.settingSlider("Falloff", "glow-falloff", particles.glowFalloff(), 0.05f, 3.0f, 2,
+            UIControls.settingSlider("Falloff", "glow-falloff", particles.glowFalloff(), 0.05f, 3.0f, 2,
                     particles::glowFalloff, changed);
             ImGui.textDisabled("Bloom resolution: 1/%d per axis".formatted(particles.effectiveBloomDivisor()));
         }
 
         effectHeader("Trails", EffectMode.TRAILS, particles, changed);
         if (particles.effectEnabled(EffectMode.TRAILS)) {
-            UiControls.settingIntSlider("Trail length", "trail-length", particles.trailLength(),
+            UIControls.settingIntSlider("Trail length", "trail-length", particles.trailLength(),
                     SimulationDefaults.MIN_TRAIL_LENGTH, SimulationDefaults.MAX_TRAIL_LENGTH, 0,
                     particles::trailLength, changed);
-            UiControls.settingSlider("Thickness", "trail-thickness", particles.trailThickness(),
+            UIControls.settingSlider("Thickness", "trail-thickness", particles.trailThickness(),
                     SimulationDefaults.MIN_TRAIL_THICKNESS, particles.pointSize(), 1, particles::trailThickness,
                     changed);
             String quality = WorkspaceStatusBar.qualityMessage(particles);
@@ -152,9 +155,9 @@ final class InspectorSections {
 
     private void renderCamera(CameraController camera, Runnable changed) {
         section("Movement");
-        UiControls.settingSlider("Sensitivity", "camera-sensitivity", camera.getSensitivity(), 0.0001f, 0.01f, 4,
+        UIControls.settingSlider("Sensitivity", "camera-sensitivity", camera.getSensitivity(), 0.0001f, 0.01f, 4,
                 camera::setSensitivity, changed);
-        UiControls.settingSlider("Fly speed", "camera-speed", camera.getFlySpeed(), 0.1f, 30.0f, 1,
+        UIControls.settingSlider("Fly speed", "camera-speed", camera.getFlySpeed(), 0.1f, 30.0f, 1,
                 camera::setFlySpeed, changed);
         if (ImGui.button("Reset camera##camera-reset")) camera.reset();
         ImGui.spacing();
@@ -194,11 +197,11 @@ final class InspectorSections {
     }
 
     private void metricCard(String id, String label, String value, float width) {
-        ImGui.pushStyleColor(ImGuiCol.ChildBg, UiPalette.SURFACE.withAlpha(0.72f).vec4());
+        ImGui.pushStyleColor(ImGuiCol.ChildBg, UIColors.SURFACE_DEFAULT.withAlpha(0.72f).vec4());
         int flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
         if (ImGui.beginChild("##metric-" + id, width, 64.0f, true, flags)) {
             ImGui.textDisabled(label);
-            ImGui.pushFont(UiFonts.section());
+            ImGui.pushFont(UIFonts.section());
             ImGui.textUnformatted(value);
             ImGui.popFont();
         }
@@ -208,7 +211,7 @@ final class InspectorSections {
 
     private void section(String label) {
         ImGui.spacing();
-        ImGui.pushFont(UiFonts.section());
+        ImGui.pushFont(UIFonts.section());
         ImGui.separatorText(label);
         ImGui.popFont();
     }

@@ -6,8 +6,8 @@ import com.particle.sim.input.HotkeyManager;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SettingsController;
 import com.particle.sim.settings.SimulationDefaults;
-import com.particle.sim.ui.ImguiLayer;
-import com.particle.sim.ui.SimulationUi;
+import com.particle.sim.ui.ImGuiLayer;
+import com.particle.sim.ui.SimulationUI;
 import com.particle.sim.window.WindowManager;
 
 import java.util.concurrent.locks.LockSupport;
@@ -27,20 +27,20 @@ public final class ApplicationRuntime {
     private static final int MAX_SIMULATION_STEPS_PER_FRAME = 4;
 
     private final WindowManager window;
-    private final ImguiLayer imgui;
+    private final ImGuiLayer imgui;
     private final HotkeyManager hotkeys;
     private final CameraController camera;
     private final GpuParticleSystem particles;
-    private final SimulationUi ui;
+    private final SimulationUI ui;
     private final SettingsController settingsController;
     private final FixedSimulationClock simulationClock = new FixedSimulationClock(
             SimulationDefaults.SIMULATION_STEP_SECONDS);
 
     private double lastFrameTime;
 
-    public ApplicationRuntime(WindowManager window, ImguiLayer imgui, HotkeyManager hotkeys,
+    public ApplicationRuntime(WindowManager window, ImGuiLayer imgui, HotkeyManager hotkeys,
             CameraController camera,
-            GpuParticleSystem particles, SimulationUi ui, SettingsController settingsController) {
+            GpuParticleSystem particles, SimulationUI ui, SettingsController settingsController) {
         this.window = window;
         this.imgui = imgui;
         this.hotkeys = hotkeys;

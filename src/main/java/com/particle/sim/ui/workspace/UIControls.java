@@ -1,9 +1,11 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
+
+import com.particle.sim.ui.theme.UIFonts;
 
 import imgui.ImGui;
 
-final class UiControls {
-    private UiControls() {
+final class UIControls {
+    private UIControls() {
     }
 
     static void settingSlider(String label, float value, float min, float max, int decimals, FloatSetter setter,
@@ -38,7 +40,7 @@ final class UiControls {
     }
 
     private static void settingLabel(String label, String value) {
-        ImGui.pushFont(UiFonts.medium());
+        ImGui.pushFont(UIFonts.medium());
         ImGui.textUnformatted(label);
         ImGui.popFont();
         float right = ImGui.getWindowContentRegionMaxX();

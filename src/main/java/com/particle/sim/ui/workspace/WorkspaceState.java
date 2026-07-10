@@ -1,17 +1,17 @@
-package com.particle.sim.ui;
+package com.particle.sim.ui.workspace;
 
 final class WorkspaceState {
-    private UiSection activeSection = UiSection.SIMULATION;
+    private UISection activeSection = UISection.SIMULATION;
     private boolean inspectorVisible = true;
     private boolean resetConfirmationOpen;
     private WorkspaceLayout.Mode layoutMode = WorkspaceLayout.Mode.WIDE;
 
-    UiSection activeSection() {
+    UISection activeSection() {
         return activeSection;
     }
 
-    void select(UiSection section) {
-        activeSection = section == null ? UiSection.SIMULATION : section;
+    void select(UISection section) {
+        activeSection = section == null ? UISection.SIMULATION : section;
         inspectorVisible = true;
     }
 

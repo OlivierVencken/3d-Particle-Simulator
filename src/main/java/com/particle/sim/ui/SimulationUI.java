@@ -3,8 +3,9 @@ package com.particle.sim.ui;
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SimulationDefaults;
+import com.particle.sim.ui.workspace.WorkspaceShell;
 
-public final class SimulationUi {
+public final class SimulationUI {
     private final WorkspaceShell workspace = new WorkspaceShell();
 
     private float currentFps;
