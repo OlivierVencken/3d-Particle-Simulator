@@ -55,7 +55,10 @@ public final class SimulationUi {
             return;
         }
 
-        workspace.render(deltaTime, currentFps, fpsCap, particles, camera, paused, this::togglePause,
+        workspace.render(deltaTime, currentFps, fpsCap, particles, camera, paused, () -> {
+            togglePause();
+            settingsChanged.run();
+        },
                 settingsChanged, resetSettings, savePreset, loadPreset, exitApplication, this::hide,
                 this::setFpsCap);
     }

@@ -69,8 +69,9 @@ final class InspectorSections {
 
         section("Population");
         ImInt groups = new ImInt(particles.groupCount());
+        ImGui.textDisabled("Groups");
         ImGui.setNextItemWidth(-1.0f);
-        if (ImGui.inputInt("Groups##particle-groups", groups, 1, 2)) {
+        if (ImGui.inputInt("##particle-groups", groups, 1, 2)) {
             particles.groupCount(groups.get());
             changed.run();
         }
@@ -91,7 +92,9 @@ final class InspectorSections {
 
         customSpawnAmount.set(Math.max(0, customSpawnAmount.get()));
         ImGui.setNextItemWidth(Math.max(100.0f, ImGui.getContentRegionAvailX() - 72.0f));
-        ImGui.inputInt("##custom-spawn-amount", customSpawnAmount, 100, 1_000);
+        if (ImGui.inputInt("##custom-spawn-amount", customSpawnAmount, 100, 1_000)) {
+            changed.run();
+        }
         customSpawnAmount.set(Math.max(0, customSpawnAmount.get()));
         ImGui.sameLine();
         if (ImGui.button("Add##custom-spawn", 64.0f, 0.0f)) {
@@ -187,7 +190,7 @@ final class InspectorSections {
 
     private void section(String label) {
         ImGui.spacing();
-        ImGui.pushFont(UiFonts.medium());
+        ImGui.pushFont(UiFonts.section());
         ImGui.separatorText(label);
         ImGui.popFont();
     }

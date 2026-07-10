@@ -34,6 +34,10 @@ public final class ImguiLayer {
         byte[] medium = ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Medium.ttf");
         fontAtlas.addFontFromMemoryTTF(regular, 16.0f);
         UiFonts.setMedium(fontAtlas.addFontFromMemoryTTF(medium, 16.0f));
+        UiFonts.setSection(fontAtlas.addFontFromMemoryTTF(
+                ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Medium.ttf"), 18.0f));
+        UiFonts.setTitle(fontAtlas.addFontFromMemoryTTF(
+                ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Medium.ttf"), 20.0f));
 
         fontAtlas.build();
         fontConfig.destroy();

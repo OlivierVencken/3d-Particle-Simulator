@@ -32,7 +32,9 @@ final class WorkspaceCommandBar {
     }
 
     private void renderLeft(float width, Runnable loadPreset, Runnable savePreset) {
+        ImGui.pushFont(UiFonts.title());
         ImGui.textUnformatted(width >= 900.0f ? "3D Particle Simulator" : "3DPS");
+        ImGui.popFont();
         if (width >= 720.0f) {
             ImGui.sameLine(0.0f, 20.0f);
             if (ImGui.button("Load##command-load", 64.0f, 28.0f)) {
