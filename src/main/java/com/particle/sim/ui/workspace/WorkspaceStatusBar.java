@@ -23,7 +23,7 @@ final class WorkspaceStatusBar {
             ImGui.setCursorPosX(12.0f);
             ImGui.setCursorPosY(Math.max(0.0f, (panel.height() - ImGui.getTextLineHeight()) * 0.5f));
             ImGui.pushStyleColor(ImGuiCol.Text,
-                    paused ? UIColors.TEXT_MUTED.vec4() : UIColors.STATUS_SUCCESS.vec4());
+                    paused ? UIColors.TEXT_MUTED.vec4() : UIColors.TEXT_PRIMARY.vec4());
             ImGui.textUnformatted(status);
             ImGui.popStyleColor();
             String qualityMessage = qualityMessage(particles);

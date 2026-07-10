@@ -4,7 +4,6 @@ import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.ui.theme.UIColors;
 import com.particle.sim.ui.theme.UIFonts;
 import imgui.ImGui;
-import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
@@ -140,12 +139,10 @@ final class WorkspaceCommandBar {
             ImGui.textUnformatted("Restore every simulation setting to its default value?");
             ImGui.textDisabled("This does not reset the current particle positions.");
             ImGui.spacing();
-            ImGui.pushStyleColor(ImGuiCol.Button, UIColors.STATUS_DANGER.vec4());
             if (ImGui.button("Reset settings", 128.0f, 32.0f)) {
                 resetSettings.run();
                 ImGui.closeCurrentPopup();
             }
-            ImGui.popStyleColor();
             ImGui.sameLine();
             if (ImGui.button("Cancel", 88.0f, 32.0f)) {
                 ImGui.closeCurrentPopup();

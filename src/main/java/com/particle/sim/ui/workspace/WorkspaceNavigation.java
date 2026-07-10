@@ -44,15 +44,9 @@ final class WorkspaceNavigation {
                 ImGui.pushStyleColor(ImGuiCol.Header, UIColors.TRANSPARENT.vec4());
                 ImGui.pushStyleColor(ImGuiCol.HeaderHovered, UIColors.TRANSPARENT.vec4());
                 ImGui.pushStyleColor(ImGuiCol.HeaderActive, UIColors.TRANSPARENT.vec4());
-                if (selected) {
-                    ImGui.pushStyleColor(ImGuiCol.Text, UIColors.ACCENT_BRIGHT.vec4());
-                }
                 if (ImGui.selectable(section.label() + "##navigation-" + section.name(),
                         selected, 0, itemWidth, 44.0f)) {
                     state.select(section);
-                }
-                if (selected) {
-                    ImGui.popStyleColor();
                 }
                 ImGui.popStyleColor(3);
                 ImGui.popStyleVar();

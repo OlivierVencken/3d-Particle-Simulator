@@ -6,7 +6,7 @@ public final class UIColors {
 
     public static final UIColor TEXT_PRIMARY = UIColor.fromHex("#E7E9EC");
     public static final UIColor TEXT_MUTED = UIColor.fromHex("#8F98A3");
-    public static final UIColor TEXT_SELECTION = UIColor.fromHex("#E8752A55");
+    public static final UIColor TEXT_SELECTION = UIColor.fromHex("#56606C66");
 
     public static final UIColor BACKGROUND_WINDOW = UIColor.fromHex("#0B0D10FA");
     public static final UIColor BACKGROUND_PANEL = UIColor.fromHex("#11151A");
@@ -22,17 +22,11 @@ public final class UIColors {
 
     public static final UIColor SURFACE_DEFAULT = UIColor.fromHex("#171C22");
     public static final UIColor SURFACE_HOVER = UIColor.fromHex("#202730");
-    public static final UIColor SURFACE_ACTIVE = UIColor.fromHex("#39281E");
+    public static final UIColor SURFACE_ACTIVE = UIColor.fromHex("#2A313A");
 
     public static final UIColor CONTROL_DEFAULT = UIColor.fromHex("#171C22");
     public static final UIColor CONTROL_HOVER = UIColor.fromHex("#252D36");
-    public static final UIColor CONTROL_ACTIVE = UIColor.fromHex("#E8752A");
-
-    public static final UIColor ACCENT_DEFAULT = UIColor.fromHex("#E8752A");
-    public static final UIColor ACCENT_MUTED = UIColor.fromHex("#C96424");
-    public static final UIColor ACCENT_BRIGHT = UIColor.fromHex("#F28A46");
-    public static final UIColor STATUS_DANGER = UIColor.fromHex("#D65A5A");
-    public static final UIColor STATUS_SUCCESS = UIColor.fromHex("#72B58C");
+    public static final UIColor CONTROL_ACTIVE = UIColor.fromHex("#3A434E");
 
     public static final UIColor TABLE_HEADER = UIColor.fromHex("#141414");
     public static final UIColor TABLE_ROW_ALTERNATE = UIColor.fromHex("#1B1B1B59");

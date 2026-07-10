@@ -110,12 +110,10 @@ final class InspectorSections {
             changed.run();
         }
         ImGui.spacing();
-        ImGui.pushStyleColor(ImGuiCol.Text, UIColors.STATUS_DANGER.vec4());
         if (ImGui.button("Clear particles##clear-particles")) {
             particles.clearParticles();
             changed.run();
         }
-        ImGui.popStyleColor();
     }
 
     private void renderAppearance(GpuParticleSystem particles, Runnable changed) {

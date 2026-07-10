@@ -51,9 +51,9 @@ public final class UITheme {
         color(ImGuiCol.ScrollbarGrab, UIColors.BORDER_DEFAULT.withAlpha(1.00f));
         color(ImGuiCol.ScrollbarGrabHovered, UIColors.BORDER_STRONG);
         color(ImGuiCol.ScrollbarGrabActive, UIColors.CONTROL_ACTIVE);
-        color(ImGuiCol.CheckMark, UIColors.ACCENT_DEFAULT);
-        color(ImGuiCol.SliderGrab, UIColors.ACCENT_MUTED);
-        color(ImGuiCol.SliderGrabActive, UIColors.ACCENT_BRIGHT);
+        color(ImGuiCol.CheckMark, UIColors.TEXT_PRIMARY);
+        color(ImGuiCol.SliderGrab, UIColors.BORDER_STRONG);
+        color(ImGuiCol.SliderGrabActive, UIColors.TEXT_MUTED);
 
         color(ImGuiCol.Button, UIColors.CONTROL_DEFAULT);
         color(ImGuiCol.ButtonHovered, UIColors.CONTROL_HOVER);
@@ -63,11 +63,11 @@ public final class UITheme {
         color(ImGuiCol.HeaderActive, UIColors.CONTROL_ACTIVE);
 
         color(ImGuiCol.Separator, UIColors.BORDER_DEFAULT);
-        color(ImGuiCol.SeparatorHovered, UIColors.ACCENT_MUTED.withAlpha(1.00f));
-        color(ImGuiCol.SeparatorActive, UIColors.ACCENT_BRIGHT.withAlpha(1.00f));
-        color(ImGuiCol.ResizeGrip, UIColors.ACCENT_MUTED.withAlpha(0.28f));
-        color(ImGuiCol.ResizeGripHovered, UIColors.ACCENT_MUTED.withAlpha(0.62f));
-        color(ImGuiCol.ResizeGripActive, UIColors.ACCENT_BRIGHT.withAlpha(0.92f));
+        color(ImGuiCol.SeparatorHovered, UIColors.BORDER_STRONG);
+        color(ImGuiCol.SeparatorActive, UIColors.TEXT_MUTED);
+        color(ImGuiCol.ResizeGrip, UIColors.BORDER_DEFAULT.withAlpha(0.28f));
+        color(ImGuiCol.ResizeGripHovered, UIColors.BORDER_STRONG.withAlpha(0.62f));
+        color(ImGuiCol.ResizeGripActive, UIColors.TEXT_MUTED.withAlpha(0.92f));
 
         color(ImGuiCol.Tab, UIColors.SURFACE_DEFAULT);
         color(ImGuiCol.TabHovered, UIColors.CONTROL_HOVER);
@@ -81,7 +81,7 @@ public final class UITheme {
         color(ImGuiCol.TableRowBg, UIColors.TRANSPARENT);
         color(ImGuiCol.TableRowBgAlt, UIColors.TABLE_ROW_ALTERNATE);
         color(ImGuiCol.TextSelectedBg, UIColors.TEXT_SELECTION);
-        color(ImGuiCol.NavHighlight, UIColors.ACCENT_DEFAULT);
+        color(ImGuiCol.NavHighlight, UIColors.BORDER_STRONG);
         color(ImGuiCol.ModalWindowDimBg, UIColors.SCRIM);
     }
 
