@@ -7,7 +7,14 @@ import imgui.ImVec4;
 import java.util.Set;
 import java.util.Random;
 
+import static org.lwjgl.opengl.GL43C.GL_MAX_COMPUTE_WORK_GROUP_COUNT;
+import static org.lwjgl.opengl.GL43C.GL_MAX_SHADER_STORAGE_BLOCK_SIZE;
+import static org.lwjgl.opengl.GL43C.glGetInteger64;
+import static org.lwjgl.opengl.GL43C.glGetIntegeri;
+
 public final class GpuParticleSystem {
+    private static final int COMPUTE_WORK_GROUP_SIZE = 256;
+    private static final int BYTES_PER_PARTICLE = 4 * 4 * Float.BYTES + Integer.BYTES;
 
     private final ParticleBuffers particleBuffers = new ParticleBuffers();
     private final TrailHistoryBuffers trailHistoryBuffers = new TrailHistoryBuffers();
@@ -20,11 +27,14 @@ public final class GpuParticleSystem {
             SimulationDefaults.GROUP_COUNT,
             SimulationDefaults.MAX_GROUP_COUNT);
     private final Random particleRandom = new Random();
+    private int maximumParticleCount = SimulationDefaults.MAX_PARTICLE_COUNT;
     private boolean initialized;
 
     public void init() {
         compute.init();
         renderer.init();
+        maximumParticleCount = detectMaximumParticleCount();
+        config.particleCount(Math.min(config.particleCount(), maximumParticleCount));
         spatialGridBuffers.init(particleCount(), gridCellCount());
         attractionMatrix.randomize();
         initialized = true;
@@ -87,7 +97,7 @@ public final class GpuParticleSystem {
     }
 
     public int maxParticleCount() {
-        return SimulationDefaults.MAX_PARTICLE_COUNT;
+        return maximumParticleCount;
     }
 
     public ParticleSimulationConfig config() {
@@ -99,38 +109,25 @@ public final class GpuParticleSystem {
             return;
         }
 
-        setParticleCount(config.particleCount());
-        pointSize(config.pointSize());
-        fixedParticleScreenSize(config.fixedParticleScreenSize());
-        effectModes(config.effectModes());
-        glowBlurPasses(config.glowBlurPasses());
-        glowStrength(config.glowStrength());
-        glowRadius(config.glowRadius());
-        glowFalloff(config.glowFalloff());
-        trailLength(config.trailLength());
-        trailThickness(config.trailThickness());
-        bounds(config.bounds());
-        forceFactor(config.forceFactor());
-        velocityDamping(config.velocityDamping());
-        interactionRange(config.interactionRange());
-        repulsionRadius(config.repulsionRadius());
-        maxVelocity(config.maxVelocity());
-        boundaryBounce(config.boundaryBounce());
-        toroidalWrap(config.toroidalWrap());
-        densityRegulationEnabled(config.densityRegulationEnabled());
-        densityLimit(config.densityLimit());
-        distanceMetric(config.distanceMetric());
-        groupCount(config.groupCount());
-        colorMode(config.colorMode());
-        spawnMode(config.spawnMode());
-        groupColors(config.groupColors());
+        ParticleSimulationConfig sanitized = config.copy();
+        sanitized.sanitize();
+        sanitized.particleCount(Math.min(sanitized.particleCount(), maximumParticleCount));
+
+        int oldParticleCount = particleCount();
+        this.config.applyFrom(sanitized);
+        attractionMatrix.groupCount(this.config.groupCount());
+        if (initialized) {
+            particleBuffers.resize(oldParticleCount, this.config.particleCount(), false, this.config, particleRandom);
+            trailHistoryBuffers.clear();
+        }
     }
 
     public void addParticles(int amount) {
         if (amount <= 0) {
             return;
         }
-        setParticleCount(particleCount() + amount, true);
+        long requestedParticleCount = (long) particleCount() + amount;
+        setParticleCount((int) Math.min(requestedParticleCount, Integer.MAX_VALUE), true);
     }
 
     public void removeParticles(int amount) {
@@ -149,7 +146,7 @@ public final class GpuParticleSystem {
     }
 
     private void setParticleCount(int requestedParticleCount, boolean preserveExisting) {
-        int newParticleCount = Math.max(0, Math.min(SimulationDefaults.MAX_PARTICLE_COUNT, requestedParticleCount));
+        int newParticleCount = Math.max(0, Math.min(maximumParticleCount, requestedParticleCount));
         if (initialized) {
             resizeParticles(newParticleCount, preserveExisting);
         } else {
@@ -167,7 +164,7 @@ public final class GpuParticleSystem {
 
     private void resizeParticles(int requestedParticleCount, boolean preserveExisting) {
         int oldParticleCount = particleCount();
-        int newParticleCount = Math.max(0, Math.min(SimulationDefaults.MAX_PARTICLE_COUNT, requestedParticleCount));
+        int newParticleCount = Math.max(0, Math.min(maximumParticleCount, requestedParticleCount));
         particleBuffers.resize(oldParticleCount, newParticleCount, preserveExisting, config, particleRandom);
         trailHistoryBuffers.clear();
         config.particleCount(newParticleCount);
@@ -424,5 +421,14 @@ public final class GpuParticleSystem {
 
     public int gridCellCount() {
         return SpatialGridSizing.gridCellCount(bounds(), interactionRange());
+    }
+
+    private int detectMaximumParticleCount() {
+        long storageBlockLimit = glGetInteger64(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / (4L * Float.BYTES);
+        long dispatchLimit = (long) glGetIntegeri(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0) * COMPUTE_WORK_GROUP_SIZE;
+        long memoryLimit = SimulationDefaults.SIMULATION_MEMORY_BUDGET_BYTES / BYTES_PER_PARTICLE;
+        long supported = Math.min(SimulationDefaults.MAX_PARTICLE_COUNT,
+                Math.min(storageBlockLimit, Math.min(dispatchLimit, memoryLimit)));
+        return (int) Math.max(1L, supported);
     }
 }

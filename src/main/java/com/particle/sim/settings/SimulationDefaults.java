@@ -11,7 +11,8 @@ public final class SimulationDefaults {
     }
 
     public static final int PARTICLE_COUNT = 65_536;
-    public static final int MAX_PARTICLE_COUNT = 1_000_000;
+    public static final int MAX_PARTICLE_COUNT = 16_000_000;
+    public static final long SIMULATION_MEMORY_BUDGET_BYTES = 512L * 1024L * 1024L;
     public static final int GROUP_COUNT = 6;
     public static final int MAX_GROUP_COUNT = 16;
 

@@ -46,6 +46,7 @@ class GpuParticleSystemOpenGlTest {
             system.interactionRange(0.4f);
             system.spawnMode(SpawnMode.POINT);
             system.init();
+            assertTrue(system.maxParticleCount() > 1_000_000);
             system.step();
 
             assertEquals(GL_NO_ERROR, glGetError());

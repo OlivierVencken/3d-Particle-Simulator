@@ -1,7 +1,5 @@
 package com.particle.sim.particles;
 
-import org.lwjgl.BufferUtils;
-
 import java.nio.FloatBuffer;
 import java.util.Random;
 
@@ -15,13 +13,15 @@ import static org.lwjgl.opengl.GL43C.glBufferSubData;
 import static org.lwjgl.opengl.GL43C.glCopyBufferSubData;
 import static org.lwjgl.opengl.GL43C.glDeleteBuffers;
 import static org.lwjgl.opengl.GL43C.glGenBuffers;
+import static org.lwjgl.system.MemoryUtil.memAllocFloat;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 final class ParticleBuffers {
     private int positionSsbo;
     private int velocitySsbo;
     private int nextPositionSsbo;
     private int nextVelocitySsbo;
-    private long bufferBytes;
+    private int particleCapacity;
 
     int positionSsbo() {
         return positionSsbo;
@@ -44,11 +44,23 @@ final class ParticleBuffers {
         int copiedParticleCount = preserveExisting ? Math.min(oldParticleCount, requestedParticleCount) : 0;
         int appendedParticleCount = requestedParticleCount - copiedParticleCount;
 
+        if (requestedParticleCount <= particleCapacity) {
+            if (!preserveExisting && requestedParticleCount > 0) {
+                uploadRandomParticles(positionSsbo, velocitySsbo, 0, requestedParticleCount, config, random);
+            } else if (appendedParticleCount > 0) {
+                long byteOffset = (long) copiedParticleCount * 4L * Float.BYTES;
+                uploadRandomParticles(positionSsbo, velocitySsbo, byteOffset, appendedParticleCount, config, random);
+            }
+            return;
+        }
+
+        int newParticleCapacity = grownCapacity(particleCapacity, requestedParticleCount);
+
         int newPositionSsbo = glGenBuffers();
         int newVelocitySsbo = glGenBuffers();
         int newNextPositionSsbo = glGenBuffers();
         int newNextVelocitySsbo = glGenBuffers();
-        long newBufferBytes = particleBufferBytes(requestedParticleCount);
+        long newBufferBytes = particleBufferBytes(newParticleCapacity);
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, newPositionSsbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, newBufferBytes, GL_DYNAMIC_DRAW);
@@ -68,8 +80,6 @@ final class ParticleBuffers {
         if (appendedParticleCount > 0) {
             long byteOffset = (long) copiedParticleCount * 4L * Float.BYTES;
             uploadRandomParticles(newPositionSsbo, newVelocitySsbo, byteOffset, appendedParticleCount, config, random);
-        } else if (requestedParticleCount == 0) {
-            uploadZeroParticle(newPositionSsbo, newVelocitySsbo);
         }
 
         glDeleteBuffers(positionSsbo);
@@ -81,7 +91,7 @@ final class ParticleBuffers {
         velocitySsbo = newVelocitySsbo;
         nextPositionSsbo = newNextPositionSsbo;
         nextVelocitySsbo = newNextVelocitySsbo;
-        bufferBytes = newBufferBytes;
+        particleCapacity = newParticleCapacity;
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
@@ -104,31 +114,29 @@ final class ParticleBuffers {
 
     private void uploadRandomParticles(int targetPositionSsbo, int targetVelocitySsbo, long byteOffset, int count,
             ParticleSimulationConfig config, Random random) {
-        FloatBuffer positions = BufferUtils.createFloatBuffer(count * 4);
-        FloatBuffer velocities = BufferUtils.createFloatBuffer(count * 4);
+        FloatBuffer positions = null;
+        FloatBuffer velocities = null;
+        try {
+            positions = memAllocFloat(Math.multiplyExact(count, 4));
+            velocities = memAllocFloat(Math.multiplyExact(count, 4));
+            ParticleSpawner.spawnParticles(positions, velocities, count, config.bounds(), config.groupCount(),
+                    config.spawnMode(), random);
 
-        ParticleSpawner.spawnParticles(positions, velocities, count, config.bounds(), config.groupCount(),
-                config.spawnMode(), random);
+            positions.flip();
+            velocities.flip();
 
-        positions.flip();
-        velocities.flip();
-
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, targetPositionSsbo);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, byteOffset, positions);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, targetVelocitySsbo);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, byteOffset, velocities);
-    }
-
-    private void uploadZeroParticle(int targetPositionSsbo, int targetVelocitySsbo) {
-        FloatBuffer positions = BufferUtils.createFloatBuffer(4);
-        FloatBuffer velocities = BufferUtils.createFloatBuffer(4);
-        positions.put(0.0f).put(0.0f).put(0.0f).put(0.0f).flip();
-        velocities.put(0.0f).put(0.0f).put(0.0f).put(0.0f).flip();
-
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, targetPositionSsbo);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, positions);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, targetVelocitySsbo);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, velocities);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, targetPositionSsbo);
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, byteOffset, positions);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, targetVelocitySsbo);
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, byteOffset, velocities);
+        } finally {
+            if (positions != null) {
+                memFree(positions);
+            }
+            if (velocities != null) {
+                memFree(velocities);
+            }
+        }
     }
 
     private static void copyBufferPrefix(int sourceBuffer, int targetBuffer, long byteCount) {
@@ -139,6 +147,14 @@ final class ParticleBuffers {
 
     private static long particleBufferBytes(int count) {
         return (long) Math.max(count, 1) * 4L * Float.BYTES;
+    }
+
+    private static int grownCapacity(int currentCapacity, int requiredCapacity) {
+        int capacity = Math.max(currentCapacity, 1);
+        while (capacity < requiredCapacity) {
+            capacity = Math.max(requiredCapacity, capacity + Math.max(capacity / 2, 1));
+        }
+        return capacity;
     }
 
     void dispose() {

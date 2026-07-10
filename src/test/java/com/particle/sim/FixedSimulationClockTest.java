@@ -39,6 +39,18 @@ class FixedSimulationClockTest {
         assertFalse(clock.hasStep());
     }
 
+    @Test
+    void discardsWholeBacklogStepsButRetainsFractionalTime() {
+        FixedSimulationClock clock = new FixedSimulationClock(0.01);
+        clock.addFrameTime(0.035);
+
+        assertEquals(0.03, clock.discardExcessSteps(), EPSILON);
+        assertFalse(clock.hasStep());
+
+        clock.addFrameTime(0.005);
+        assertTrue(clock.hasStep());
+    }
+
     private int countStepsForOneSecondAtFps(int fps) {
         FixedSimulationClock clock = new FixedSimulationClock(SimulationDefaults.SIMULATION_STEP_SECONDS);
         int steps = 0;
