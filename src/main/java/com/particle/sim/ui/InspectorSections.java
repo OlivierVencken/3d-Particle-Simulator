@@ -9,6 +9,7 @@ import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.settings.SimulationDefaults;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
 
@@ -194,7 +195,8 @@ final class InspectorSections {
 
     private void metricCard(String id, String label, String value, float width) {
         ImGui.pushStyleColor(ImGuiCol.ChildBg, UiPalette.SURFACE.withAlpha(0.72f).vec4());
-        if (ImGui.beginChild("##metric-" + id, width, 64.0f, true)) {
+        int flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
+        if (ImGui.beginChild("##metric-" + id, width, 64.0f, true, flags)) {
             ImGui.textDisabled(label);
             ImGui.pushFont(UiFonts.section());
             ImGui.textUnformatted(value);

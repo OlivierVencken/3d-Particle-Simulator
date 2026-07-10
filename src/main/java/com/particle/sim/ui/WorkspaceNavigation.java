@@ -23,21 +23,24 @@ final class WorkspaceNavigation {
                 boolean selected = state.activeSection() == section;
                 ImVec2 itemOrigin = ImGui.getCursorScreenPos();
                 float itemWidth = ImGui.getContentRegionAvailX();
+                boolean hovered = ImGui.isMouseHoveringRect(
+                        itemOrigin.x + 4.0f, itemOrigin.y,
+                        itemOrigin.x + itemWidth - 4.0f, itemOrigin.y + 44.0f);
                 ImGui.pushFont(UiFonts.section());
                 ImGui.pushStyleVar(ImGuiStyleVar.SelectableTextAlign, 0.5f, 0.5f);
-                if (selected) {
-                    int selectedBackground = ImGui.getColorU32(UiPalette.SURFACE_ACTIVE.vec4());
-                    int accent = ImGui.getColorU32(UiPalette.ACCENT.vec4());
+                if (selected || hovered) {
+                    UiColor background = selected || ImGui.isMouseDown(0)
+                            ? UiPalette.SURFACE_ACTIVE
+                            : UiPalette.SURFACE_HOVERED;
                     ImGui.getWindowDrawList().addRectFilled(
                             itemOrigin.x + 4.0f, itemOrigin.y,
                             itemOrigin.x + itemWidth - 4.0f, itemOrigin.y + 44.0f,
-                            selectedBackground, 5.0f);
-                    ImGui.getWindowDrawList().addRectFilled(
-                            itemOrigin.x + 4.0f, itemOrigin.y + 7.0f,
-                            itemOrigin.x + 7.0f, itemOrigin.y + 37.0f,
-                            accent, 2.0f);
-                    ImGui.pushStyleColor(ImGuiCol.Header, UiPalette.CLEAR.vec4());
-                    ImGui.pushStyleColor(ImGuiCol.HeaderHovered, UiPalette.CLEAR.vec4());
+                            ImGui.getColorU32(background.vec4()), 5.0f);
+                }
+                ImGui.pushStyleColor(ImGuiCol.Header, UiPalette.CLEAR.vec4());
+                ImGui.pushStyleColor(ImGuiCol.HeaderHovered, UiPalette.CLEAR.vec4());
+                ImGui.pushStyleColor(ImGuiCol.HeaderActive, UiPalette.CLEAR.vec4());
+                if (selected) {
                     ImGui.pushStyleColor(ImGuiCol.Text, UiPalette.ACCENT_BRIGHT.vec4());
                 }
                 if (ImGui.selectable(section.label() + "##navigation-" + section.name(),
@@ -45,8 +48,9 @@ final class WorkspaceNavigation {
                     state.select(section);
                 }
                 if (selected) {
-                    ImGui.popStyleColor(3);
+                    ImGui.popStyleColor();
                 }
+                ImGui.popStyleColor(3);
                 ImGui.popStyleVar();
                 ImGui.popFont();
                 ImGui.dummy(0.0f, 4.0f);

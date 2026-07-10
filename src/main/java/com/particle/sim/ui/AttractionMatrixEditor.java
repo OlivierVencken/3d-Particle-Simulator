@@ -7,6 +7,7 @@ import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
+import imgui.flag.ImGuiCol;
 
 final class AttractionMatrixEditor {
     private static final int LEFT_MOUSE_BUTTON = 0;
@@ -31,10 +32,12 @@ final class AttractionMatrixEditor {
                 settingsChanged);
 
         renderMatrixActions(particles, settingsChanged);
-        ImGui.beginChild("matrix-scroll", 0.0f, Math.max(180.0f, ImGui.getContentRegionAvailY() - 34.0f), true,
+        ImGui.pushStyleColor(ImGuiCol.ChildBg, UiPalette.CLEAR.vec4());
+        ImGui.beginChild("matrix-scroll", 0.0f, Math.max(180.0f, ImGui.getContentRegionAvailY() - 34.0f), false,
                 imgui.flag.ImGuiWindowFlags.HorizontalScrollbar);
         renderMatrix(particles, settingsChanged);
         ImGui.endChild();
+        ImGui.popStyleColor();
         renderLegend();
     }
 
