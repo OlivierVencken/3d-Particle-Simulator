@@ -116,7 +116,7 @@ public final class ApplicationRuntime {
 
     private void renderScene() {
         glViewport(0, 0, window.width(), window.height());
-        glClearColor(0.015f, 0.018f, 0.024f, 1.0f);
+        glClearColor(0.031f, 0.031f, 0.031f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glDepthMask(false);
         try {

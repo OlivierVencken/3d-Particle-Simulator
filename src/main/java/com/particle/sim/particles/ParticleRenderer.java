@@ -218,7 +218,7 @@ public final class ParticleRenderer {
 
         glBindFramebuffer(GL_FRAMEBUFFER, sceneFbo);
         glViewport(0, 0, width, height);
-        glClearColor(0.015f, 0.018f, 0.024f, 1.0f);
+        glClearColor(0.031f, 0.031f, 0.031f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         if (trailsEnabled) {
             renderTrails(width, height, viewMatrix, particleBuffers, spatialGridBuffers, trailHistoryBuffers,
