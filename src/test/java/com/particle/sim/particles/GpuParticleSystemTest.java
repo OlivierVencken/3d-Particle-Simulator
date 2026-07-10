@@ -19,7 +19,6 @@ class GpuParticleSystemTest {
         assertEquals(65_536, system.particleCount());
         assertEquals(1_000_000, system.maxParticleCount());
         assertEquals(6, system.groupCount());
-        assertEquals(128, system.maxParticlesPerCell());
         assertEquals(ColorMode.GROUP, system.colorMode());
         assertTrue(system.effectModes().isEmpty());
         assertFalse(system.effectEnabled(EffectMode.GLOW));
@@ -133,24 +132,13 @@ class GpuParticleSystemTest {
     }
 
     @Test
-    void spatialMapSizeScalesWithLikelyOccupiedGridCells() {
+    void gridCellCountMatchesGridVolume() {
         GpuParticleSystem system = new GpuParticleSystem();
 
         system.bounds(4.0f);
         system.interactionRange(0.95f);
 
-        assertTrue(system.spatialMapSize() < 2_000);
-    }
-
-    @Test
-    void spatialMapSizeStaysCappedForWorstCaseSettings() {
-        GpuParticleSystem system = new GpuParticleSystem();
-
-        system.setParticleCount(system.maxParticleCount());
-        system.bounds(10.0f);
-        system.interactionRange(0.2f);
-
-        assertEquals(GpuParticleSystem.MAX_SPATIAL_MAP_SIZE, system.spatialMapSize());
+        assertEquals(729, system.gridCellCount());
     }
 
     @Test

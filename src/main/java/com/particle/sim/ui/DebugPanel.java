@@ -76,8 +76,8 @@ final class DebugPanel {
         ImGui.separatorText("Simulation Internals");
         ImGui.text("Particles: %,d / %,d".formatted(particles.particleCount(), particles.maxParticleCount()));
         ImGui.text("Grid: %d x %d x %d".formatted(gridSize, gridSize, gridSize));
-        ImGui.text("Grid cells: %,d".formatted(gridSize * gridSize * gridSize));
-        ImGui.text("Cell capacity: %,d".formatted(particles.maxParticlesPerCell()));
+        ImGui.text("Grid cells: %,d".formatted(particles.gridCellCount()));
+        ImGui.textUnformatted("Cell storage: exact compact ranges");
         ImGui.text("Simulation step: %.2f ms (%.0f Hz)".formatted(
                 SimulationDefaults.SIMULATION_STEP_SECONDS * 1000.0,
                 1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS));

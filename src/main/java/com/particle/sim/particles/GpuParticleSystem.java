@@ -8,8 +8,6 @@ import java.util.Set;
 import java.util.Random;
 
 public final class GpuParticleSystem {
-    private static final int WORK_GROUP_SIZE = 256;
-    public static final int MAX_SPATIAL_MAP_SIZE = SpatialGridSizing.MAX_SPATIAL_MAP_SIZE;
 
     private final ParticleBuffers particleBuffers = new ParticleBuffers();
     private final TrailHistoryBuffers trailHistoryBuffers = new TrailHistoryBuffers();
@@ -27,7 +25,7 @@ public final class GpuParticleSystem {
     public void init() {
         compute.init();
         renderer.init();
-        spatialGridBuffers.init(desiredSpatialMapSize());
+        spatialGridBuffers.init(particleCount(), gridCellCount());
         attractionMatrix.randomize();
         initialized = true;
         reset();
@@ -50,15 +48,9 @@ public final class GpuParticleSystem {
             return;
         }
 
-        spatialGridBuffers.ensureCapacity(desiredSpatialMapSize());
-        compute.bindBuffers(particleBuffers, spatialGridBuffers);
-
-        spatialGridBuffers.clear();
-        compute.setUniforms(this, deltaTime, 0);
-        compute.dispatch(particleCount(), WORK_GROUP_SIZE, false);
-
-        compute.setUniforms(this, deltaTime, 1);
-        compute.dispatch(particleCount(), WORK_GROUP_SIZE, true);
+        spatialGridBuffers.ensureCapacity(particleCount(), gridCellCount());
+        compute.buildGrid(this, particleBuffers, spatialGridBuffers);
+        compute.integrate(this, particleBuffers, spatialGridBuffers, deltaTime);
         particleBuffers.swapState();
 
         if (effectEnabled(EffectMode.TRAILS)) {
@@ -68,22 +60,17 @@ public final class GpuParticleSystem {
 
     private void rebuildSpatialGrid() {
         if (particleCount() == 0) {
-            spatialGridBuffers.clear();
             return;
         }
 
-        spatialGridBuffers.ensureCapacity(desiredSpatialMapSize());
-        compute.bindBuffers(particleBuffers, spatialGridBuffers);
-
-        spatialGridBuffers.clear();
-        compute.setUniforms(this, 0.0f, 0);
-        compute.dispatch(particleCount(), WORK_GROUP_SIZE, false);
+        spatialGridBuffers.ensureCapacity(particleCount(), gridCellCount());
+        compute.buildGrid(this, particleBuffers, spatialGridBuffers);
     }
 
     public void render(int width, int height, float[] viewMatrix) {
         renderer.render(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount(), pointSize(),
                 fixedParticleScreenSize(), effectEnabled(EffectMode.GLOW), effectEnabled(EffectMode.TRAILS),
-                colorMode().ordinal(), groupCount(), maxVelocity(), bounds(), interactionRange(), spatialMapSize(),
+                colorMode().ordinal(), groupCount(), maxVelocity(), bounds(), interactionRange(),
                 glowSettings(), trailSettings(), trailHistoryBuffers);
     }
 
@@ -435,15 +422,7 @@ public final class GpuParticleSystem {
         return SpatialGridSizing.gridSize(bounds(), interactionRange());
     }
 
-    public int spatialMapSize() {
-        return initialized ? spatialGridBuffers.mapSize() : desiredSpatialMapSize();
-    }
-
-    private int desiredSpatialMapSize() {
-        return SpatialGridSizing.spatialMapSize(particleCount(), bounds(), interactionRange());
-    }
-
-    public int maxParticlesPerCell() {
-        return SpatialGridBuffers.MAX_PARTICLES_PER_CELL;
+    public int gridCellCount() {
+        return SpatialGridSizing.gridCellCount(bounds(), interactionRange());
     }
 }

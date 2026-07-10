@@ -13,6 +13,10 @@ class ShaderResourceTest {
     @Test
     void shaderResourcesArePackagedWithExpectedEntrypoints() throws IOException {
         assertShaderContains("/shaders/particle.comp", "layout(local_size_x = 256) in;", "void main()");
+        assertShaderContains("/shaders/grid_count.comp", "atomicAdd", "void main()");
+        assertShaderContains("/shaders/grid_scan.comp", "shared int values[512]", "void main()");
+        assertShaderContains("/shaders/grid_scan_add.comp", "block_offsets", "void main()");
+        assertShaderContains("/shaders/grid_scatter.comp", "particle_ids[destination]", "void main()");
         assertShaderContains("/shaders/particle.vert", "uniform mat4 uViewProjection;", "void main()");
         assertShaderContains("/shaders/particle.frag", "out vec4 fragColor;", "void main()");
         assertShaderContains("/shaders/fullscreen.vert", "out vec2 vUv;", "void main()");

@@ -77,7 +77,6 @@ public final class ParticleRenderer {
     private int uBoundsLoc;
     private int uInteractionRangeLoc;
     private int uGridSizeLoc;
-    private int uMapSizeLoc;
 
     private int uTrailViewProjectionLoc;
     private int uTrailViewLoc;
@@ -97,7 +96,6 @@ public final class ParticleRenderer {
     private int uTrailBoundsLoc;
     private int uTrailInteractionRangeLoc;
     private int uTrailGridSizeLoc;
-    private int uTrailMapSizeLoc;
 
     private int uBlurTextureLoc;
     private int uBlurDirectionLoc;
@@ -134,7 +132,6 @@ public final class ParticleRenderer {
         uBoundsLoc = glGetUniformLocation(renderProgram, "uBounds");
         uInteractionRangeLoc = glGetUniformLocation(renderProgram, "uInteractionRange");
         uGridSizeLoc = glGetUniformLocation(renderProgram, "uGridSize");
-        uMapSizeLoc = glGetUniformLocation(renderProgram, "uMapSize");
 
         uTrailViewProjectionLoc = glGetUniformLocation(trailProgram, "uViewProjection");
         uTrailViewLoc = glGetUniformLocation(trailProgram, "uView");
@@ -154,7 +151,6 @@ public final class ParticleRenderer {
         uTrailBoundsLoc = glGetUniformLocation(trailProgram, "uBounds");
         uTrailInteractionRangeLoc = glGetUniformLocation(trailProgram, "uInteractionRange");
         uTrailGridSizeLoc = glGetUniformLocation(trailProgram, "uGridSize");
-        uTrailMapSizeLoc = glGetUniformLocation(trailProgram, "uMapSize");
 
         uBlurTextureLoc = glGetUniformLocation(blurProgram, "uTexture");
         uBlurDirectionLoc = glGetUniformLocation(blurProgram, "uDirection");
@@ -168,7 +164,7 @@ public final class ParticleRenderer {
     public void render(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
             SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, boolean fixedParticleScreenSize,
             boolean glowEnabled, boolean trailsEnabled, int colorMode, int groupCount, float maxVelocity, float bounds,
-            float interactionRange, int spatialMapSize, GlowSettings glowSettings, TrailSettings trailSettings,
+            float interactionRange, GlowSettings glowSettings, TrailSettings trailSettings,
             TrailHistoryBuffers trailHistoryBuffers) {
         if (particleCount == 0) {
             return;
@@ -177,24 +173,24 @@ public final class ParticleRenderer {
         if (glowEnabled) {
             renderGlow(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
                     fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange,
-                    spatialMapSize, glowSettings, trailsEnabled, trailSettings, trailHistoryBuffers);
+                    glowSettings, trailsEnabled, trailSettings, trailHistoryBuffers);
             return;
         }
 
         if (trailsEnabled) {
             renderTrails(width, height, viewMatrix, particleBuffers, spatialGridBuffers, trailHistoryBuffers,
                     particleCount, pointSize, fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds,
-                    interactionRange, spatialMapSize, trailSettings);
+                    interactionRange, trailSettings);
         }
 
         renderParticles(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
-                fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange, spatialMapSize);
+                fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange);
     }
 
     private void renderGlow(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
             SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, boolean fixedParticleScreenSize,
             int colorMode, int groupCount, float maxVelocity, float bounds, float interactionRange,
-            int spatialMapSize, GlowSettings glowSettings, boolean trailsEnabled, TrailSettings trailSettings,
+            GlowSettings glowSettings, boolean trailsEnabled, TrailSettings trailSettings,
             TrailHistoryBuffers trailHistoryBuffers) {
         ensureGlowTargets(width, height);
 
@@ -205,10 +201,10 @@ public final class ParticleRenderer {
         if (trailsEnabled) {
             renderTrails(width, height, viewMatrix, particleBuffers, spatialGridBuffers, trailHistoryBuffers,
                     particleCount, pointSize, fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds,
-                    interactionRange, spatialMapSize, trailSettings);
+                    interactionRange, trailSettings);
         }
         renderParticles(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
-                fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange, spatialMapSize);
+                fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange);
 
         boolean blendEnabled = glIsEnabled(GL_BLEND);
         glDisable(GL_BLEND);
@@ -242,13 +238,12 @@ public final class ParticleRenderer {
 
     private void renderParticles(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
             SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, boolean fixedParticleScreenSize,
-            int colorMode, int groupCount, float maxVelocity, float bounds, float interactionRange, int spatialMapSize) {
+            int colorMode, int groupCount, float maxVelocity, float bounds, float interactionRange) {
         glUseProgram(renderProgram);
         glBindVertexArray(particleVao);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particleBuffers.positionSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, particleBuffers.velocitySsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, spatialGridBuffers.countsSsbo());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, spatialGridBuffers.keysSsbo());
 
         glUniformMatrix4fv(uViewProjectionLoc, false, viewProjection(width, height, viewMatrix));
         if (uViewLoc != -1) {
@@ -279,16 +274,13 @@ public final class ParticleRenderer {
         if (uGridSizeLoc != -1) {
             glUniform1i(uGridSizeLoc, SpatialGridSizing.gridSize(bounds, interactionRange));
         }
-        if (uMapSizeLoc != -1) {
-            glUniform1i(uMapSizeLoc, spatialMapSize);
-        }
         glDrawArrays(GL_POINTS, 0, particleCount);
     }
 
     private void renderTrails(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
             SpatialGridBuffers spatialGridBuffers, TrailHistoryBuffers trailHistoryBuffers, int particleCount,
             float pointSize, boolean fixedParticleScreenSize, int colorMode, int groupCount, float maxVelocity,
-            float bounds, float interactionRange, int spatialMapSize, TrailSettings trailSettings) {
+            float bounds, float interactionRange, TrailSettings trailSettings) {
         int activeSamples = Math.min(trailSettings.length(), trailHistoryBuffers.sampleCount());
         if (activeSamples < 2 || trailHistoryBuffers.historySsbo() == 0) {
             return;
@@ -299,7 +291,6 @@ public final class ParticleRenderer {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particleBuffers.positionSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, particleBuffers.velocitySsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, spatialGridBuffers.countsSsbo());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, spatialGridBuffers.keysSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, trailHistoryBuffers.historySsbo());
 
         glUniformMatrix4fv(uTrailViewProjectionLoc, false, viewProjection(width, height, viewMatrix));
@@ -320,7 +311,6 @@ public final class ParticleRenderer {
         glUniform1f(uTrailBoundsLoc, bounds);
         glUniform1f(uTrailInteractionRangeLoc, interactionRange);
         glUniform1i(uTrailGridSizeLoc, SpatialGridSizing.gridSize(bounds, interactionRange));
-        glUniform1i(uTrailMapSizeLoc, spatialMapSize);
 
         int vertexCount = particleCount * (activeSamples - 1) * 2;
         glDrawArrays(GL_LINES, 0, vertexCount);

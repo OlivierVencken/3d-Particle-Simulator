@@ -3,9 +3,6 @@
 layout(local_size_x = 256) in;
 
 #define MAX_GROUPS 16
-#define MAX_GRID_PROBES 32
-#define GRID_KEY_COORD_OFFSET 512
-#define GRID_KEY_COORD_MASK 1023
 #define DISTANCE_EUCLIDEAN 0
 #define DISTANCE_MANHATTAN 1
 #define DISTANCE_CHEBYSHEV 2
@@ -18,23 +15,23 @@ layout(std430, binding = 1) readonly buffer Velocities {
     vec4 velocities[];
 };
 
-layout(std430, binding = 2) buffer GridData {
-    int grid_data[];
+layout(std430, binding = 2) readonly buffer GridParticleIds {
+    int particle_ids[];
 };
 
-layout(std430, binding = 3) buffer GridCounts {
+layout(std430, binding = 3) readonly buffer GridCounts {
     int grid_counts[];
 };
 
-layout(std430, binding = 4) buffer GridKeys {
-    int grid_keys[];
+layout(std430, binding = 4) readonly buffer GridOffsets {
+    int grid_offsets[];
 };
 
-layout(std430, binding = 5) writeonly buffer NextPositions {
+layout(std430, binding = 6) writeonly buffer NextPositions {
     vec4 next_positions[];
 };
 
-layout(std430, binding = 6) writeonly buffer NextVelocities {
+layout(std430, binding = 7) writeonly buffer NextVelocities {
     vec4 next_velocities[];
 };
 
@@ -52,118 +49,48 @@ uniform int uDensityRegulationEnabled;
 uniform float uDensityLimit;
 uniform int uDistanceMetric;
 uniform int uGridSize;
-uniform int uMapSize;
-uniform int uMaxParticlesPerCell;
 uniform int uToroidalWrap;
-uniform int uPass;
 uniform float uAttractionMatrix[MAX_GROUPS * MAX_GROUPS];
 
-float attraction(int gi, int gj) {
-    gi = clamp(gi, 0, uGroupCount - 1);
-    gj = clamp(gj, 0, uGroupCount - 1);
-    return uAttractionMatrix[gi * MAX_GROUPS + gj];
+float attraction(int groupI, int groupJ) {
+    groupI = clamp(groupI, 0, uGroupCount - 1);
+    groupJ = clamp(groupJ, 0, uGroupCount - 1);
+    return uAttractionMatrix[groupI * MAX_GROUPS + groupJ];
 }
 
-ivec3 getGridCoord(vec3 pos) {
-    vec3 normalized = (pos + vec3(uBounds)) / uInteractionRange;
-    return clamp(ivec3(floor(normalized)), ivec3(0), ivec3(max(uGridSize - 1, 0)));
+ivec3 getGridCoord(vec3 position) {
+    vec3 normalized = (position + vec3(uBounds)) / uInteractionRange;
+    return clamp(ivec3(floor(normalized)), ivec3(0), ivec3(uGridSize - 1));
 }
 
 int getGridIndex(ivec3 coord) {
-    uint h = uint(coord.x) * 73856093u;
-    h ^= uint(coord.y) * 19349663u;
-    h ^= uint(coord.z) * 83492791u;
-    return int(h % uint(uMapSize));
+    return coord.x + uGridSize * (coord.y + uGridSize * coord.z);
 }
 
-int getGridKey(ivec3 coord) {
-    ivec3 biased = coord + ivec3(GRID_KEY_COORD_OFFSET);
-    if (any(lessThan(biased, ivec3(0))) || any(greaterThan(biased, ivec3(GRID_KEY_COORD_MASK)))) {
-        return -1;
-    }
-
-    return 1
-        + biased.x
-        + biased.y * 1024
-        + biased.z * 1048576;
-}
-
-int probeIndex(int startIndex, int probe) {
-    int index = startIndex + probe;
-    return index >= uMapSize ? index - uMapSize : index;
-}
-
-int findOrCreateGridBucket(ivec3 coord) {
-    int key = getGridKey(coord);
-    if (key < 0) {
-        return -1;
-    }
-
-    int startIndex = getGridIndex(coord);
-    for (int probe = 0; probe < MAX_GRID_PROBES; probe++) {
-        int index = probeIndex(startIndex, probe);
-        int previousKey = atomicCompSwap(grid_keys[index], 0, key);
-        if (previousKey == 0 || previousKey == key) {
-            return index;
-        }
-    }
-
-    return -1;
-}
-
-int findGridBucket(ivec3 coord) {
-    int key = getGridKey(coord);
-    if (key < 0) {
-        return -1;
-    }
-
-    int startIndex = getGridIndex(coord);
-    for (int probe = 0; probe < MAX_GRID_PROBES; probe++) {
-        int index = probeIndex(startIndex, probe);
-        int existingKey = grid_keys[index];
-        if (existingKey == key) {
-            return index;
-        }
-        if (existingKey == 0) {
-            return -1;
-        }
-    }
-
-    return -1;
-}
-
-float calculateForce(float normalizedDistance, float attractionValue) {
-    float repulsionRadius = clamp(uRepulsionRadius, 0.01, 0.95);
+float calculateForce(float normalizedDistance, float attractionValue, float repulsionRadius) {
     if (normalizedDistance < repulsionRadius) {
         return normalizedDistance / repulsionRadius - 1.0;
     }
 
-    if (normalizedDistance < 1.0) {
-        return attractionValue
-            * (1.0 - abs(2.0 * normalizedDistance - 1.0 - repulsionRadius) / (1.0 - repulsionRadius));
-    }
-
-    return 0.0;
+    return attractionValue
+        * (1.0 - abs(2.0 * normalizedDistance - 1.0 - repulsionRadius) / (1.0 - repulsionRadius));
 }
 
 vec3 toroidalDistance(vec3 from, vec3 to) {
-    vec3 diff = to - from;
+    vec3 difference = to - from;
     float worldSize = uBounds * 2.0;
-    return diff - worldSize * round(diff / worldSize);
+    return difference - worldSize * round(difference / worldSize);
 }
 
-float metricDistance(vec3 direction) {
+float metricDistance(vec3 direction, float euclideanDistance) {
     vec3 absoluteDirection = abs(direction);
-
     if (uDistanceMetric == DISTANCE_MANHATTAN) {
         return absoluteDirection.x + absoluteDirection.y + absoluteDirection.z;
     }
-
     if (uDistanceMetric == DISTANCE_CHEBYSHEV) {
         return max(max(absoluteDirection.x, absoluteDirection.y), absoluteDirection.z);
     }
-
-    return length(direction);
+    return euclideanDistance;
 }
 
 ivec3 wrapGridCoord(ivec3 coord) {
@@ -174,9 +101,9 @@ ivec3 wrapGridCoord(ivec3 coord) {
     );
 }
 
-vec3 wrapPosition(vec3 pos) {
+vec3 wrapPosition(vec3 position) {
     float worldSize = uBounds * 2.0;
-    return mod(pos + vec3(uBounds), vec3(worldSize)) - vec3(uBounds);
+    return mod(position + vec3(uBounds), vec3(worldSize)) - vec3(uBounds);
 }
 
 void main() {
@@ -185,91 +112,73 @@ void main() {
         return;
     }
 
-    if (uPass == 0) {
-        vec3 pos = positions[id].xyz;
-        ivec3 gridCoord = getGridCoord(pos);
-        int gridIndex = findOrCreateGridBucket(gridCoord);
-        if (gridIndex < 0) {
-            return;
-        }
-
-        int cellOffset = atomicAdd(grid_counts[gridIndex], 1);
-
-        if (cellOffset < uMaxParticlesPerCell) {
-            int dataIndex = gridIndex * uMaxParticlesPerCell + cellOffset;
-            grid_data[dataIndex] = int(id);
-        }
-
-        return;
-    }
-
     vec4 packedPosition = positions[id];
-    vec3 pos = packedPosition.xyz;
+    vec3 position = packedPosition.xyz;
     vec3 velocity = velocities[id].xyz;
-    int groupI = int(round(packedPosition.w));
+    int groupI = int(packedPosition.w);
     vec3 force = vec3(0.0);
     vec3 positiveAttractionForce = vec3(0.0);
-    ivec3 currentGrid = getGridCoord(pos);
-    
-    float interactionRangeSq = uInteractionRange * uInteractionRange;
-    float invInteractionRange = 1.0 / uInteractionRange;
+    ivec3 currentGrid = getGridCoord(position);
+
+    float inverseInteractionRange = 1.0 / uInteractionRange;
+    float repulsionRadius = clamp(uRepulsionRadius, 0.01, 0.95);
     float localDensity = 0.0;
     bool densityRegulated = uDensityRegulationEnabled == 1;
-    float densityCap = uDensityLimit + 1.005;
+    float densityCap = uDensityLimit + 1.0;
 
-    for (int dz = -1; dz <= 1; dz++) {
-        for (int dy = -1; dy <= 1; dy++) {
-            for (int dx = -1; dx <= 1; dx++) {
+    int minimumOffset = uGridSize <= 1 ? 0 : -1;
+    int maximumOffset = uGridSize <= 1 ? 0 : (uGridSize == 2 && uToroidalWrap == 1 ? 0 : 1);
+
+    for (int dz = minimumOffset; dz <= maximumOffset; dz++) {
+        for (int dy = minimumOffset; dy <= maximumOffset; dy++) {
+            for (int dx = minimumOffset; dx <= maximumOffset; dx++) {
                 ivec3 neighborGrid = currentGrid + ivec3(dx, dy, dz);
                 if (uToroidalWrap == 1) {
                     neighborGrid = wrapGridCoord(neighborGrid);
-                }
-
-                int neighborIndex = findGridBucket(neighborGrid);
-                if (neighborIndex < 0) {
+                } else if (any(lessThan(neighborGrid, ivec3(0)))
+                        || any(greaterThanEqual(neighborGrid, ivec3(uGridSize)))) {
                     continue;
                 }
 
-                int cellParticleCount = min(grid_counts[neighborIndex], uMaxParticlesPerCell);
+                int neighborIndex = getGridIndex(neighborGrid);
+                int firstParticle = grid_offsets[neighborIndex];
+                int cellParticleCount = grid_counts[neighborIndex];
 
                 for (int i = 0; i < cellParticleCount; i++) {
-                    int dataIndex = neighborIndex * uMaxParticlesPerCell + i;
-                    int otherId = grid_data[dataIndex];
-
+                    int otherId = particle_ids[firstParticle + i];
                     if (otherId == int(id)) {
                         continue;
                     }
 
                     vec4 otherPosition = positions[otherId];
                     vec3 direction = uToroidalWrap == 1
-                        ? toroidalDistance(pos, otherPosition.xyz)
-                        : otherPosition.xyz - pos;
-                    
-                    float sqDist = dot(direction, direction);
+                        ? toroidalDistance(position, otherPosition.xyz)
+                        : otherPosition.xyz - position;
+                    float squaredEuclideanDistance = dot(direction, direction);
+                    if (squaredEuclideanDistance <= 0.00000001) {
+                        continue;
+                    }
 
-                    if (sqDist > 0.00000001 && sqDist < interactionRangeSq) {
-                        float directionLength = sqrt(sqDist);
-                        float distance = metricDistance(direction);
-                        int groupJ = int(round(otherPosition.w));
-                        float normalizedDistance = distance * invInteractionRange;
-                        float attractionValue = attraction(groupI, groupJ);
+                    float inverseEuclideanDistance = inversesqrt(squaredEuclideanDistance);
+                    float euclideanDistance = squaredEuclideanDistance * inverseEuclideanDistance;
+                    float normalizedDistance = metricDistance(direction, euclideanDistance) * inverseInteractionRange;
+                    if (normalizedDistance >= 1.0) {
+                        continue;
+                    }
 
-                        if (normalizedDistance >= 1.0) {
-                            continue;
-                        }
+                    int groupJ = int(otherPosition.w);
+                    float attractionValue = attraction(groupI, groupJ);
+                    if (densityRegulated && localDensity < densityCap) {
+                        float densityWeight = 1.0 - normalizedDistance;
+                        localDensity += groupI == groupJ ? densityWeight : densityWeight * 0.5;
+                    }
 
-                        if (densityRegulated && localDensity < densityCap) {
-                            float densityWeight = 1.0 - normalizedDistance;
-                            localDensity += groupI == groupJ ? densityWeight : densityWeight * 0.5;
-                        }
-
-                        float forceMagnitude = calculateForce(normalizedDistance, attractionValue);
-                        vec3 forceContribution = (direction / directionLength) * forceMagnitude * uForceFactor;
-                        if (densityRegulated && attractionValue > 0.0 && normalizedDistance >= uRepulsionRadius) {
-                            positiveAttractionForce += forceContribution;
-                        } else {
-                            force += forceContribution;
-                        }
+                    float forceMagnitude = calculateForce(normalizedDistance, attractionValue, repulsionRadius);
+                    vec3 forceContribution = direction * inverseEuclideanDistance * forceMagnitude * uForceFactor;
+                    if (densityRegulated && attractionValue > 0.0 && normalizedDistance >= repulsionRadius) {
+                        positiveAttractionForce += forceContribution;
+                    } else {
+                        force += forceContribution;
                     }
                 }
             }
@@ -277,34 +186,32 @@ void main() {
     }
 
     if (densityRegulated) {
-        float densityFactor = 1.0 - min(max(0.0, localDensity - uDensityLimit), 1.005);
+        float densityFactor = clamp(1.0 - max(0.0, localDensity - uDensityLimit), 0.0, 1.0);
         force += positiveAttractionForce * densityFactor;
     }
 
-    velocity += force * uDeltaTime * 0.1;
-    velocity *= uVelocityDamping;
-
-    float velocityMagnitude = length(velocity);
-    if (velocityMagnitude > uMaxVelocity) {
-        velocity = normalize(velocity) * uMaxVelocity;
+    velocity = (velocity + force * uDeltaTime * 0.1) * uVelocityDamping;
+    float squaredVelocity = dot(velocity, velocity);
+    float maximumSquaredVelocity = uMaxVelocity * uMaxVelocity;
+    if (squaredVelocity > maximumSquaredVelocity) {
+        velocity *= uMaxVelocity * inversesqrt(squaredVelocity);
     }
 
-    pos += velocity * uDeltaTime;
-
+    position += velocity * uDeltaTime;
     if (uToroidalWrap == 1) {
-        pos = wrapPosition(pos);
+        position = wrapPosition(position);
     } else {
         for (int axis = 0; axis < 3; axis++) {
-            if (pos[axis] > uBounds) {
-                pos[axis] = uBounds;
+            if (position[axis] > uBounds) {
+                position[axis] = uBounds;
                 velocity[axis] *= -uBoundaryBounce;
-            } else if (pos[axis] < -uBounds) {
-                pos[axis] = -uBounds;
+            } else if (position[axis] < -uBounds) {
+                position[axis] = -uBounds;
                 velocity[axis] *= -uBoundaryBounce;
             }
         }
     }
 
-    next_positions[id] = vec4(pos, packedPosition.w);
+    next_positions[id] = vec4(position, packedPosition.w);
     next_velocities[id] = vec4(velocity, 0.0);
 }

@@ -1,0 +1,34 @@
+#version 430 core
+
+layout(local_size_x = 256) in;
+
+layout(std430, binding = 0) readonly buffer Positions {
+    vec4 positions[];
+};
+
+layout(std430, binding = 3) buffer GridCounts {
+    int grid_counts[];
+};
+
+uniform int uParticleCount;
+uniform float uBounds;
+uniform float uInteractionRange;
+uniform int uGridSize;
+
+ivec3 getGridCoord(vec3 position) {
+    vec3 normalized = (position + vec3(uBounds)) / uInteractionRange;
+    return clamp(ivec3(floor(normalized)), ivec3(0), ivec3(uGridSize - 1));
+}
+
+int getGridIndex(ivec3 coord) {
+    return coord.x + uGridSize * (coord.y + uGridSize * coord.z);
+}
+
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    if (id >= uint(uParticleCount)) {
+        return;
+    }
+
+    atomicAdd(grid_counts[getGridIndex(getGridCoord(positions[id].xyz))], 1);
+}
