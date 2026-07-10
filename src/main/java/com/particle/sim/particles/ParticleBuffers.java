@@ -100,13 +100,6 @@ final class ParticleBuffers {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
 
-    void copyPositionsTo(int targetSsbo, long targetByteOffset, int particleCount) {
-        long byteCount = particleBufferBytes(particleCount);
-        glBindBuffer(GL_COPY_READ_BUFFER, positionSsbo);
-        glBindBuffer(GL_COPY_WRITE_BUFFER, targetSsbo);
-        glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, targetByteOffset, byteCount);
-    }
-
     void swapState() {
         int oldPositionSsbo = positionSsbo;
         int oldVelocitySsbo = velocitySsbo;

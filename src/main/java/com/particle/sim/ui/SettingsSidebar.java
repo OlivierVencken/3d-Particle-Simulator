@@ -228,6 +228,9 @@ final class SettingsSidebar {
                 SimulationDefaults.MAX_TRAIL_LENGTH, 0, particles::trailLength, settingsChanged);
         UiControls.settingSlider("Thickness", particles.trailThickness(), SimulationDefaults.MIN_TRAIL_THICKNESS,
                 particles.pointSize(), 1, particles::trailThickness, settingsChanged);
+        if (particles.effectiveTrailLength() > 0 && particles.effectiveTrailLength() < particles.trailLength()) {
+            ImGui.textDisabled("Effective length: %d (memory budget)".formatted(particles.effectiveTrailLength()));
+        }
     }
 
     private void renderSpawnControls(GpuParticleSystem particles, Runnable settingsChanged) {

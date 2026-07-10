@@ -32,7 +32,7 @@ public final class ParticleCompute {
     private int uVelocityDampingLoc, uInteractionRangeLoc, uRepulsionRadiusLoc;
     private int uMaxVelocityLoc, uBoundaryBounceLoc, uBoundsLoc, uGridSizeLoc;
     private int uToroidalWrapLoc, uDensityRegulationEnabledLoc, uDensityLimitLoc;
-    private int uDistanceMetricLoc, uAttractionMatrixLoc;
+    private int uDistanceMetricLoc, uAttractionMatrixLoc, uTrailCaptureEnabledLoc, uTrailWriteOffsetLoc;
     private GpuTimerQuery countTimer;
     private GpuTimerQuery scanTimer;
     private GpuTimerQuery scatterTimer;
@@ -76,6 +76,8 @@ public final class ParticleCompute {
         uGridSizeLoc = glGetUniformLocation(integrateProgram, "uGridSize");
         uToroidalWrapLoc = glGetUniformLocation(integrateProgram, "uToroidalWrap");
         uAttractionMatrixLoc = glGetUniformLocation(integrateProgram, "uAttractionMatrix");
+        uTrailCaptureEnabledLoc = glGetUniformLocation(integrateProgram, "uTrailCaptureEnabled");
+        uTrailWriteOffsetLoc = glGetUniformLocation(integrateProgram, "uTrailWriteOffset");
     }
 
     public void buildGrid(GpuParticleSystem system, ParticleBuffers particles, SpatialGridBuffers grid) {
@@ -118,7 +120,7 @@ public final class ParticleCompute {
     }
 
     public void integrate(GpuParticleSystem system, ParticleBuffers particles, SpatialGridBuffers grid,
-            float deltaTime) {
+            TrailHistoryBuffers trailHistory, boolean captureTrail, float deltaTime) {
         integrationTimer.begin();
         glUseProgram(integrateProgram);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particles.positionSsbo());
@@ -128,6 +130,7 @@ public final class ParticleCompute {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, grid.offsetsSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, particles.nextPositionSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, particles.nextVelocitySsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, captureTrail ? trailHistory.historySsbo() : 0);
 
         glUniform1f(uDeltaTimeLoc, deltaTime);
         glUniform1i(uParticleCountLoc, system.particleCount());
@@ -145,6 +148,8 @@ public final class ParticleCompute {
         glUniform1i(uGridSizeLoc, system.gridSize());
         glUniform1i(uToroidalWrapLoc, system.toroidalWrap() ? 1 : 0);
         glUniform1fv(uAttractionMatrixLoc, system.getAttractionMatrix());
+        glUniform1i(uTrailCaptureEnabledLoc, captureTrail ? 1 : 0);
+        glUniform1i(uTrailWriteOffsetLoc, captureTrail ? trailHistory.writeElementOffset() : 0);
 
         dispatchParticles(system.particleCount());
         integrationTimer.end();

@@ -60,11 +60,13 @@ public final class GpuParticleSystem {
 
         spatialGridBuffers.ensureCapacity(particleCount(), gridCellCount());
         compute.buildGrid(this, particleBuffers, spatialGridBuffers);
-        compute.integrate(this, particleBuffers, spatialGridBuffers, deltaTime);
+        boolean captureTrail = effectEnabled(EffectMode.TRAILS)
+                && trailHistoryBuffers.prepareCapture(particleCount(), trailLength());
+        compute.integrate(this, particleBuffers, spatialGridBuffers, trailHistoryBuffers, captureTrail, deltaTime);
         particleBuffers.swapState();
 
-        if (effectEnabled(EffectMode.TRAILS)) {
-            trailHistoryBuffers.capture(particleBuffers, particleCount(), trailLength());
+        if (captureTrail) {
+            trailHistoryBuffers.commitCapture();
         }
     }
 
@@ -118,7 +120,11 @@ public final class GpuParticleSystem {
         attractionMatrix.groupCount(this.config.groupCount());
         if (initialized) {
             particleBuffers.resize(oldParticleCount, this.config.particleCount(), false, this.config, particleRandom);
-            trailHistoryBuffers.clear();
+            if (effectEnabled(EffectMode.TRAILS)) {
+                trailHistoryBuffers.clear();
+            } else {
+                trailHistoryBuffers.dispose();
+            }
         }
     }
 
@@ -200,6 +206,9 @@ public final class GpuParticleSystem {
 
     public void effectEnabled(EffectMode effectMode, boolean enabled) {
         config.effectEnabled(effectMode, enabled);
+        if (initialized && effectMode == EffectMode.TRAILS && !enabled) {
+            trailHistoryBuffers.dispose();
+        }
     }
 
     public GlowSettings glowSettings() {
@@ -252,6 +261,10 @@ public final class GpuParticleSystem {
 
     public float trailThickness() {
         return config.trailThickness();
+    }
+
+    public int effectiveTrailLength() {
+        return trailHistoryBuffers.sampleCapacity();
     }
 
     public void trailThickness(float trailThickness) {

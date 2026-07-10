@@ -35,6 +35,10 @@ layout(std430, binding = 7) writeonly buffer NextVelocities {
     vec4 next_velocities[];
 };
 
+layout(std430, binding = 8) writeonly buffer TrailHistory {
+    vec4 trail_history[];
+};
+
 uniform float uDeltaTime;
 uniform int uParticleCount;
 uniform int uGroupCount;
@@ -51,6 +55,8 @@ uniform int uDistanceMetric;
 uniform int uGridSize;
 uniform int uToroidalWrap;
 uniform float uAttractionMatrix[MAX_GROUPS * MAX_GROUPS];
+uniform int uTrailCaptureEnabled;
+uniform int uTrailWriteOffset;
 
 float attraction(int groupI, int groupJ) {
     groupI = clamp(groupI, 0, uGroupCount - 1);
@@ -212,6 +218,10 @@ void main() {
         }
     }
 
-    next_positions[id] = vec4(position, packedPosition.w);
+    vec4 nextPosition = vec4(position, packedPosition.w);
+    next_positions[id] = nextPosition;
     next_velocities[id] = vec4(velocity, 0.0);
+    if (uTrailCaptureEnabled == 1) {
+        trail_history[uTrailWriteOffset + int(id)] = nextPosition;
+    }
 }
