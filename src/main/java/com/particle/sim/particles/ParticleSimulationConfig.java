@@ -69,6 +69,7 @@ public final class ParticleSimulationConfig {
         groupCount(source.groupCount);
         colorMode(source.colorMode);
         spawnMode(source.spawnMode);
+        groupColors(source.groupColors);
     }
 
     public int particleCount() {
@@ -84,7 +85,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void pointSize(float pointSize) {
-        this.pointSize = pointSize;
+        this.pointSize = clamp(pointSize, 1.0f, 8.0f);
         trailThickness(trailThickness);
     }
 
@@ -148,7 +149,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void glowStrength(float glowStrength) {
-        this.glowStrength = glowStrength;
+        this.glowStrength = clamp(glowStrength, 0.0f, 6.0f);
     }
 
     public float glowRadius() {
@@ -156,7 +157,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void glowRadius(float glowRadius) {
-        this.glowRadius = glowRadius;
+        this.glowRadius = clamp(glowRadius, 0.5f, 12.0f);
     }
 
     public float glowFalloff() {
@@ -164,7 +165,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void glowFalloff(float glowFalloff) {
-        this.glowFalloff = glowFalloff;
+        this.glowFalloff = clamp(glowFalloff, 0.05f, 3.0f);
     }
 
     public TrailSettings trailSettings() {
@@ -193,7 +194,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void bounds(float bounds) {
-        this.bounds = bounds;
+        this.bounds = clamp(bounds, 2.0f, 10.0f);
     }
 
     public float forceFactor() {
@@ -201,7 +202,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void forceFactor(float forceFactor) {
-        this.forceFactor = forceFactor;
+        this.forceFactor = clamp(forceFactor, 0.0f, 10.0f);
     }
 
     public float velocityDamping() {
@@ -209,7 +210,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void velocityDamping(float velocityDamping) {
-        this.velocityDamping = velocityDamping;
+        this.velocityDamping = clamp(velocityDamping, 0.85f, 1.0f);
     }
 
     public float interactionRange() {
@@ -217,7 +218,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void interactionRange(float interactionRange) {
-        this.interactionRange = interactionRange;
+        this.interactionRange = clamp(interactionRange, 0.2f, 3.0f);
     }
 
     public float repulsionRadius() {
@@ -225,7 +226,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void repulsionRadius(float repulsionRadius) {
-        this.repulsionRadius = repulsionRadius;
+        this.repulsionRadius = clamp(repulsionRadius, 0.02f, 0.95f);
     }
 
     public float maxVelocity() {
@@ -233,7 +234,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void maxVelocity(float maxVelocity) {
-        this.maxVelocity = maxVelocity;
+        this.maxVelocity = clamp(maxVelocity, 0.5f, 16.0f);
     }
 
     public float boundaryBounce() {
@@ -241,7 +242,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void boundaryBounce(float boundaryBounce) {
-        this.boundaryBounce = boundaryBounce;
+        this.boundaryBounce = clamp(boundaryBounce, 0.0f, 1.0f);
     }
 
     public boolean toroidalWrap() {
@@ -265,7 +266,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void densityLimit(float densityLimit) {
-        this.densityLimit = densityLimit;
+        this.densityLimit = clamp(densityLimit, 0.0f, 500.0f);
     }
 
     public DistanceMetric distanceMetric() {

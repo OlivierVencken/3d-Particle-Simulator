@@ -40,4 +40,15 @@ final class FixedSimulationClock {
     float stepSeconds() {
         return (float) stepSeconds;
     }
+
+    double discardExcessSteps() {
+        if (!hasStep()) {
+            return 0.0;
+        }
+
+        double retainedSeconds = accumulatedSeconds % stepSeconds;
+        double discardedSeconds = accumulatedSeconds - retainedSeconds;
+        accumulatedSeconds = retainedSeconds;
+        return discardedSeconds;
+    }
 }

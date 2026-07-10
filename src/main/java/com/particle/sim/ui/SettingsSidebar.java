@@ -221,6 +221,7 @@ final class SettingsSidebar {
                 12.0f, 1, particles::glowRadius, settingsChanged);
         UiControls.settingSlider("Falloff", particles.glowFalloff(), 0.05f,
                 3.0f, 2, particles::glowFalloff, settingsChanged);
+        ImGui.textDisabled("Bloom resolution: 1/%d per axis".formatted(particles.effectiveBloomDivisor()));
     }
 
     private void renderTrailControls(GpuParticleSystem particles, Runnable settingsChanged) {
@@ -228,6 +229,13 @@ final class SettingsSidebar {
                 SimulationDefaults.MAX_TRAIL_LENGTH, 0, particles::trailLength, settingsChanged);
         UiControls.settingSlider("Thickness", particles.trailThickness(), SimulationDefaults.MIN_TRAIL_THICKNESS,
                 particles.pointSize(), 1, particles::trailThickness, settingsChanged);
+        if (particles.effectiveTrailLength() > 0 && particles.effectiveTrailLength() < particles.trailLength()) {
+            ImGui.textDisabled("Effective length: %d (memory budget)".formatted(particles.effectiveTrailLength()));
+        }
+        if (particles.effectiveTrailParticleStride() > 1) {
+            ImGui.textDisabled("Rendering 1/%d particles (GPU budget)"
+                    .formatted(particles.effectiveTrailParticleStride()));
+        }
     }
 
     private void renderSpawnControls(GpuParticleSystem particles, Runnable settingsChanged) {

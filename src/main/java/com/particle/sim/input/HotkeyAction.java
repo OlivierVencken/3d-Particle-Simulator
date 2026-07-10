@@ -7,8 +7,7 @@ public enum HotkeyAction {
     TOGGLE_DEBUG("Toggle debug panel"),
     TOGGLE_PAUSE("Pause/resume simulation"),
     RESET_PARTICLES("Reset particles"),
-    SIMULATION_STEP_FORWARD("Step simulation forward"),
-    SIMULATION_STEP_BACKWARD("Step simulation backward");
+    SIMULATION_STEP_FORWARD("Step simulation forward");
 
     private final String displayName;
 

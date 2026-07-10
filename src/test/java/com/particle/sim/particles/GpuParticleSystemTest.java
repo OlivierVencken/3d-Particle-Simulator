@@ -17,9 +17,8 @@ class GpuParticleSystemTest {
         GpuParticleSystem system = new GpuParticleSystem();
 
         assertEquals(65_536, system.particleCount());
-        assertEquals(1_000_000, system.maxParticleCount());
+        assertEquals(16_000_000, system.maxParticleCount());
         assertEquals(6, system.groupCount());
-        assertEquals(128, system.maxParticlesPerCell());
         assertEquals(ColorMode.GROUP, system.colorMode());
         assertTrue(system.effectModes().isEmpty());
         assertFalse(system.effectEnabled(EffectMode.GLOW));
@@ -127,39 +126,39 @@ class GpuParticleSystemTest {
 
         assertEquals(9, system.gridSize());
 
-        system.interactionRange(4.0f);
+        system.interactionRange(3.0f);
 
-        assertEquals(2, system.gridSize());
+        assertEquals(3, system.gridSize());
     }
 
     @Test
-    void spatialMapSizeScalesWithLikelyOccupiedGridCells() {
+    void simulationInputsAreClampedBeforeTheyReachGridSizing() {
+        GpuParticleSystem system = new GpuParticleSystem();
+
+        system.bounds(-10.0f);
+        system.interactionRange(0.0f);
+
+        assertEquals(2.0f, system.bounds(), EPSILON);
+        assertEquals(0.2f, system.interactionRange(), EPSILON);
+        assertEquals(8_000, system.gridCellCount());
+    }
+
+    @Test
+    void gridCellCountMatchesGridVolume() {
         GpuParticleSystem system = new GpuParticleSystem();
 
         system.bounds(4.0f);
         system.interactionRange(0.95f);
 
-        assertTrue(system.spatialMapSize() < 2_000);
+        assertEquals(729, system.gridCellCount());
     }
 
     @Test
-    void spatialMapSizeStaysCappedForWorstCaseSettings() {
-        GpuParticleSystem system = new GpuParticleSystem();
-
-        system.setParticleCount(system.maxParticleCount());
-        system.bounds(10.0f);
-        system.interactionRange(0.2f);
-
-        assertEquals(GpuParticleSystem.MAX_SPATIAL_MAP_SIZE, system.spatialMapSize());
-    }
-
-    @Test
-    void stepMethodsAreSafeBeforeInitialization() {
+    void stepMethodIsSafeBeforeInitialization() {
         GpuParticleSystem system = new GpuParticleSystem();
 
         assertDoesNotThrow(() -> {
             system.step();
-            system.stepBack();
         });
         assertEquals(65_536, system.particleCount());
     }

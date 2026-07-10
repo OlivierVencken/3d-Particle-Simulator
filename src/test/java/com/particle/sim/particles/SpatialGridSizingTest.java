@@ -3,7 +3,6 @@ package com.particle.sim.particles;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SpatialGridSizingTest {
     @Test
@@ -13,13 +12,12 @@ class SpatialGridSizingTest {
     }
 
     @Test
-    void spatialMapSizeScalesWithLikelyOccupiedGridCells() {
-        assertTrue(SpatialGridSizing.spatialMapSize(65_536, 4.0f, 0.95f) < 2_000);
+    void gridCellCountMatchesCubedGridSize() {
+        assertEquals(729, SpatialGridSizing.gridCellCount(4.0f, 0.95f));
     }
 
     @Test
-    void spatialMapSizeStaysCappedForWorstCaseSettings() {
-        assertEquals(SpatialGridSizing.MAX_SPATIAL_MAP_SIZE,
-                SpatialGridSizing.spatialMapSize(1_000_000, 10.0f, 0.2f));
+    void gridCellCountSupportsWorstCaseSettings() {
+        assertEquals(1_000_000, SpatialGridSizing.gridCellCount(10.0f, 0.2f));
     }
 }

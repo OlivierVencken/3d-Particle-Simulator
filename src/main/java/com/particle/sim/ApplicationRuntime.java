@@ -24,6 +24,7 @@ import static org.lwjgl.opengl.GL43C.glViewport;
 public final class ApplicationRuntime {
     private static final double FRAME_LIMIT_SPIN_SECONDS = 0.0005;
     private static final double MAX_FRAME_DELTA_SECONDS = 0.25;
+    private static final int MAX_SIMULATION_STEPS_PER_FRAME = 4;
 
     private final WindowManager window;
     private final ImguiLayer imgui;
@@ -67,8 +68,13 @@ public final class ApplicationRuntime {
 
             if (!ui.isPaused()) {
                 simulationClock.addFrameTime(frameDelta);
-                while (simulationClock.hasStep()) {
+                int simulationSteps = 0;
+                while (simulationClock.hasStep() && simulationSteps < MAX_SIMULATION_STEPS_PER_FRAME) {
                     particles.update(simulationClock.stepSeconds(), simulationClock.consumeStep());
+                    simulationSteps++;
+                }
+                if (simulationClock.hasStep()) {
+                    simulationClock.discardExcessSteps();
                 }
             }
 

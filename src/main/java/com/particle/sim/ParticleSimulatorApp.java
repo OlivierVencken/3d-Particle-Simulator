@@ -29,8 +29,16 @@ public final class ParticleSimulatorApp {
     private final SimulationUi ui = new SimulationUi();
     private final HotkeyManager hotkeys = new HotkeyManager();
     private final SettingsController settingsController = new SettingsController(particles, camera, ui);
+    private boolean windowInitialized;
+    private boolean presetDialogInitialized;
+    private boolean imguiInitialized;
+    private boolean particlesInitialized;
 
     public static void main(String[] args) {
+        if (ParticleBenchmarkRunner.requested(args)) {
+            ParticleBenchmarkRunner.run(args);
+            return;
+        }
         try {
             new ParticleSimulatorApp().run();
         } catch (StartupFailureException ignored) {
@@ -40,23 +48,29 @@ public final class ParticleSimulatorApp {
 
     private void run() {
         window.init();
-        PresetFileDialog.init();
-        initOpenGl();
-        imgui.init(window.handle());
-        particles.init();
-        initSettings();
-        AppHotkeys.register(hotkeys, this);
+        windowInitialized = true;
+        try {
+            PresetFileDialog.init();
+            presetDialogInitialized = true;
+            initOpenGl();
+            imgui.init(window.handle());
+            imguiInitialized = true;
+            particles.init();
+            particlesInitialized = true;
+            initSettings();
+            AppHotkeys.register(hotkeys, this);
 
-        new ApplicationRuntime(
-                window,
-                imgui,
-                hotkeys,
-                camera,
-                particles,
-                ui,
-                settingsController).run();
-
-        dispose();
+            new ApplicationRuntime(
+                    window,
+                    imgui,
+                    hotkeys,
+                    camera,
+                    particles,
+                    ui,
+                    settingsController).run();
+        } finally {
+            dispose();
+        }
     }
 
     private void initOpenGl() {
@@ -94,10 +108,34 @@ public final class ParticleSimulatorApp {
     }
 
     private void dispose() {
-        settingsController.flush();
-        particles.dispose();
-        imgui.dispose();
-        window.dispose();
-        PresetFileDialog.shutdown();
+        try {
+            settingsController.flush();
+        } finally {
+            try {
+                if (particlesInitialized) {
+                    particles.dispose();
+                    particlesInitialized = false;
+                }
+            } finally {
+                try {
+                    if (imguiInitialized) {
+                        imgui.dispose();
+                        imguiInitialized = false;
+                    }
+                } finally {
+                    try {
+                        if (presetDialogInitialized) {
+                            PresetFileDialog.shutdown();
+                            presetDialogInitialized = false;
+                        }
+                    } finally {
+                        if (windowInitialized) {
+                            window.dispose();
+                            windowInitialized = false;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

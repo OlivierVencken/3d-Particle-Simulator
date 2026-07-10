@@ -1,13 +1,13 @@
 package com.particle.sim.particles;
 
+import com.particle.sim.settings.SimulationDefaults;
+
 import static org.lwjgl.opengl.GL43C.GL_DYNAMIC_DRAW;
-import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BARRIER_BIT;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
 import static org.lwjgl.opengl.GL43C.glBindBuffer;
 import static org.lwjgl.opengl.GL43C.glBufferData;
 import static org.lwjgl.opengl.GL43C.glDeleteBuffers;
 import static org.lwjgl.opengl.GL43C.glGenBuffers;
-import static org.lwjgl.opengl.GL43C.glMemoryBarrier;
 
 final class TrailHistoryBuffers {
     private static final int COMPONENTS_PER_PARTICLE = 4;
@@ -42,16 +42,34 @@ final class TrailHistoryBuffers {
         return sampleCount;
     }
 
-    void capture(ParticleBuffers particleBuffers, int particleCount, int desiredSamples) {
+    long allocatedBytes() {
+        return (long) particleCapacity * sampleCapacity * BYTES_PER_PARTICLE;
+    }
+
+    boolean prepareCapture(int particleCount, int desiredSamples) {
         if (particleCount <= 0 || desiredSamples <= 1) {
             clear();
-            return;
+            return false;
         }
 
-        ensureCapacity(particleCount, desiredSamples);
-        long targetByteOffset = (long) nextSampleIndex * particleCapacity * BYTES_PER_PARTICLE;
-        particleBuffers.copyPositionsTo(historySsbo, targetByteOffset, particleCount);
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        long bytesPerSample = (long) particleCount * BYTES_PER_PARTICLE;
+        int budgetedSamples = (int) Math.min(Integer.MAX_VALUE,
+                SimulationDefaults.TRAIL_MEMORY_BUDGET_BYTES / bytesPerSample);
+        int effectiveSamples = Math.min(desiredSamples, budgetedSamples);
+        if (effectiveSamples < 2) {
+            dispose();
+            return false;
+        }
+
+        ensureCapacity(particleCount, effectiveSamples);
+        return true;
+    }
+
+    int writeElementOffset() {
+        return Math.multiplyExact(nextSampleIndex, particleCapacity);
+    }
+
+    void commitCapture() {
         nextSampleIndex = (nextSampleIndex + 1) % sampleCapacity;
         sampleCount = Math.min(sampleCount + 1, sampleCapacity);
     }
@@ -70,13 +88,13 @@ final class TrailHistoryBuffers {
     }
 
     private void ensureCapacity(int particleCount, int desiredSamples) {
-        if (historySsbo != 0 && particleCapacity >= particleCount && sampleCapacity >= desiredSamples) {
+        if (historySsbo != 0 && particleCapacity == particleCount && sampleCapacity == desiredSamples) {
             return;
         }
 
         glDeleteBuffers(historySsbo);
-        particleCapacity = Math.max(1, particleCount);
-        sampleCapacity = Math.max(2, desiredSamples);
+        particleCapacity = particleCount;
+        sampleCapacity = desiredSamples;
         long bufferBytes = (long) particleCapacity * sampleCapacity * BYTES_PER_PARTICLE;
 
         historySsbo = glGenBuffers();
