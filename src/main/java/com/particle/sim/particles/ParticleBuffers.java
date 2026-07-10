@@ -39,6 +39,10 @@ final class ParticleBuffers {
         return nextVelocitySsbo;
     }
 
+    long allocatedBytes() {
+        return (long) particleCapacity * 4L * 4L * Float.BYTES;
+    }
+
     void resize(int oldParticleCount, int requestedParticleCount, boolean preserveExisting,
             ParticleSimulationConfig config, Random random) {
         int copiedParticleCount = preserveExisting ? Math.min(oldParticleCount, requestedParticleCount) : 0;

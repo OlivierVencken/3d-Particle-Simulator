@@ -2,6 +2,7 @@ package com.particle.sim.ui;
 
 import com.particle.sim.AppInfo;
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.particles.PerformanceSnapshot;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.system.SystemLoadMonitor;
 import com.particle.sim.system.SystemLoadSnapshot;
@@ -72,12 +73,20 @@ final class DebugPanel {
 
     private void renderSimulationInternals(GpuParticleSystem particles) {
         int gridSize = particles.gridSize();
+        PerformanceSnapshot performance = particles.performanceSnapshot();
 
         ImGui.separatorText("Simulation Internals");
         ImGui.text("Particles: %,d / %,d".formatted(particles.particleCount(), particles.maxParticleCount()));
         ImGui.text("Grid: %d x %d x %d".formatted(gridSize, gridSize, gridSize));
         ImGui.text("Grid cells: %,d".formatted(particles.gridCellCount()));
         ImGui.textUnformatted("Cell storage: exact compact ranges");
+        ImGui.text("GPU simulation: %s".formatted(formatMilliseconds(performance.simulationMilliseconds())));
+        ImGui.text("  Count / scan / scatter: %s / %s / %s".formatted(
+                formatMilliseconds(performance.gridCountMilliseconds()),
+                formatMilliseconds(performance.gridScanMilliseconds()),
+                formatMilliseconds(performance.gridScatterMilliseconds())));
+        ImGui.text("  Force integration: %s".formatted(formatMilliseconds(performance.integrationMilliseconds())));
+        ImGui.text("Estimated GPU buffers: %s".formatted(formatBytes(performance.allocatedGpuBytes())));
         ImGui.text("Simulation step: %.2f ms (%.0f Hz)".formatted(
                 SimulationDefaults.SIMULATION_STEP_SECONDS * 1000.0,
                 1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS));
@@ -138,5 +147,9 @@ final class DebugPanel {
 
         double mib = bytes / 1024.0 / 1024.0;
         return "%.0f MB".formatted(mib);
+    }
+
+    private String formatMilliseconds(double milliseconds) {
+        return milliseconds < 0.0 ? "pending" : "%.3f ms".formatted(milliseconds);
     }
 }

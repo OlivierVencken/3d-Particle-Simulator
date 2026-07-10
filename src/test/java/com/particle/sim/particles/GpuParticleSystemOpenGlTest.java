@@ -20,6 +20,7 @@ import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwTerminate;
 import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import static org.lwjgl.opengl.GL43C.GL_NO_ERROR;
+import static org.lwjgl.opengl.GL43C.glFinish;
 import static org.lwjgl.opengl.GL43C.glGetError;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -47,9 +48,13 @@ class GpuParticleSystemOpenGlTest {
             system.spawnMode(SpawnMode.POINT);
             system.init();
             assertTrue(system.maxParticleCount() > 1_000_000);
-            system.step();
+            for (int i = 0; i < 6; i++) {
+                system.step();
+            }
+            glFinish();
 
             assertEquals(GL_NO_ERROR, glGetError());
+            assertTrue(system.performanceSnapshot().simulationMilliseconds() >= 0.0);
         } finally {
             if (system != null) {
                 system.dispose();

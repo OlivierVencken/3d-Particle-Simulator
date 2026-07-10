@@ -29,6 +29,7 @@ final class SpatialGridBuffers {
     private int cellCapacity;
     private final List<Integer> blockSumsSsbos = new ArrayList<>();
     private final List<Integer> scannedBlockSumsSsbos = new ArrayList<>();
+    private final List<Integer> scanScratchElementCounts = new ArrayList<>();
 
     void init(int initialParticleCount, int initialCellCount) {
         particleIdsSsbo = glGenBuffers();
@@ -98,6 +99,14 @@ final class SpatialGridBuffers {
         return blockSumsSsbos.size();
     }
 
+    long allocatedBytes() {
+        long bytes = (long) particleCapacity * Integer.BYTES + (long) cellCapacity * 3L * Integer.BYTES;
+        for (int elementCount : scanScratchElementCounts) {
+            bytes += (long) elementCount * 2L * Integer.BYTES;
+        }
+        return bytes;
+    }
+
     void dispose() {
         glDeleteBuffers(particleIdsSsbo);
         glDeleteBuffers(countsSsbo);
@@ -119,6 +128,7 @@ final class SpatialGridBuffers {
             int groups = Math.ceilDiv(levelElements, SCAN_ELEMENTS_PER_GROUP);
             blockSumsSsbos.add(allocateIntBuffer(groups));
             scannedBlockSumsSsbos.add(allocateIntBuffer(groups));
+            scanScratchElementCounts.add(groups);
             if (groups <= 1) {
                 return;
             }
@@ -142,6 +152,7 @@ final class SpatialGridBuffers {
         }
         blockSumsSsbos.clear();
         scannedBlockSumsSsbos.clear();
+        scanScratchElementCounts.clear();
     }
 
     private static int grownCapacity(int currentCapacity, int requiredCapacity) {

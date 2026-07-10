@@ -42,6 +42,10 @@ final class TrailHistoryBuffers {
         return sampleCount;
     }
 
+    long allocatedBytes() {
+        return (long) particleCapacity * sampleCapacity * BYTES_PER_PARTICLE;
+    }
+
     void capture(ParticleBuffers particleBuffers, int particleCount, int desiredSamples) {
         if (particleCount <= 0 || desiredSamples <= 1) {
             clear();

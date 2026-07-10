@@ -1,6 +1,7 @@
 package com.particle.sim.particles;
 
 import com.particle.sim.graphics.ShaderProgram;
+import com.particle.sim.graphics.GpuTimerQuery;
 
 import static org.lwjgl.opengl.GL43C.GL_BUFFER_UPDATE_BARRIER_BIT;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BARRIER_BIT;
@@ -32,6 +33,10 @@ public final class ParticleCompute {
     private int uMaxVelocityLoc, uBoundaryBounceLoc, uBoundsLoc, uGridSizeLoc;
     private int uToroidalWrapLoc, uDensityRegulationEnabledLoc, uDensityLimitLoc;
     private int uDistanceMetricLoc, uAttractionMatrixLoc;
+    private GpuTimerQuery countTimer;
+    private GpuTimerQuery scanTimer;
+    private GpuTimerQuery scatterTimer;
+    private GpuTimerQuery integrationTimer;
 
     public void init() {
         countProgram = ShaderProgram.compute("/shaders/grid_count.comp");
@@ -39,6 +44,10 @@ public final class ParticleCompute {
         addScanOffsetsProgram = ShaderProgram.compute("/shaders/grid_scan_add.comp");
         scatterProgram = ShaderProgram.compute("/shaders/grid_scatter.comp");
         integrateProgram = ShaderProgram.compute("/shaders/particle.comp");
+        countTimer = new GpuTimerQuery();
+        scanTimer = new GpuTimerQuery();
+        scatterTimer = new GpuTimerQuery();
+        integrationTimer = new GpuTimerQuery();
 
         countParticleCountLoc = glGetUniformLocation(countProgram, "uParticleCount");
         countBoundsLoc = glGetUniformLocation(countProgram, "uBounds");
@@ -75,6 +84,7 @@ public final class ParticleCompute {
         grid.clearCounts(cellCount);
         glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
 
+        countTimer.begin();
         glUseProgram(countProgram);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particles.positionSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, grid.countsSsbo());
@@ -83,13 +93,17 @@ public final class ParticleCompute {
         glUniform1f(countInteractionRangeLoc, system.interactionRange());
         glUniform1i(countGridSizeLoc, system.gridSize());
         dispatchParticles(particleCount);
+        countTimer.end();
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
+        scanTimer.begin();
         scan(grid, grid.countsSsbo(), grid.offsetsSsbo(), cellCount, 0);
+        scanTimer.end();
         glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
         grid.copyOffsetsToCursors(cellCount);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
+        scatterTimer.begin();
         glUseProgram(scatterProgram);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particles.positionSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, grid.particleIdsSsbo());
@@ -99,11 +113,13 @@ public final class ParticleCompute {
         glUniform1f(scatterInteractionRangeLoc, system.interactionRange());
         glUniform1i(scatterGridSizeLoc, system.gridSize());
         dispatchParticles(particleCount);
+        scatterTimer.end();
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 
     public void integrate(GpuParticleSystem system, ParticleBuffers particles, SpatialGridBuffers grid,
             float deltaTime) {
+        integrationTimer.begin();
         glUseProgram(integrateProgram);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particles.positionSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, particles.velocitySsbo());
@@ -131,7 +147,24 @@ public final class ParticleCompute {
         glUniform1fv(uAttractionMatrixLoc, system.getAttractionMatrix());
 
         dispatchParticles(system.particleCount());
+        integrationTimer.end();
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    }
+
+    double gridCountMilliseconds() {
+        return countTimer.latestMilliseconds();
+    }
+
+    double gridScanMilliseconds() {
+        return scanTimer.latestMilliseconds();
+    }
+
+    double gridScatterMilliseconds() {
+        return scatterTimer.latestMilliseconds();
+    }
+
+    double integrationMilliseconds() {
+        return integrationTimer.latestMilliseconds();
     }
 
     private void scan(SpatialGridBuffers grid, int inputBuffer, int outputBuffer, int elementCount, int level) {
@@ -175,5 +208,9 @@ public final class ParticleCompute {
         glDeleteProgram(addScanOffsetsProgram);
         glDeleteProgram(scatterProgram);
         glDeleteProgram(integrateProgram);
+        countTimer.dispose();
+        scanTimer.dispose();
+        scatterTimer.dispose();
+        integrationTimer.dispose();
     }
 }

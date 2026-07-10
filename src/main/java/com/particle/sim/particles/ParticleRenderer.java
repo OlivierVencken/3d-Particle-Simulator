@@ -401,4 +401,8 @@ public final class ParticleRenderer {
         glDeleteProgram(blurProgram);
         glDeleteProgram(glowCompositeProgram);
     }
+
+    long allocatedEffectBytes() {
+        return (long) effectWidth * effectHeight * 3L * 4L * Short.BYTES;
+    }
 }

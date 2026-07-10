@@ -423,6 +423,26 @@ public final class GpuParticleSystem {
         return SpatialGridSizing.gridCellCount(bounds(), interactionRange());
     }
 
+    public PerformanceSnapshot performanceSnapshot() {
+        if (!initialized) {
+            return new PerformanceSnapshot(-1.0, -1.0, -1.0, -1.0, -1.0, 0L, particleCount(),
+                    maxParticleCount(), gridCellCount());
+        }
+        double countMilliseconds = compute.gridCountMilliseconds();
+        double scanMilliseconds = compute.gridScanMilliseconds();
+        double scatterMilliseconds = compute.gridScatterMilliseconds();
+        double integrationMilliseconds = compute.integrationMilliseconds();
+        double simulationMilliseconds = countMilliseconds < 0.0 || scanMilliseconds < 0.0
+                || scatterMilliseconds < 0.0 || integrationMilliseconds < 0.0
+                        ? -1.0
+                        : countMilliseconds + scanMilliseconds + scatterMilliseconds + integrationMilliseconds;
+        long allocatedBytes = particleBuffers.allocatedBytes() + spatialGridBuffers.allocatedBytes()
+                + trailHistoryBuffers.allocatedBytes() + renderer.allocatedEffectBytes();
+        return new PerformanceSnapshot(countMilliseconds, scanMilliseconds, scatterMilliseconds,
+                integrationMilliseconds, simulationMilliseconds, allocatedBytes, particleCount(), maxParticleCount(),
+                gridCellCount());
+    }
+
     private int detectMaximumParticleCount() {
         long storageBlockLimit = glGetInteger64(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / (4L * Float.BYTES);
         long dispatchLimit = (long) glGetIntegeri(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0) * COMPUTE_WORK_GROUP_SIZE;
