@@ -1,6 +1,7 @@
 package com.particle.sim.particles;
 
 import com.particle.sim.graphics.ShaderProgram;
+import com.particle.sim.graphics.GpuTimerQuery;
 import com.particle.sim.math.Math3d;
 import com.particle.sim.settings.SimulationDefaults;
 
@@ -120,6 +121,10 @@ public final class ParticleRenderer {
     private final int[] pingPongFbos = new int[2];
     private final int[] pingPongTextures = new int[2];
     private int effectiveTrailParticleStride = 1;
+    private GpuTimerQuery particleTimer;
+    private GpuTimerQuery trailTimer;
+    private GpuTimerQuery bloomTimer;
+    private float[] frameViewProjection;
 
     public void init() {
         renderProgram = ShaderProgram.render("/shaders/particle.vert", "/shaders/particle.frag");
@@ -127,6 +132,9 @@ public final class ParticleRenderer {
         bloomExtractProgram = ShaderProgram.render("/shaders/fullscreen.vert", "/shaders/bloom_extract.frag");
         blurProgram = ShaderProgram.render("/shaders/fullscreen.vert", "/shaders/blur.frag");
         glowCompositeProgram = ShaderProgram.render("/shaders/fullscreen.vert", "/shaders/bloom_composite.frag");
+        particleTimer = new GpuTimerQuery();
+        trailTimer = new GpuTimerQuery();
+        bloomTimer = new GpuTimerQuery();
 
         particleVao = glGenVertexArrays();
         fullscreenVao = glGenVertexArrays();
@@ -182,6 +190,7 @@ public final class ParticleRenderer {
         if (particleCount == 0) {
             return;
         }
+        frameViewProjection = viewProjection(width, height, viewMatrix);
 
         if (glowEnabled) {
             renderGlow(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
@@ -223,6 +232,7 @@ public final class ParticleRenderer {
         glDisable(GL_BLEND);
         int sourceTexture;
         try {
+            bloomTimer.begin();
             extractBloom();
             int sourceIndex = 0;
             sourceTexture = pingPongTextures[sourceIndex];
@@ -246,6 +256,7 @@ public final class ParticleRenderer {
             glUniform1i(uGlowTextureLoc, 1);
             glUniform1f(uGlowStrengthLoc, glowSettings.strength());
             glDrawArrays(GL_TRIANGLES, 0, 3);
+            bloomTimer.end();
         } finally {
             if (blendEnabled) {
                 glEnable(GL_BLEND);
@@ -262,7 +273,7 @@ public final class ParticleRenderer {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, particleBuffers.velocitySsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, spatialGridBuffers.countsSsbo());
 
-        glUniformMatrix4fv(uViewProjectionLoc, false, viewProjection(width, height, viewMatrix));
+        glUniformMatrix4fv(uViewProjectionLoc, false, frameViewProjection);
         if (uViewLoc != -1) {
             glUniformMatrix4fv(uViewLoc, false, viewMatrix);
         }
@@ -291,7 +302,9 @@ public final class ParticleRenderer {
         if (uGridSizeLoc != -1) {
             glUniform1i(uGridSizeLoc, SpatialGridSizing.gridSize(bounds, interactionRange));
         }
+        particleTimer.begin();
         glDrawArrays(GL_POINTS, 0, particleCount);
+        particleTimer.end();
     }
 
     private void renderTrails(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
@@ -317,7 +330,7 @@ public final class ParticleRenderer {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, spatialGridBuffers.countsSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, trailHistoryBuffers.historySsbo());
 
-        glUniformMatrix4fv(uTrailViewProjectionLoc, false, viewProjection(width, height, viewMatrix));
+        glUniformMatrix4fv(uTrailViewProjectionLoc, false, frameViewProjection);
         glUniformMatrix4fv(uTrailViewLoc, false, viewMatrix);
         glUniform2f(uTrailViewportLoc, width, height);
         glUniform1f(uTrailPointSizeLoc, pointSize);
@@ -339,7 +352,9 @@ public final class ParticleRenderer {
         glUniform1i(uTrailGridSizeLoc, SpatialGridSizing.gridSize(bounds, interactionRange));
 
         int instanceCount = Math.multiplyExact(renderedParticleCount, segmentsPerParticle);
+        trailTimer.begin();
         glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instanceCount);
+        trailTimer.end();
     }
 
     int effectiveTrailParticleStride() {
@@ -449,6 +464,7 @@ public final class ParticleRenderer {
         glDeleteProgram(bloomExtractProgram);
         glDeleteProgram(blurProgram);
         glDeleteProgram(glowCompositeProgram);
+        disposeTimers();
     }
 
     long allocatedEffectBytes() {
@@ -458,5 +474,23 @@ public final class ParticleRenderer {
 
     int effectiveBloomDivisor() {
         return effectiveBloomDivisor;
+    }
+
+    double particleRenderMilliseconds() {
+        return particleTimer.latestMilliseconds();
+    }
+
+    double trailRenderMilliseconds() {
+        return trailTimer.latestMilliseconds();
+    }
+
+    double bloomMilliseconds() {
+        return bloomTimer.latestMilliseconds();
+    }
+
+    private void disposeTimers() {
+        particleTimer.dispose();
+        trailTimer.dispose();
+        bloomTimer.dispose();
     }
 }

@@ -450,7 +450,7 @@ public final class GpuParticleSystem {
 
     public PerformanceSnapshot performanceSnapshot() {
         if (!initialized) {
-            return new PerformanceSnapshot(-1.0, -1.0, -1.0, -1.0, -1.0, 0L, particleCount(),
+            return new PerformanceSnapshot(-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0L, particleCount(),
                     maxParticleCount(), gridCellCount());
         }
         double countMilliseconds = compute.gridCountMilliseconds();
@@ -464,8 +464,9 @@ public final class GpuParticleSystem {
         long allocatedBytes = particleBuffers.allocatedBytes() + spatialGridBuffers.allocatedBytes()
                 + trailHistoryBuffers.allocatedBytes() + renderer.allocatedEffectBytes();
         return new PerformanceSnapshot(countMilliseconds, scanMilliseconds, scatterMilliseconds,
-                integrationMilliseconds, simulationMilliseconds, allocatedBytes, particleCount(), maxParticleCount(),
-                gridCellCount());
+                integrationMilliseconds, simulationMilliseconds, renderer.particleRenderMilliseconds(),
+                renderer.trailRenderMilliseconds(), renderer.bloomMilliseconds(), allocatedBytes, particleCount(),
+                maxParticleCount(), gridCellCount());
     }
 
     float[] readPositions() {

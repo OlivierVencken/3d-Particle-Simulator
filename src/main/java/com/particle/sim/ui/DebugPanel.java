@@ -86,6 +86,10 @@ final class DebugPanel {
                 formatMilliseconds(performance.gridScanMilliseconds()),
                 formatMilliseconds(performance.gridScatterMilliseconds())));
         ImGui.text("  Force integration: %s".formatted(formatMilliseconds(performance.integrationMilliseconds())));
+        ImGui.text("GPU particles / trails / bloom: %s / %s / %s".formatted(
+                formatMilliseconds(performance.particleRenderMilliseconds()),
+                formatMilliseconds(performance.trailRenderMilliseconds()),
+                formatMilliseconds(performance.bloomMilliseconds())));
         ImGui.text("Estimated GPU buffers: %s".formatted(formatBytes(performance.allocatedGpuBytes())));
         ImGui.text("Simulation step: %.2f ms (%.0f Hz)".formatted(
                 SimulationDefaults.SIMULATION_STEP_SECONDS * 1000.0,
