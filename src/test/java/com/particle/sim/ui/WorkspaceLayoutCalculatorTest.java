@@ -27,19 +27,16 @@ class WorkspaceLayoutCalculatorTest {
 
     @ParameterizedTest
     @CsvSource({
-            "2560, 1440, 600",
-            "1920, 1080, 600",
-            "1366, 768, 500",
-            "1024, 768, 500",
+            "2560, 1440, 368",
+            "1920, 1080, 368",
+            "1366, 768, 336",
+            "1024, 768, 320",
             "700, 600, 700"
     })
-    void interactionsUseExpandedInspectorAndPreserveSimulation(float width, float height, float inspectorWidth) {
+    void interactionsUseTheSameInspectorWidthAsOtherSections(float width, float height, float inspectorWidth) {
         WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(width, height, UiSection.INTERACTIONS, true);
 
         assertEquals(inspectorWidth, layout.inspector().width());
-        if (layout.mode() != WorkspaceLayout.Mode.FOCUS) {
-            assertTrue(layout.simulation().width() >= WorkspaceLayoutCalculator.MIN_SIMULATION_STRIP);
-        }
         assertPanelsStayInBounds(layout, width, height);
     }
 

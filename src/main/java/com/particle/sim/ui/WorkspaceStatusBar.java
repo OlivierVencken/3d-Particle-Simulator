@@ -19,8 +19,7 @@ final class WorkspaceStatusBar {
         if (ImGui.begin("##workspace-status", WINDOW_FLAGS)) {
             String status = "%s  ·  %.0f Hz fixed".formatted(
                     paused ? "Paused" : "Running", 1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS);
-            float statusWidth = ImGui.calcTextSize(status).x;
-            ImGui.setCursorPosX(Math.max(12.0f, (panel.width() - statusWidth) * 0.5f));
+            ImGui.setCursorPosX(12.0f);
             ImGui.setCursorPosY(Math.max(0.0f, (panel.height() - ImGui.getTextLineHeight()) * 0.5f));
             ImGui.pushStyleColor(ImGuiCol.Text, paused ? UiPalette.TEXT_DISABLED.vec4() : UiPalette.SUCCESS.vec4());
             ImGui.textUnformatted(status);

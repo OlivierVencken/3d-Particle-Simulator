@@ -3,7 +3,6 @@ package com.particle.sim.ui;
 final class WorkspaceLayoutCalculator {
     static final float COMMAND_BAR_HEIGHT = 44.0f;
     static final float STATUS_BAR_HEIGHT = 26.0f;
-    static final float MIN_SIMULATION_STRIP = 360.0f;
 
     private WorkspaceLayoutCalculator() {
     }
@@ -18,7 +17,7 @@ final class WorkspaceLayoutCalculator {
 
         WorkspaceLayout.Mode mode = modeFor(width);
         float navigationWidth = navigationWidth(mode);
-        float inspectorWidth = inspectorVisible ? inspectorWidth(width, mode, section) : 0.0f;
+        float inspectorWidth = inspectorVisible ? inspectorWidth(width, mode) : 0.0f;
 
         WorkspaceLayout.Panel commandBar = new WorkspaceLayout.Panel(0.0f, 0.0f, width, workspaceY);
         WorkspaceLayout.Panel statusBar = new WorkspaceLayout.Panel(
@@ -58,25 +57,12 @@ final class WorkspaceLayoutCalculator {
         };
     }
 
-    private static float inspectorWidth(float displayWidth, WorkspaceLayout.Mode mode, UiSection section) {
-        if (mode == WorkspaceLayout.Mode.FOCUS) {
-            return displayWidth;
-        }
-        if (section != UiSection.INTERACTIONS) {
-            return switch (mode) {
-                case WIDE -> 368.0f;
-                case MEDIUM -> 336.0f;
-                case COMPACT -> Math.min(320.0f, displayWidth);
-                case FOCUS -> displayWidth;
-            };
-        }
-
-        float preferred = switch (mode) {
-            case WIDE -> 600.0f;
-            case MEDIUM -> 500.0f;
-            case COMPACT -> 500.0f;
+    private static float inspectorWidth(float displayWidth, WorkspaceLayout.Mode mode) {
+        return switch (mode) {
+            case WIDE -> 368.0f;
+            case MEDIUM -> 336.0f;
+            case COMPACT -> Math.min(320.0f, displayWidth);
             case FOCUS -> displayWidth;
         };
-        return Math.min(preferred, Math.max(0.0f, displayWidth - MIN_SIMULATION_STRIP));
     }
 }

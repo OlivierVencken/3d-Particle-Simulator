@@ -24,7 +24,7 @@ final class WorkspaceCommandBar {
         ImGui.setNextWindowSize(panel.width(), panel.height());
         ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 12.0f, 6.0f);
         if (ImGui.begin("##workspace-command-bar", WINDOW_FLAGS)) {
-            renderLeft(panel.width(), loadPreset, savePreset);
+            renderLeft(panel.width(), panel.height(), loadPreset, savePreset);
             renderCenter(panel.width(), layout.simulation(), particles, paused, togglePause);
             renderRight(panel.width(), state, particles, fps, paused, loadPreset, savePreset, showDebug, hideUi,
                     exitApplication);
@@ -35,10 +35,19 @@ final class WorkspaceCommandBar {
         hotkeyPopup.render(showHotkeys);
     }
 
-    private void renderLeft(float width, Runnable loadPreset, Runnable savePreset) {
+    private void renderLeft(float width, float height, Runnable loadPreset, Runnable savePreset) {
+        String title = width >= 900.0f ? "3D Particle Simulator" : "3DPS";
         ImGui.pushFont(UiFonts.title());
-        ImGui.textUnformatted(width >= 900.0f ? "3D Particle Simulator" : "3DPS");
+        float titleWidth = ImGui.calcTextSize(title).x;
         ImGui.popFont();
+        ImGui.setCursorPosX(12.0f);
+        ImGui.setCursorPosY(6.0f);
+        ImGui.invisibleButton("##application-title", titleWidth, 32.0f);
+        int titleColor = ImGui.getColorU32(UiPalette.TEXT.vec4());
+        ImGui.getWindowDrawList().addText(UiFonts.title(), 20,
+                ImGui.getWindowPosX() + 12.0f,
+                ImGui.getWindowPosY() + Math.max(0.0f, (height - 20.0f) * 0.5f),
+                titleColor, title);
         if (width >= 1100.0f) {
             ImGui.sameLine(0.0f, 20.0f);
             if (ImGui.button("Load##command-load", 72.0f, 32.0f)) {
@@ -55,12 +64,9 @@ final class WorkspaceCommandBar {
             boolean paused, Runnable togglePause) {
         float controlsWidth = width >= 900.0f ? 246.0f : 92.0f;
         ImGui.sameLine(Math.max(ImGui.getCursorPosX() + 12.0f, centeredControlsX(simulation, controlsWidth)));
-        ImGui.pushStyleColor(ImGuiCol.Button, UiPalette.ACCENT.vec4());
-        ImGui.pushStyleColor(ImGuiCol.ButtonHovered, UiPalette.ACCENT_BRIGHT.vec4());
         if (ImGui.button(paused ? "Resume##command-pause" : "Pause##command-pause", 92.0f, 32.0f)) {
             togglePause.run();
         }
-        ImGui.popStyleColor(2);
         if (width >= 900.0f) {
             ImGui.sameLine();
             ImGui.beginDisabled(!paused);
@@ -77,11 +83,16 @@ final class WorkspaceCommandBar {
 
     private void renderRight(float width, WorkspaceState state, GpuParticleSystem particles, float fps, boolean paused,
             Runnable loadPreset, Runnable savePreset, Runnable showDebug, Runnable hideUi, Runnable exitApplication) {
-        float rightWidth = width >= 1100.0f ? 214.0f : 44.0f;
-        ImGui.sameLine(Math.max(ImGui.getCursorPosX() + 8.0f, width - rightWidth - 12.0f));
+        float buttonX = width - 12.0f - 38.0f;
         if (width >= 1100.0f) {
-            ImGui.textDisabled("%,d particles  ·  %.0f FPS".formatted(particles.particleCount(), fps));
-            ImGui.sameLine();
+            String statistics = "%,d particles  ·  %.0f FPS".formatted(particles.particleCount(), fps);
+            float statisticsWidth = ImGui.calcTextSize(statistics).x;
+            ImGui.sameLine(Math.max(ImGui.getCursorPosX() + 8.0f, buttonX - statisticsWidth - 10.0f));
+            ImGui.alignTextToFramePadding();
+            ImGui.textDisabled(statistics);
+            ImGui.sameLine(buttonX);
+        } else {
+            ImGui.sameLine(Math.max(ImGui.getCursorPosX() + 8.0f, buttonX));
         }
         if (ImGui.button("...##command-overflow", 38.0f, 32.0f)) {
             ImGui.openPopup("command-overflow-menu");

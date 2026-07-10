@@ -22,22 +22,30 @@ final class WorkspaceNavigation {
             for (UiSection section : UiSection.values()) {
                 boolean selected = state.activeSection() == section;
                 ImVec2 itemOrigin = ImGui.getCursorScreenPos();
+                float itemWidth = ImGui.getContentRegionAvailX();
                 ImGui.pushFont(UiFonts.section());
                 ImGui.pushStyleVar(ImGuiStyleVar.SelectableTextAlign, 0.5f, 0.5f);
                 if (selected) {
-                    ImGui.pushStyleColor(ImGuiCol.Header, UiPalette.SURFACE_ACTIVE.vec4());
+                    int selectedBackground = ImGui.getColorU32(UiPalette.SURFACE_ACTIVE.vec4());
+                    int accent = ImGui.getColorU32(UiPalette.ACCENT.vec4());
+                    ImGui.getWindowDrawList().addRectFilled(
+                            itemOrigin.x + 4.0f, itemOrigin.y,
+                            itemOrigin.x + itemWidth - 4.0f, itemOrigin.y + 44.0f,
+                            selectedBackground, 5.0f);
+                    ImGui.getWindowDrawList().addRectFilled(
+                            itemOrigin.x + 4.0f, itemOrigin.y + 7.0f,
+                            itemOrigin.x + 7.0f, itemOrigin.y + 37.0f,
+                            accent, 2.0f);
+                    ImGui.pushStyleColor(ImGuiCol.Header, UiPalette.CLEAR.vec4());
+                    ImGui.pushStyleColor(ImGuiCol.HeaderHovered, UiPalette.CLEAR.vec4());
                     ImGui.pushStyleColor(ImGuiCol.Text, UiPalette.ACCENT_BRIGHT.vec4());
                 }
                 if (ImGui.selectable(section.label() + "##navigation-" + section.name(),
-                        selected, 0, ImGui.getContentRegionAvailX(), 44.0f)) {
+                        selected, 0, itemWidth, 44.0f)) {
                     state.select(section);
                 }
                 if (selected) {
-                    ImGui.popStyleColor(2);
-                    int accent = ImGui.getColorU32(UiPalette.ACCENT.vec4());
-                    ImGui.getWindowDrawList().addRectFilled(
-                            itemOrigin.x, itemOrigin.y + 6.0f, itemOrigin.x + 3.0f, itemOrigin.y + 38.0f,
-                            accent, 2.0f);
+                    ImGui.popStyleColor(3);
                 }
                 ImGui.popStyleVar();
                 ImGui.popFont();
