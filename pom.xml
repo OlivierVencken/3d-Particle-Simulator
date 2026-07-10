@@ -122,18 +122,6 @@
                 <imgui.natives>imgui-java-natives-linux</imgui.natives>
             </properties>
         </profile>
-        <profile>
-            <id>macos</id>
-            <activation>
-                <os>
-                    <family>mac</family>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-macos</lwjgl.natives>
-                <imgui.natives>imgui-java-natives-macos</imgui.natives>
-            </properties>
-        </profile>
     </profiles>
 
     <build>

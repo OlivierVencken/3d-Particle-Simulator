@@ -87,7 +87,7 @@ public final class ParticleBenchmarkRunner {
             String json = toJson(system, measurements, sustainedParticleCount);
             System.out.println(json);
             if (options.outputPath() != null) {
-                writeOutput(options.outputPath(), json);
+                writeOutput(options.outputPath(), json, measurements);
             }
         } finally {
             if (system != null) {
@@ -234,16 +234,31 @@ public final class ParticleBenchmarkRunner {
         return String.format(Locale.ROOT, "%.4f", value);
     }
 
-    private static void writeOutput(Path outputPath, String json) {
+    private static void writeOutput(Path outputPath, String json, List<Measurement> measurements) {
         try {
             Path parent = outputPath.toAbsolutePath().getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
             }
-            Files.writeString(outputPath, json);
+            String fileName = outputPath.getFileName().toString().toLowerCase(Locale.ROOT);
+            Files.writeString(outputPath, fileName.endsWith(".csv") ? toCsv(measurements) : json);
         } catch (IOException exception) {
             throw new IllegalStateException("Could not write benchmark result to " + outputPath, exception);
         }
+    }
+
+    private static String toCsv(List<Measurement> measurements) {
+        StringBuilder csv = new StringBuilder(
+                "particles,wall_median_ms,wall_p95_ms,gpu_median_ms,gpu_p95_ms,meets_60hz\n");
+        for (Measurement measurement : measurements) {
+            csv.append(measurement.particleCount()).append(',')
+                    .append(format(measurement.wallMedianMilliseconds())).append(',')
+                    .append(format(measurement.wallP95Milliseconds())).append(',')
+                    .append(format(measurement.gpuMedianMilliseconds())).append(',')
+                    .append(format(measurement.gpuP95Milliseconds())).append(',')
+                    .append(measurement.meetsTarget()).append('\n');
+        }
+        return csv.toString();
     }
 
     private record Measurement(int particleCount, double wallMedianMilliseconds, double wallP95Milliseconds,
