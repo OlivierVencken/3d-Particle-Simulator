@@ -22,7 +22,7 @@ final class WorkspaceShell {
                 ImGui.getIO().getDisplaySizeX(), ImGui.getIO().getDisplaySizeY(), state.activeSection(),
                 state.inspectorVisible());
         state.setLayoutMode(layout.mode());
-        commandBar.render(layout.commandBar(), state, particles, fps, paused, togglePause, savePreset, loadPreset,
+        commandBar.render(layout, state, particles, fps, paused, togglePause, savePreset, loadPreset,
                 resetSettings, () -> showDebug.set(true), hideUi, exitApplication);
         navigation.render(layout.navigation(), state);
         inspector.render(layout, state, particles, camera, settingsChanged);

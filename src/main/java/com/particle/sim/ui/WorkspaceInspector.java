@@ -42,8 +42,21 @@ final class WorkspaceInspector {
                 state.select(UiSection.values()[selected.get()]);
             }
         } else {
+            ImGui.pushFont(UiFonts.section());
             ImGui.textUnformatted(state.activeSection().label());
+            ImGui.popFont();
+            ImGui.textDisabled(sectionDescription(state.activeSection()));
         }
+    }
+
+    private String sectionDescription(UiSection section) {
+        return switch (section) {
+            case SIMULATION -> "World boundaries and motion";
+            case PARTICLES -> "Population and spawning";
+            case APPEARANCE -> "Rendering, glow, and trails";
+            case CAMERA -> "Navigation and movement";
+            case INTERACTIONS -> "Attraction matrix and group forces";
+        };
     }
 
     int customSpawnAmount() { return sections.customSpawnAmount(); }

@@ -33,6 +33,7 @@ final class UiPalette {
     static final UiColor ACCENT_MUTED = UiColor.fromHex("#C96424");
     static final UiColor ACCENT_BRIGHT = UiColor.fromHex("#F28A46");
     static final UiColor DESTRUCTIVE = UiColor.fromHex("#D65A5A");
+    static final UiColor SUCCESS = UiColor.fromHex("#72B58C");
 
     static final UiColor TABLE_HEADER = UiColor.fromHex("#141414");
     static final UiColor TABLE_ROW_ALT = UiColor.fromHex("#1B1B1B59");

@@ -3,6 +3,8 @@ package com.particle.sim.ui;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SimulationDefaults;
 import imgui.ImGui;
+import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 
 final class WorkspaceStatusBar {
@@ -13,18 +15,25 @@ final class WorkspaceStatusBar {
     void render(WorkspaceLayout.Panel panel, boolean paused, GpuParticleSystem particles) {
         ImGui.setNextWindowPos(panel.x(), panel.y());
         ImGui.setNextWindowSize(panel.width(), panel.height());
+        ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 12.0f, 0.0f);
         if (ImGui.begin("##workspace-status", WINDOW_FLAGS)) {
-            ImGui.textUnformatted(paused ? "Paused" : "Running");
-            ImGui.sameLine(0.0f, 16.0f);
-            ImGui.textDisabled("Fixed %.0f Hz".formatted(1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS));
+            String status = "%s  ·  %.0f Hz fixed".formatted(
+                    paused ? "Paused" : "Running", 1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS);
+            float statusWidth = ImGui.calcTextSize(status).x;
+            ImGui.setCursorPosX(Math.max(12.0f, (panel.width() - statusWidth) * 0.5f));
+            ImGui.setCursorPosY(Math.max(0.0f, (panel.height() - ImGui.getTextLineHeight()) * 0.5f));
+            ImGui.pushStyleColor(ImGuiCol.Text, paused ? UiPalette.TEXT_DISABLED.vec4() : UiPalette.SUCCESS.vec4());
+            ImGui.textUnformatted(status);
+            ImGui.popStyleColor();
             String qualityMessage = qualityMessage(particles);
             if (!qualityMessage.isEmpty() && panel.width() >= 720.0f) {
                 float messageWidth = ImGui.calcTextSize(qualityMessage).x;
-                ImGui.sameLine(Math.max(ImGui.getCursorPosX() + 8.0f, panel.width() - messageWidth - 12.0f));
+                ImGui.sameLine(Math.max(ImGui.getCursorPosX() + 16.0f, panel.width() - messageWidth - 12.0f));
                 ImGui.textDisabled(qualityMessage);
             }
         }
         ImGui.end();
+        ImGui.popStyleVar();
     }
 
     static String qualityMessage(GpuParticleSystem particles) {

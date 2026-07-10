@@ -43,6 +43,17 @@ class WorkspaceLayoutCalculatorTest {
         assertPanelsStayInBounds(layout, width, height);
     }
 
+    @org.junit.jupiter.api.Test
+    void commandControlsCenterOnVisibleSimulationInsteadOfWholeDisplay() {
+        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(2560.0f, 1440.0f, UiSection.SIMULATION, true);
+
+        float controlsWidth = 246.0f;
+        float x = WorkspaceCommandBar.centeredControlsX(layout.simulation(), controlsWidth);
+
+        assertEquals(layout.simulation().x() + layout.simulation().width() * 0.5f,
+                x + controlsWidth * 0.5f);
+    }
+
     private void assertPanelsStayInBounds(WorkspaceLayout layout, float width, float height) {
         for (WorkspaceLayout.Panel panel : new WorkspaceLayout.Panel[] {
                 layout.commandBar(), layout.navigation(), layout.simulation(), layout.inspector(), layout.statusBar() }) {

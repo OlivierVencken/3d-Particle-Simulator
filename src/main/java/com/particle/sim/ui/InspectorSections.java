@@ -62,10 +62,12 @@ final class InspectorSections {
     }
 
     private void renderParticles(GpuParticleSystem particles, Runnable changed) {
-        ImGui.text("%,d".formatted(particles.particleCount()));
-        ImGui.textDisabled("particles");
-        ImGui.sameLine(0.0f, 24.0f);
-        ImGui.text("%d groups".formatted(particles.groupCount()));
+        float summaryWidth = ImGui.getContentRegionAvailX();
+        float particleCardWidth = Math.max(140.0f, (summaryWidth - 8.0f) * 0.62f);
+        metricCard("particle-count", "PARTICLES", "%,d".formatted(particles.particleCount()), particleCardWidth);
+        ImGui.sameLine();
+        metricCard("group-count", "GROUPS", Integer.toString(particles.groupCount()),
+                Math.max(88.0f, summaryWidth - particleCardWidth - 8.0f));
 
         section("Population");
         ImInt groups = new ImInt(particles.groupCount());
@@ -79,18 +81,20 @@ final class InspectorSections {
                 value -> particles.spawnMode(SpawnMode.values()[value]), changed);
 
         section("Spawn particles");
-        spawnButton("+1k", 1_000, particles, changed);
+        float pairWidth = Math.max(80.0f, (ImGui.getContentRegionAvailX() - 8.0f) * 0.5f);
+        spawnButton("Add 1k", 1_000, pairWidth, particles, changed);
         ImGui.sameLine();
-        spawnButton("-1k", -1_000, particles, changed);
+        spawnButton("Remove 1k", -1_000, pairWidth, particles, changed);
+        spawnButton("Add 10k", 10_000, pairWidth, particles, changed);
         ImGui.sameLine();
-        spawnButton("+10k", 10_000, particles, changed);
+        spawnButton("Remove 10k", -10_000, pairWidth, particles, changed);
+        spawnButton("Add 100k", 100_000, pairWidth, particles, changed);
         ImGui.sameLine();
-        spawnButton("-10k", -10_000, particles, changed);
-        spawnButton("+100k", 100_000, particles, changed);
-        ImGui.sameLine();
-        spawnButton("-100k", -100_000, particles, changed);
+        spawnButton("Remove 100k", -100_000, pairWidth, particles, changed);
 
         customSpawnAmount.set(Math.max(0, customSpawnAmount.get()));
+        ImGui.spacing();
+        ImGui.textDisabled("Custom amount");
         ImGui.setNextItemWidth(Math.max(100.0f, ImGui.getContentRegionAvailX() - 72.0f));
         if (ImGui.inputInt("##custom-spawn-amount", customSpawnAmount, 100, 1_000)) {
             changed.run();
@@ -181,11 +185,23 @@ final class InspectorSections {
         }
     }
 
-    private void spawnButton(String label, int amount, GpuParticleSystem particles, Runnable changed) {
-        if (ImGui.button(label + "##spawn-" + amount)) {
+    private void spawnButton(String label, int amount, float width, GpuParticleSystem particles, Runnable changed) {
+        if (ImGui.button(label + "##spawn-" + amount, width, 32.0f)) {
             if (amount > 0) particles.addParticles(amount); else particles.removeParticles(-amount);
             changed.run();
         }
+    }
+
+    private void metricCard(String id, String label, String value, float width) {
+        ImGui.pushStyleColor(ImGuiCol.ChildBg, UiPalette.SURFACE.withAlpha(0.72f).vec4());
+        if (ImGui.beginChild("##metric-" + id, width, 64.0f, true)) {
+            ImGui.textDisabled(label);
+            ImGui.pushFont(UiFonts.section());
+            ImGui.textUnformatted(value);
+            ImGui.popFont();
+        }
+        ImGui.endChild();
+        ImGui.popStyleColor();
     }
 
     private void section(String label) {

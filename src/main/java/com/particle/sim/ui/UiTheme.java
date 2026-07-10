@@ -14,7 +14,7 @@ final class UiTheme {
         ImGuiStyle style = ImGui.getStyle();
         style.setWindowPadding(16.0f, 12.0f);
         style.setFramePadding(8.0f, 7.0f);
-        style.setItemSpacing(8.0f, 8.0f);
+        style.setItemSpacing(8.0f, 10.0f);
         style.setItemInnerSpacing(8.0f, 6.0f);
         style.setCellPadding(6.0f, 6.0f);
         style.setWindowRounding(0.0f);
@@ -58,7 +58,7 @@ final class UiTheme {
         color(ImGuiCol.Button, UiPalette.INTERACTIVE);
         color(ImGuiCol.ButtonHovered, UiPalette.INTERACTIVE_HOVERED);
         color(ImGuiCol.ButtonActive, UiPalette.INTERACTIVE_ACTIVE);
-        color(ImGuiCol.Header, UiPalette.INTERACTIVE);
+        color(ImGuiCol.Header, UiPalette.SURFACE_ACTIVE);
         color(ImGuiCol.HeaderHovered, UiPalette.INTERACTIVE_HOVERED);
         color(ImGuiCol.HeaderActive, UiPalette.INTERACTIVE_ACTIVE);
 
