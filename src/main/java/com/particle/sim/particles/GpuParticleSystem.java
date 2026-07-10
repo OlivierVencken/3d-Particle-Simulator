@@ -70,15 +70,6 @@ public final class GpuParticleSystem {
         }
     }
 
-    private void rebuildSpatialGrid() {
-        if (particleCount() == 0) {
-            return;
-        }
-
-        spatialGridBuffers.ensureCapacity(particleCount(), gridCellCount());
-        compute.buildGrid(this, particleBuffers, spatialGridBuffers);
-    }
-
     public void render(int width, int height, float[] viewMatrix) {
         renderer.render(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount(), pointSize(),
                 fixedParticleScreenSize(), effectEnabled(EffectMode.GLOW), effectEnabled(EffectMode.TRAILS),
