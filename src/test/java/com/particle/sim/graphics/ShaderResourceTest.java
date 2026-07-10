@@ -20,7 +20,8 @@ class ShaderResourceTest {
         assertShaderContains("/shaders/particle.vert", "uniform mat4 uViewProjection;", "void main()");
         assertShaderContains("/shaders/particle.frag", "out vec4 fragColor;", "void main()");
         assertShaderContains("/shaders/fullscreen.vert", "out vec2 vUv;", "void main()");
-        assertShaderContains("/shaders/blur.frag", "uniform float uRadius;", "uniform float uFalloff;", "void main()");
+        assertShaderContains("/shaders/bloom_extract.frag", "uniform sampler2D uScene;", "void main()");
+        assertShaderContains("/shaders/blur.frag", "uniform float uRadius;", "1.384615", "void main()");
         assertShaderContains("/shaders/bloom_composite.frag", "uniform sampler2D uBloom;", "void main()");
         assertShaderContains("/shaders/trail.vert", "layout(std430, binding = 4) readonly buffer TrailHistory",
                 "uniform float uTrailThickness;", "gl_InstanceID", "void main()");

@@ -47,6 +47,7 @@ class GpuParticleSystemOpenGlTest {
             system.interactionRange(0.4f);
             system.spawnMode(SpawnMode.POINT);
             system.effectEnabled(EffectMode.TRAILS, true);
+            system.effectEnabled(EffectMode.GLOW, true);
             system.init();
             assertTrue(system.maxParticleCount() > 1_000_000);
             for (int i = 0; i < 6; i++) {

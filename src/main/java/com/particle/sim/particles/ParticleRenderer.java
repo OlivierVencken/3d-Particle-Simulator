@@ -61,6 +61,7 @@ public final class ParticleRenderer {
     private static final int MAX_TRAIL_SEGMENTS = 4_000_000;
     private int renderProgram;
     private int trailProgram;
+    private int bloomExtractProgram;
     private int blurProgram;
     private int glowCompositeProgram;
 
@@ -107,9 +108,13 @@ public final class ParticleRenderer {
     private int uGlowSceneLoc;
     private int uGlowTextureLoc;
     private int uGlowStrengthLoc;
+    private int uExtractSceneLoc;
 
     private int effectWidth;
     private int effectHeight;
+    private int bloomWidth;
+    private int bloomHeight;
+    private int effectiveBloomDivisor = 4;
     private int sceneFbo;
     private int sceneTexture;
     private final int[] pingPongFbos = new int[2];
@@ -119,6 +124,7 @@ public final class ParticleRenderer {
     public void init() {
         renderProgram = ShaderProgram.render("/shaders/particle.vert", "/shaders/particle.frag");
         trailProgram = ShaderProgram.render("/shaders/trail.vert", "/shaders/trail.frag");
+        bloomExtractProgram = ShaderProgram.render("/shaders/fullscreen.vert", "/shaders/bloom_extract.frag");
         blurProgram = ShaderProgram.render("/shaders/fullscreen.vert", "/shaders/blur.frag");
         glowCompositeProgram = ShaderProgram.render("/shaders/fullscreen.vert", "/shaders/bloom_composite.frag");
 
@@ -165,6 +171,7 @@ public final class ParticleRenderer {
         uGlowSceneLoc = glGetUniformLocation(glowCompositeProgram, "uScene");
         uGlowTextureLoc = glGetUniformLocation(glowCompositeProgram, "uBloom");
         uGlowStrengthLoc = glGetUniformLocation(glowCompositeProgram, "uBloomStrength");
+        uExtractSceneLoc = glGetUniformLocation(bloomExtractProgram, "uScene");
     }
 
     public void render(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
@@ -198,7 +205,7 @@ public final class ParticleRenderer {
             int colorMode, int groupCount, float maxVelocity, float bounds, float interactionRange,
             GlowSettings glowSettings, boolean trailsEnabled, TrailSettings trailSettings,
             TrailHistoryBuffers trailHistoryBuffers) {
-        ensureGlowTargets(width, height);
+        ensureGlowTargets(width, height, particleCount);
 
         glBindFramebuffer(GL_FRAMEBUFFER, sceneFbo);
         glViewport(0, 0, width, height);
@@ -214,13 +221,17 @@ public final class ParticleRenderer {
 
         boolean blendEnabled = glIsEnabled(GL_BLEND);
         glDisable(GL_BLEND);
-        int sourceTexture = sceneTexture;
+        int sourceTexture;
         try {
+            extractBloom();
+            int sourceIndex = 0;
+            sourceTexture = pingPongTextures[sourceIndex];
             for (int pass = 0; pass < glowSettings.blurPasses(); pass++) {
-                int target = pass % 2;
+                int target = 1 - sourceIndex;
                 blurTo(pingPongFbos[target], sourceTexture, pass % 2 == 0 ? 1.0f : 0.0f,
                         pass % 2 == 0 ? 0.0f : 1.0f, glowSettings);
                 sourceTexture = pingPongTextures[target];
+                sourceIndex = target;
             }
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -338,7 +349,7 @@ public final class ParticleRenderer {
     private void blurTo(int targetFbo, int sourceTexture, float directionX, float directionY,
             GlowSettings glowSettings) {
         glBindFramebuffer(GL_FRAMEBUFFER, targetFbo);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glViewport(0, 0, bloomWidth, bloomHeight);
         glUseProgram(blurProgram);
         glBindVertexArray(fullscreenVao);
         glActiveTexture(GL_TEXTURE0);
@@ -350,6 +361,17 @@ public final class ParticleRenderer {
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 
+    private void extractBloom() {
+        glBindFramebuffer(GL_FRAMEBUFFER, pingPongFbos[0]);
+        glViewport(0, 0, bloomWidth, bloomHeight);
+        glUseProgram(bloomExtractProgram);
+        glBindVertexArray(fullscreenVao);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, sceneTexture);
+        glUniform1i(uExtractSceneLoc, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
+
     private float[] viewProjection(int width, int height, float[] viewMatrix) {
         float aspect = width / (float) height;
         return Math3d.multiply(
@@ -357,20 +379,25 @@ public final class ParticleRenderer {
                 viewMatrix);
     }
 
-    private void ensureGlowTargets(int width, int height) {
-        if (width == effectWidth && height == effectHeight && sceneFbo != 0) {
+    private void ensureGlowTargets(int width, int height, int particleCount) {
+        int desiredDivisor = particleCount <= 50_000 ? 2 : particleCount <= 250_000 ? 4 : 8;
+        if (width == effectWidth && height == effectHeight && desiredDivisor == effectiveBloomDivisor
+                && sceneFbo != 0) {
             return;
         }
 
         deleteGlowTargets();
         effectWidth = width;
         effectHeight = height;
+        effectiveBloomDivisor = desiredDivisor;
+        bloomWidth = Math.max(1, Math.ceilDiv(width, effectiveBloomDivisor));
+        bloomHeight = Math.max(1, Math.ceilDiv(height, effectiveBloomDivisor));
 
         sceneTexture = createColorTexture(width, height);
         sceneFbo = createFramebuffer(sceneTexture);
 
         for (int i = 0; i < 2; i++) {
-            pingPongTextures[i] = createColorTexture(width, height);
+            pingPongTextures[i] = createColorTexture(bloomWidth, bloomHeight);
             pingPongFbos[i] = createFramebuffer(pingPongTextures[i]);
         }
 
@@ -409,6 +436,8 @@ public final class ParticleRenderer {
         }
         sceneFbo = 0;
         sceneTexture = 0;
+        bloomWidth = 0;
+        bloomHeight = 0;
     }
 
     public void dispose() {
@@ -417,11 +446,17 @@ public final class ParticleRenderer {
         glDeleteVertexArrays(fullscreenVao);
         glDeleteProgram(renderProgram);
         glDeleteProgram(trailProgram);
+        glDeleteProgram(bloomExtractProgram);
         glDeleteProgram(blurProgram);
         glDeleteProgram(glowCompositeProgram);
     }
 
     long allocatedEffectBytes() {
-        return (long) effectWidth * effectHeight * 3L * 4L * Short.BYTES;
+        return ((long) effectWidth * effectHeight + (long) bloomWidth * bloomHeight * 2L)
+                * 4L * Short.BYTES;
+    }
+
+    int effectiveBloomDivisor() {
+        return effectiveBloomDivisor;
     }
 }

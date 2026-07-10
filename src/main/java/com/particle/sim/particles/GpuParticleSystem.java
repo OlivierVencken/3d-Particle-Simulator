@@ -271,6 +271,10 @@ public final class GpuParticleSystem {
         return renderer.effectiveTrailParticleStride();
     }
 
+    public int effectiveBloomDivisor() {
+        return renderer.effectiveBloomDivisor();
+    }
+
     public void trailThickness(float trailThickness) {
         config.trailThickness(trailThickness);
     }

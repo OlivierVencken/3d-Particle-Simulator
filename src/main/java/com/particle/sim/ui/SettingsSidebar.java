@@ -221,6 +221,7 @@ final class SettingsSidebar {
                 12.0f, 1, particles::glowRadius, settingsChanged);
         UiControls.settingSlider("Falloff", particles.glowFalloff(), 0.05f,
                 3.0f, 2, particles::glowFalloff, settingsChanged);
+        ImGui.textDisabled("Bloom resolution: 1/%d per axis".formatted(particles.effectiveBloomDivisor()));
     }
 
     private void renderTrailControls(GpuParticleSystem particles, Runnable settingsChanged) {
