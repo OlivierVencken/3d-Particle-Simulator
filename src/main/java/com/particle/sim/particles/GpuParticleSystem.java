@@ -267,6 +267,10 @@ public final class GpuParticleSystem {
         return trailHistoryBuffers.sampleCapacity();
     }
 
+    public int effectiveTrailParticleStride() {
+        return renderer.effectiveTrailParticleStride();
+    }
+
     public void trailThickness(float trailThickness) {
         config.trailThickness(trailThickness);
     }

@@ -52,6 +52,12 @@ class GpuParticleSystemOpenGlTest {
             for (int i = 0; i < 6; i++) {
                 system.step();
             }
+            system.render(64, 64, new float[] {
+                    1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1
+            });
             glFinish();
 
             assertEquals(GL_NO_ERROR, glGetError());

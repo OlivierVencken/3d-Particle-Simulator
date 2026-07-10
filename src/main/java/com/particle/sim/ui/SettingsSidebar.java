@@ -231,6 +231,10 @@ final class SettingsSidebar {
         if (particles.effectiveTrailLength() > 0 && particles.effectiveTrailLength() < particles.trailLength()) {
             ImGui.textDisabled("Effective length: %d (memory budget)".formatted(particles.effectiveTrailLength()));
         }
+        if (particles.effectiveTrailParticleStride() > 1) {
+            ImGui.textDisabled("Rendering 1/%d particles (GPU budget)"
+                    .formatted(particles.effectiveTrailParticleStride()));
+        }
     }
 
     private void renderSpawnControls(GpuParticleSystem particles, Runnable settingsChanged) {

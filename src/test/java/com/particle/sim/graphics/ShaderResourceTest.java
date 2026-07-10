@@ -23,9 +23,7 @@ class ShaderResourceTest {
         assertShaderContains("/shaders/blur.frag", "uniform float uRadius;", "uniform float uFalloff;", "void main()");
         assertShaderContains("/shaders/bloom_composite.frag", "uniform sampler2D uBloom;", "void main()");
         assertShaderContains("/shaders/trail.vert", "layout(std430, binding = 4) readonly buffer TrailHistory",
-                "uniform float uTrailThickness;", "void main()");
-        assertShaderContains("/shaders/trail.geom", "layout(lines) in;", "layout(triangle_strip, max_vertices = 4) out;",
-                "void main()");
+                "uniform float uTrailThickness;", "gl_InstanceID", "void main()");
         assertShaderContains("/shaders/trail.frag", "out vec4 fragColor;", "void main()");
     }
 

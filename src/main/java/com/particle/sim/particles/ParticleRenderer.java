@@ -14,7 +14,6 @@ import static org.lwjgl.opengl.GL43C.GL_FLOAT;
 import static org.lwjgl.opengl.GL43C.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL43C.GL_FRAMEBUFFER_COMPLETE;
 import static org.lwjgl.opengl.GL43C.GL_LINEAR;
-import static org.lwjgl.opengl.GL43C.GL_LINES;
 import static org.lwjgl.opengl.GL43C.GL_POINTS;
 import static org.lwjgl.opengl.GL43C.GL_RGBA;
 import static org.lwjgl.opengl.GL43C.GL_RGBA16F;
@@ -41,6 +40,7 @@ import static org.lwjgl.opengl.GL43C.glDeleteTextures;
 import static org.lwjgl.opengl.GL43C.glDeleteVertexArrays;
 import static org.lwjgl.opengl.GL43C.glDisable;
 import static org.lwjgl.opengl.GL43C.glDrawArrays;
+import static org.lwjgl.opengl.GL43C.glDrawArraysInstanced;
 import static org.lwjgl.opengl.GL43C.glEnable;
 import static org.lwjgl.opengl.GL43C.glFramebufferTexture2D;
 import static org.lwjgl.opengl.GL43C.glGenFramebuffers;
@@ -58,6 +58,7 @@ import static org.lwjgl.opengl.GL43C.glUseProgram;
 import static org.lwjgl.opengl.GL43C.glViewport;
 
 public final class ParticleRenderer {
+    private static final int MAX_TRAIL_SEGMENTS = 4_000_000;
     private int renderProgram;
     private int trailProgram;
     private int blurProgram;
@@ -90,6 +91,8 @@ public final class ParticleRenderer {
     private int uTrailSampleCapacityLoc;
     private int uTrailNewestSampleIndexLoc;
     private int uTrailSampleCountLoc;
+    private int uTrailRenderedParticleCountLoc;
+    private int uTrailParticleStrideLoc;
     private int uTrailColorModeLoc;
     private int uTrailGroupCountLoc;
     private int uTrailMaxVelocityLoc;
@@ -111,10 +114,11 @@ public final class ParticleRenderer {
     private int sceneTexture;
     private final int[] pingPongFbos = new int[2];
     private final int[] pingPongTextures = new int[2];
+    private int effectiveTrailParticleStride = 1;
 
     public void init() {
         renderProgram = ShaderProgram.render("/shaders/particle.vert", "/shaders/particle.frag");
-        trailProgram = ShaderProgram.render("/shaders/trail.vert", "/shaders/trail.geom", "/shaders/trail.frag");
+        trailProgram = ShaderProgram.render("/shaders/trail.vert", "/shaders/trail.frag");
         blurProgram = ShaderProgram.render("/shaders/fullscreen.vert", "/shaders/blur.frag");
         glowCompositeProgram = ShaderProgram.render("/shaders/fullscreen.vert", "/shaders/bloom_composite.frag");
 
@@ -145,6 +149,8 @@ public final class ParticleRenderer {
         uTrailSampleCapacityLoc = glGetUniformLocation(trailProgram, "uSampleCapacity");
         uTrailNewestSampleIndexLoc = glGetUniformLocation(trailProgram, "uNewestSampleIndex");
         uTrailSampleCountLoc = glGetUniformLocation(trailProgram, "uSampleCount");
+        uTrailRenderedParticleCountLoc = glGetUniformLocation(trailProgram, "uRenderedParticleCount");
+        uTrailParticleStrideLoc = glGetUniformLocation(trailProgram, "uParticleStride");
         uTrailColorModeLoc = glGetUniformLocation(trailProgram, "uColorMode");
         uTrailGroupCountLoc = glGetUniformLocation(trailProgram, "uGroupCount");
         uTrailMaxVelocityLoc = glGetUniformLocation(trailProgram, "uMaxVelocity");
@@ -283,8 +289,15 @@ public final class ParticleRenderer {
             float bounds, float interactionRange, TrailSettings trailSettings) {
         int activeSamples = Math.min(trailSettings.length(), trailHistoryBuffers.sampleCount());
         if (activeSamples < 2 || trailHistoryBuffers.historySsbo() == 0) {
+            effectiveTrailParticleStride = 1;
             return;
         }
+
+        int segmentsPerParticle = activeSamples - 1;
+        long requestedSegments = (long) particleCount * segmentsPerParticle;
+        effectiveTrailParticleStride = (int) Math.max(1L,
+                Math.ceilDiv(requestedSegments, MAX_TRAIL_SEGMENTS));
+        int renderedParticleCount = Math.ceilDiv(particleCount, effectiveTrailParticleStride);
 
         glUseProgram(trailProgram);
         glBindVertexArray(particleVao);
@@ -305,6 +318,8 @@ public final class ParticleRenderer {
         glUniform1i(uTrailSampleCapacityLoc, trailHistoryBuffers.sampleCapacity());
         glUniform1i(uTrailNewestSampleIndexLoc, trailHistoryBuffers.newestSampleIndex());
         glUniform1i(uTrailSampleCountLoc, activeSamples);
+        glUniform1i(uTrailRenderedParticleCountLoc, renderedParticleCount);
+        glUniform1i(uTrailParticleStrideLoc, effectiveTrailParticleStride);
         glUniform1i(uTrailColorModeLoc, colorMode);
         glUniform1i(uTrailGroupCountLoc, groupCount);
         glUniform1f(uTrailMaxVelocityLoc, maxVelocity);
@@ -312,8 +327,12 @@ public final class ParticleRenderer {
         glUniform1f(uTrailInteractionRangeLoc, interactionRange);
         glUniform1i(uTrailGridSizeLoc, SpatialGridSizing.gridSize(bounds, interactionRange));
 
-        int vertexCount = particleCount * (activeSamples - 1) * 2;
-        glDrawArrays(GL_LINES, 0, vertexCount);
+        int instanceCount = Math.multiplyExact(renderedParticleCount, segmentsPerParticle);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instanceCount);
+    }
+
+    int effectiveTrailParticleStride() {
+        return effectiveTrailParticleStride;
     }
 
     private void blurTo(int targetFbo, int sourceTexture, float directionX, float directionY,
