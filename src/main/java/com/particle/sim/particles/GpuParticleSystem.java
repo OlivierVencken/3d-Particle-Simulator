@@ -468,6 +468,22 @@ public final class GpuParticleSystem {
                 gridCellCount());
     }
 
+    float[] readPositions() {
+        return particleBuffers.readPositions(particleCount());
+    }
+
+    float[] readVelocities() {
+        return particleBuffers.readVelocities(particleCount());
+    }
+
+    int[] readGridCounts() {
+        return spatialGridBuffers.readCounts(gridCellCount());
+    }
+
+    int[] readGridParticleIds() {
+        return spatialGridBuffers.readParticleIds(particleCount());
+    }
+
     private int detectMaximumParticleCount() {
         long storageBlockLimit = glGetInteger64(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / (4L * Float.BYTES);
         long dispatchLimit = (long) glGetIntegeri(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0) * COMPUTE_WORK_GROUP_SIZE;

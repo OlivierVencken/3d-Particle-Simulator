@@ -13,6 +13,7 @@ import static org.lwjgl.opengl.GL43C.glBufferSubData;
 import static org.lwjgl.opengl.GL43C.glCopyBufferSubData;
 import static org.lwjgl.opengl.GL43C.glDeleteBuffers;
 import static org.lwjgl.opengl.GL43C.glGenBuffers;
+import static org.lwjgl.opengl.GL43C.glGetBufferSubData;
 import static org.lwjgl.system.MemoryUtil.memAllocFloat;
 import static org.lwjgl.system.MemoryUtil.memFree;
 
@@ -41,6 +42,14 @@ final class ParticleBuffers {
 
     long allocatedBytes() {
         return (long) particleCapacity * 4L * 4L * Float.BYTES;
+    }
+
+    float[] readPositions(int particleCount) {
+        return readFloatBuffer(positionSsbo, particleCount);
+    }
+
+    float[] readVelocities(int particleCount) {
+        return readFloatBuffer(velocitySsbo, particleCount);
     }
 
     void resize(int oldParticleCount, int requestedParticleCount, boolean preserveExisting,
@@ -144,6 +153,20 @@ final class ParticleBuffers {
 
     private static long particleBufferBytes(int count) {
         return (long) Math.max(count, 1) * 4L * Float.BYTES;
+    }
+
+    private static float[] readFloatBuffer(int buffer, int particleCount) {
+        int floatCount = Math.multiplyExact(particleCount, 4);
+        FloatBuffer data = memAllocFloat(floatCount);
+        try {
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
+            glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, data);
+            float[] result = new float[floatCount];
+            data.get(result);
+            return result;
+        } finally {
+            memFree(data);
+        }
     }
 
     private static int grownCapacity(int currentCapacity, int requiredCapacity) {

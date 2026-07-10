@@ -14,9 +14,13 @@ import static org.lwjgl.opengl.GL43C.glClearBufferSubData;
 import static org.lwjgl.opengl.GL43C.glCopyBufferSubData;
 import static org.lwjgl.opengl.GL43C.glDeleteBuffers;
 import static org.lwjgl.opengl.GL43C.glGenBuffers;
+import static org.lwjgl.opengl.GL43C.glGetBufferSubData;
+import static org.lwjgl.system.MemoryUtil.memAllocInt;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.nio.IntBuffer;
 
 final class SpatialGridBuffers {
     static final int SCAN_ELEMENTS_PER_GROUP = 512;
@@ -107,6 +111,14 @@ final class SpatialGridBuffers {
         return bytes;
     }
 
+    int[] readCounts(int cellCount) {
+        return readIntBuffer(countsSsbo, cellCount);
+    }
+
+    int[] readParticleIds(int particleCount) {
+        return readIntBuffer(particleIdsSsbo, particleCount);
+    }
+
     void dispose() {
         glDeleteBuffers(particleIdsSsbo);
         glDeleteBuffers(countsSsbo);
@@ -141,6 +153,19 @@ final class SpatialGridBuffers {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
         glBufferData(GL_SHADER_STORAGE_BUFFER, (long) Math.max(elementCount, 1) * Integer.BYTES, GL_STREAM_DRAW);
         return buffer;
+    }
+
+    private static int[] readIntBuffer(int buffer, int elementCount) {
+        IntBuffer data = memAllocInt(elementCount);
+        try {
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
+            glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, data);
+            int[] result = new int[elementCount];
+            data.get(result);
+            return result;
+        } finally {
+            memFree(data);
+        }
     }
 
     private void deleteScanScratch() {
