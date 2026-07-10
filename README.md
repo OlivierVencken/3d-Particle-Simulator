@@ -53,7 +53,6 @@ The first launch may take a little longer while Maven downloads the required lib
 
 ### Hotkeys
 - **Space**: pause or resume the simulation
-- **Left arrow**: Move one step backward
 - **Right arrow**: Move one step forward
 - **F**: hide ui
 - **R**: reset the particles

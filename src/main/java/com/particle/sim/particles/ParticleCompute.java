@@ -54,6 +54,8 @@ public final class ParticleCompute {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, spatialGridBuffers.dataSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, spatialGridBuffers.countsSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, spatialGridBuffers.keysSsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, particleBuffers.nextPositionSsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, particleBuffers.nextVelocitySsbo());
     }
 
     public void setUniforms(GpuParticleSystem system, float deltaTime, int pass) {

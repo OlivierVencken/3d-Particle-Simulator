@@ -37,15 +37,6 @@ public final class GpuParticleSystem {
         advanceSimulation((float) SimulationDefaults.SIMULATION_STEP_SECONDS);
     }
 
-    public void stepBack() {
-        if (!initialized || !particleBuffers.restoreSnapshot()) {
-            return;
-        }
-
-        trailHistoryBuffers.clear();
-        rebuildSpatialGrid();
-    }
-
     public void reset() {
         resizeParticles(particleCount(), false);
     }
@@ -62,14 +53,13 @@ public final class GpuParticleSystem {
         spatialGridBuffers.ensureCapacity(desiredSpatialMapSize());
         compute.bindBuffers(particleBuffers, spatialGridBuffers);
 
-        particleBuffers.captureSnapshot();
-
         spatialGridBuffers.clear();
         compute.setUniforms(this, deltaTime, 0);
         compute.dispatch(particleCount(), WORK_GROUP_SIZE, false);
 
         compute.setUniforms(this, deltaTime, 1);
         compute.dispatch(particleCount(), WORK_GROUP_SIZE, true);
+        particleBuffers.swapState();
 
         if (effectEnabled(EffectMode.TRAILS)) {
             trailHistoryBuffers.capture(particleBuffers, particleCount(), trailLength());

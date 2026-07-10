@@ -8,7 +8,6 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_F11;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_F;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_R;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 
 import java.util.List;
@@ -21,8 +20,7 @@ public final class AppHotkeys {
             new HotkeyDefinition(GLFW_KEY_F3, HotkeyAction.TOGGLE_DEBUG, HotkeyContext.GLOBAL),
             new HotkeyDefinition(GLFW_KEY_SPACE, HotkeyAction.TOGGLE_PAUSE, HotkeyContext.SIMULATION),
             new HotkeyDefinition(GLFW_KEY_R, HotkeyAction.RESET_PARTICLES, HotkeyContext.SIMULATION),
-            new HotkeyDefinition(GLFW_KEY_RIGHT, HotkeyAction.SIMULATION_STEP_FORWARD, HotkeyContext.SIMULATION),
-            new HotkeyDefinition(GLFW_KEY_LEFT, HotkeyAction.SIMULATION_STEP_BACKWARD, HotkeyContext.SIMULATION));
+            new HotkeyDefinition(GLFW_KEY_RIGHT, HotkeyAction.SIMULATION_STEP_FORWARD, HotkeyContext.SIMULATION));
 
     private AppHotkeys() {
     }
@@ -50,7 +48,5 @@ public final class AppHotkeys {
                 HotkeyAction.RESET_PARTICLES, app.getParticles()::reset);
         hotkeyManager.on(
                 HotkeyAction.SIMULATION_STEP_FORWARD, app.getParticles()::step);
-        hotkeyManager.on(
-                HotkeyAction.SIMULATION_STEP_BACKWARD, app.getParticles()::stepBack);
     }
 }

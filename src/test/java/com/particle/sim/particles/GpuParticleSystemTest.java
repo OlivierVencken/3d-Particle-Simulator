@@ -154,12 +154,11 @@ class GpuParticleSystemTest {
     }
 
     @Test
-    void stepMethodsAreSafeBeforeInitialization() {
+    void stepMethodIsSafeBeforeInitialization() {
         GpuParticleSystem system = new GpuParticleSystem();
 
         assertDoesNotThrow(() -> {
             system.step();
-            system.stepBack();
         });
         assertEquals(65_536, system.particleCount());
     }

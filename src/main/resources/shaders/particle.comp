@@ -10,11 +10,11 @@ layout(local_size_x = 256) in;
 #define DISTANCE_MANHATTAN 1
 #define DISTANCE_CHEBYSHEV 2
 
-layout(std430, binding = 0) buffer Positions {
+layout(std430, binding = 0) readonly buffer Positions {
     vec4 positions[];
 };
 
-layout(std430, binding = 1) buffer Velocities {
+layout(std430, binding = 1) readonly buffer Velocities {
     vec4 velocities[];
 };
 
@@ -28,6 +28,14 @@ layout(std430, binding = 3) buffer GridCounts {
 
 layout(std430, binding = 4) buffer GridKeys {
     int grid_keys[];
+};
+
+layout(std430, binding = 5) writeonly buffer NextPositions {
+    vec4 next_positions[];
+};
+
+layout(std430, binding = 6) writeonly buffer NextVelocities {
+    vec4 next_velocities[];
 };
 
 uniform float uDeltaTime;
@@ -297,6 +305,6 @@ void main() {
         }
     }
 
-    positions[id] = vec4(pos, packedPosition.w);
-    velocities[id] = vec4(velocity, 0.0);
+    next_positions[id] = vec4(pos, packedPosition.w);
+    next_velocities[id] = vec4(velocity, 0.0);
 }
