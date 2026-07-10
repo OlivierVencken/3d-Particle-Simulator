@@ -30,8 +30,10 @@ public final class ImguiLayer {
         ImFontAtlas fontAtlas = io.getFonts();
         ImFontConfig fontConfig = new ImFontConfig();
 
-        byte[] fontData = ResourceLoader.loadBytesArray("/assets/Futura Heavy font.ttf");
-        fontAtlas.addFontFromMemoryTTF(fontData, 18.0f);
+        byte[] regular = ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Regular.ttf");
+        byte[] medium = ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Medium.ttf");
+        fontAtlas.addFontFromMemoryTTF(regular, 16.0f);
+        UiFonts.setMedium(fontAtlas.addFontFromMemoryTTF(medium, 16.0f));
 
         fontAtlas.build();
         fontConfig.destroy();

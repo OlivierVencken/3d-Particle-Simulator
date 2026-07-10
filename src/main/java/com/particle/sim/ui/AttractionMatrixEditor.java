@@ -14,6 +14,8 @@ final class AttractionMatrixEditor {
 
     private static final float MATRIX_GAP = 4.0f;
     private static final float HEADER_CIRCLE_RADIUS_SCALE = 0.34f;
+    private static final float MIN_CELL_SIZE = 28.0f;
+    private static final float MAX_CELL_SIZE = 44.0f;
 
     private float matrixEditStep = SimulationDefaults.MATRIX_EDIT_STEP;
 
@@ -29,7 +31,10 @@ final class AttractionMatrixEditor {
                 settingsChanged);
 
         renderMatrixActions(particles, settingsChanged);
+        ImGui.beginChild("matrix-scroll", 0.0f, Math.max(180.0f, ImGui.getContentRegionAvailY() - 34.0f), true,
+                imgui.flag.ImGuiWindowFlags.HorizontalScrollbar);
         renderMatrix(particles, settingsChanged);
+        ImGui.endChild();
         renderLegend();
     }
 
@@ -61,16 +66,13 @@ final class AttractionMatrixEditor {
         int groupCount = particles.groupCount();
         if (groupCount <= 0) {
             ImGui.textUnformatted("No groups.");
-            ImGui.endChild();
             return;
         }
 
         float availableWidth = ImGui.getContentRegionAvailX();
 
-        float cellSize = (availableWidth - (groupCount * MATRIX_GAP)) / (groupCount + 1);
-        if (cellSize < 8.0f) {
-            cellSize = 8.0f;
-        }
+        float fittedCellSize = (availableWidth - (groupCount * MATRIX_GAP)) / (groupCount + 1);
+        float cellSize = Math.max(MIN_CELL_SIZE, Math.min(MAX_CELL_SIZE, fittedCellSize));
 
         float totalSize = (groupCount + 1) * cellSize + groupCount * MATRIX_GAP;
 
@@ -101,6 +103,8 @@ final class AttractionMatrixEditor {
                 drawMatrixTile(particles, row, column, x, y, cellSize, settingsChanged, drawList);
             }
         }
+        ImGui.setCursorScreenPos(origin.x, origin.y);
+        ImGui.dummy(totalSize, totalSize);
     }
 
     private void drawEmptyCorner(float x, float y, float cellSize, ImDrawList drawList) {
@@ -177,15 +181,22 @@ final class AttractionMatrixEditor {
             ImGui.setTooltip("G%d → G%d: %.2f".formatted(row, column, value));
         }
 
+        String marker = value > 0.005f ? "+" : value < -0.005f ? "-" : "0";
+        String display = marker + " " + "%.1f".formatted(value);
+        float textWidth = ImGui.calcTextSize(display).x;
+        int textColor = ImGui.getColorU32(UiPalette.TEXT.vec4());
+        drawList.addText(x + Math.max(2.0f, (size - textWidth) * 0.5f),
+                y + Math.max(2.0f, (size - ImGui.getTextLineHeight()) * 0.5f), textColor, display);
+
         ImGui.popID();
     }
 
     private void renderLegend() {
         ImGui.spacing();
 
-        String attraction = "Green: attraction";
-        String neutral = "Grey: zero";
-        String repulsion = "Red: repulsion";
+        String attraction = "+ attraction";
+        String neutral = "0 neutral";
+        String repulsion = "- repulsion";
 
         float spacing = ImGui.getStyle().getItemSpacingX();
 

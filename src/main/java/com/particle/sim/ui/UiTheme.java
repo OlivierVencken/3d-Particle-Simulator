@@ -12,18 +12,18 @@ final class UiTheme {
         ImGui.styleColorsDark();
 
         ImGuiStyle style = ImGui.getStyle();
-        style.setWindowPadding(14.0f, 12.0f);
-        style.setFramePadding(10.0f, 6.0f);
+        style.setWindowPadding(16.0f, 12.0f);
+        style.setFramePadding(8.0f, 7.0f);
         style.setItemSpacing(8.0f, 8.0f);
         style.setItemInnerSpacing(8.0f, 6.0f);
         style.setCellPadding(6.0f, 6.0f);
         style.setWindowRounding(0.0f);
         style.setChildRounding(0.0f);
-        style.setFrameRounding(0.0f);
-        style.setPopupRounding(0.0f);
-        style.setScrollbarRounding(0.0f);
-        style.setGrabRounding(0.0f);
-        style.setTabRounding(0.0f);
+        style.setFrameRounding(3.0f);
+        style.setPopupRounding(5.0f);
+        style.setScrollbarRounding(3.0f);
+        style.setGrabRounding(3.0f);
+        style.setTabRounding(3.0f);
         style.setWindowBorderSize(1.0f);
         style.setFrameBorderSize(1.0f);
         style.setPopupBorderSize(1.0f);

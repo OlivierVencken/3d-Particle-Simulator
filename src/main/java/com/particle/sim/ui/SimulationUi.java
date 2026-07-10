@@ -3,19 +3,15 @@ package com.particle.sim.ui;
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SimulationDefaults;
-import imgui.type.ImBoolean;
 
 public final class SimulationUi {
-    private final SettingsSidebar settingsSidebar = new SettingsSidebar();
-    private final SimulationMenuBar menuBar = new SimulationMenuBar();
-    private final DebugPanel debugPanel = new DebugPanel();
-    private final FpsPanel fpsPanel = new FpsPanel();
-    private final ImBoolean showDebugPanel = new ImBoolean(false);
+    private final WorkspaceShell workspace = new WorkspaceShell();
 
     private float currentFps;
     private float fpsTimeAccumulator;
     private int fpsFrameAccumulator;
     private int fpsCap = SimulationDefaults.FPS_CAP;
+    private boolean paused;
     private boolean hidden;
     private Runnable settingsChanged = () -> {
     };
@@ -59,14 +55,9 @@ public final class SimulationUi {
             return;
         }
 
-        menuBar.render(particles, camera, settingsSidebar, showDebugPanel, settingsChanged, resetSettings,
-                savePreset, loadPreset, exitApplication, this::hide);
-
-        settingsSidebar.render(particles, camera, settingsChanged);
-        if (showDebugPanel.get()) {
-            debugPanel.render(deltaTime, currentFps, fpsCap, this::setFpsCap, settingsChanged, particles, showDebugPanel);
-        }
-        fpsPanel.render(currentFps);
+        workspace.render(deltaTime, currentFps, fpsCap, particles, camera, paused, this::togglePause,
+                settingsChanged, resetSettings, savePreset, loadPreset, exitApplication, this::hide,
+                this::setFpsCap);
     }
 
     private void updateFps(float deltaTime) {
@@ -81,27 +72,27 @@ public final class SimulationUi {
     }
 
     public boolean isPaused() {
-        return settingsSidebar.isPaused();
+        return paused;
     }
 
     public void setPaused(boolean paused) {
-        settingsSidebar.setPaused(paused);
+        this.paused = paused;
     }
 
     public float matrixEditStep() {
-        return settingsSidebar.matrixEditStep();
+        return workspace.matrixEditStep();
     }
 
     public void setMatrixEditStep(float matrixEditStep) {
-        settingsSidebar.setMatrixEditStep(matrixEditStep);
+        workspace.setMatrixEditStep(matrixEditStep);
     }
 
     public int customSpawnAmount() {
-        return settingsSidebar.customSpawnAmount();
+        return workspace.customSpawnAmount();
     }
 
     public void setCustomSpawnAmount(int customSpawnAmount) {
-        settingsSidebar.setCustomSpawnAmount(customSpawnAmount);
+        workspace.setCustomSpawnAmount(customSpawnAmount);
     }
 
     public int fpsCap() {
@@ -131,7 +122,7 @@ public final class SimulationUi {
     }
 
     public void toggleDebug() {
-        showDebugPanel.set(!showDebugPanel.get());
+        workspace.toggleDebug();
     }
 
     public boolean isHidden() {
