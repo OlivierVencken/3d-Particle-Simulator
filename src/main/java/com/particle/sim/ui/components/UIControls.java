@@ -12,32 +12,28 @@ public final class UIControls {
 
     public static void settingSlider(String label, float value, float min, float max, int decimals, FloatSetter setter,
             Runnable settingsChanged) {
-        if (slider(label, value, min, max, decimals, setter)) {
+        if (slider(label, label, value, min, max, decimals, setter)) {
             settingsChanged.run();
         }
     }
 
     public static void settingSlider(String label, String id, float value, float min, float max, int decimals,
             FloatSetter setter, Runnable settingsChanged) {
-        settingLabel(label, ("%." + decimals + "f").formatted(value));
-        ImGui.setNextItemWidth(-1.0f);
-        if (slider("##" + id, value, min, max, decimals, setter)) {
+        if (slider(label, id, value, min, max, decimals, setter)) {
             settingsChanged.run();
         }
     }
 
     public static void settingIntSlider(String label, int value, int min, int max, int decimals, IntSetter setter,
             Runnable settingsChanged) {
-        if (slider(label, value, min, max, decimals, setter)) {
+        if (slider(label, label, value, min, max, setter)) {
             settingsChanged.run();
         }
     }
 
     public static void settingIntSlider(String label, String id, int value, int min, int max, int decimals,
             IntSetter setter, Runnable settingsChanged) {
-        settingLabel(label, Integer.toString(value));
-        ImGui.setNextItemWidth(-1.0f);
-        if (slider("##" + id, value, min, max, decimals, setter)) {
+        if (slider(label, id, value, min, max, setter)) {
             settingsChanged.run();
         }
     }
@@ -45,18 +41,20 @@ public final class UIControls {
     public static void settingCheckbox(String label, String id, boolean value, BooleanSetter setter,
             Runnable settingsChanged) {
         ImBoolean valueRef = new ImBoolean(value);
-        if (ImGui.checkbox(label + "##" + id, valueRef)) {
+        if (checkbox(label, id, valueRef)) {
             setter.set(valueRef.get());
             settingsChanged.run();
         }
     }
 
+    public static boolean checkbox(String label, String id, ImBoolean valueRef) {
+        return UICheckbox.render(label, id, valueRef);
+    }
+
     public static void settingCombo(String label, String id, int value, String[] values, IntSetter setter,
             Runnable settingsChanged) {
-        ImGui.textDisabled(label);
         ImInt valueRef = new ImInt(value);
-        ImGui.setNextItemWidth(-1.0f);
-        if (ImGui.combo("##" + id, valueRef, values)) {
+        if (UICombo.render(label, id, valueRef, values)) {
             setter.set(valueRef.get());
             settingsChanged.run();
         }
@@ -77,30 +75,19 @@ public final class UIControls {
         return labels;
     }
 
-    private static void settingLabel(String label, String value) {
-        ImGui.pushFont(UIFonts.medium());
-        ImGui.textUnformatted(label);
-        ImGui.popFont();
-        float right = ImGui.getWindowContentRegionMaxX();
-        float valueWidth = ImGui.calcTextSize(value).x;
-        ImGui.sameLine(Math.max(ImGui.getCursorPosX() + 8.0f, right - valueWidth));
-        ImGui.textDisabled(value);
-    }
-
-    private static boolean slider(String label, float value, float min, float max, int decimals, FloatSetter setter) {
+    private static boolean slider(String label, String id, float value, float min, float max, int decimals,
+            FloatSetter setter) {
         float[] valueRef = { value };
-        String format = "%." + decimals + "f";
-        if (ImGui.sliderFloat(label, valueRef, min, max, format)) {
+        if (UISlider.render(label, id, valueRef, min, max, decimals)) {
             setter.set(valueRef[0]);
             return true;
         }
         return false;
     }
 
-    private static boolean slider(String label, int value, int min, int max, int decimals, IntSetter setter) {
+    private static boolean slider(String label, String id, int value, int min, int max, IntSetter setter) {
         int[] valueRef = { value };
-        String format = "%." + decimals + "d";
-        if (ImGui.sliderInt(label, valueRef, min, max, format)) {
+        if (UISlider.render(label, id, valueRef, min, max)) {
             setter.set(valueRef[0]);
             return true;
         }

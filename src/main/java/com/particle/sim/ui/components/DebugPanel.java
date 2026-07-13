@@ -49,7 +49,7 @@ public final class DebugPanel {
         renderSystemLoad();
 
         ImBoolean unlimitedFps = new ImBoolean(fpsCap <= 0);
-        if (ImGui.checkbox("Unlimited FPS", unlimitedFps)) {
+        if (UIControls.checkbox("Unlimited FPS", "debug-unlimited-fps", unlimitedFps)) {
             fpsCapChanged.accept(unlimitedFps.get() ? 0 : SimulationDefaults.FPS_CAP);
             settingsChanged.run();
         }
