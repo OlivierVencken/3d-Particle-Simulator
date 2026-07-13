@@ -2,38 +2,30 @@ package com.particle.sim.ui.workspace;
 
 final class WorkspaceLayoutCalculator {
     static final float COMMAND_BAR_HEIGHT = 44.0f;
-    static final float STATUS_BAR_HEIGHT = 26.0f;
+    static final float SIDEBAR_WIDTH = 420.0f;
 
     private WorkspaceLayoutCalculator() {
     }
 
-    static WorkspaceLayout calculate(float displayWidth, float displayHeight, UISection section,
-            boolean inspectorVisible) {
+    static WorkspaceLayout calculate(float displayWidth, float displayHeight, boolean sidebarVisible) {
         float width = Math.max(0.0f, displayWidth);
         float height = Math.max(0.0f, displayHeight);
         float workspaceY = Math.min(COMMAND_BAR_HEIGHT, height);
-        float statusHeight = Math.min(STATUS_BAR_HEIGHT, Math.max(0.0f, height - workspaceY));
-        float workspaceHeight = Math.max(0.0f, height - workspaceY - statusHeight);
+        float workspaceHeight = Math.max(0.0f, height - workspaceY);
 
         WorkspaceLayout.Mode mode = modeFor(width);
-        float navigationWidth = navigationWidth(mode);
-        float inspectorWidth = inspectorVisible ? inspectorWidth(width, mode) : 0.0f;
+        float sidebarWidth = sidebarVisible ? Math.min(SIDEBAR_WIDTH, width) : 0.0f;
 
         WorkspaceLayout.Panel commandBar = new WorkspaceLayout.Panel(0.0f, 0.0f, width, workspaceY);
-        WorkspaceLayout.Panel statusBar = new WorkspaceLayout.Panel(
-                0.0f, workspaceY + workspaceHeight, width, statusHeight);
-        WorkspaceLayout.Panel navigation = navigationWidth > 0.0f
-                ? new WorkspaceLayout.Panel(0.0f, workspaceY, navigationWidth, workspaceHeight)
+        WorkspaceLayout.Panel sidebar = sidebarWidth > 0.0f && workspaceHeight > 0.0f
+                ? new WorkspaceLayout.Panel(0.0f, workspaceY, sidebarWidth, workspaceHeight)
                 : WorkspaceLayout.Panel.hidden();
-        WorkspaceLayout.Panel inspector = inspectorWidth > 0.0f
-                ? new WorkspaceLayout.Panel(width - inspectorWidth, workspaceY, inspectorWidth, workspaceHeight)
-                : WorkspaceLayout.Panel.hidden();
-        float simulationX = navigationWidth;
-        float simulationWidth = Math.max(0.0f, width - navigationWidth - inspectorWidth);
+        float simulationX = sidebarWidth;
+        float simulationWidth = Math.max(0.0f, width - sidebarWidth);
         WorkspaceLayout.Panel simulation = new WorkspaceLayout.Panel(
                 simulationX, workspaceY, simulationWidth, workspaceHeight);
 
-        return new WorkspaceLayout(mode, commandBar, navigation, simulation, inspector, statusBar);
+        return new WorkspaceLayout(mode, commandBar, sidebar, simulation);
     }
 
     private static WorkspaceLayout.Mode modeFor(float width) {
@@ -49,20 +41,4 @@ final class WorkspaceLayoutCalculator {
         return WorkspaceLayout.Mode.WIDE;
     }
 
-    private static float navigationWidth(WorkspaceLayout.Mode mode) {
-        return switch (mode) {
-            case WIDE -> 176.0f;
-            case MEDIUM -> 152.0f;
-            case COMPACT, FOCUS -> 0.0f;
-        };
-    }
-
-    private static float inspectorWidth(float displayWidth, WorkspaceLayout.Mode mode) {
-        return switch (mode) {
-            case WIDE -> 368.0f;
-            case MEDIUM -> 336.0f;
-            case COMPACT -> Math.min(320.0f, displayWidth);
-            case FOCUS -> displayWidth;
-        };
-    }
 }

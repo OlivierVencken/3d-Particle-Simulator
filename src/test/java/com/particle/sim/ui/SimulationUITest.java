@@ -18,4 +18,15 @@ class SimulationUITest {
 
         assertFalse(ui.isHidden());
     }
+
+    @Test
+    void uiCanBeToggledInBothDirections() {
+        SimulationUI ui = new SimulationUI();
+
+        ui.toggleUi();
+        assertTrue(ui.isHidden());
+
+        ui.toggleUi();
+        assertFalse(ui.isHidden());
+    }
 }

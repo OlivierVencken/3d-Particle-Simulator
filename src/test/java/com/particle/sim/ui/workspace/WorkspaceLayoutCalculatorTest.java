@@ -4,62 +4,61 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WorkspaceLayoutCalculatorTest {
     @ParameterizedTest
     @CsvSource({
-            "2560, 1440, WIDE, 176, 368",
-            "1920, 1080, WIDE, 176, 368",
-            "1366, 768, MEDIUM, 152, 336",
-            "1024, 768, COMPACT, 0, 320",
-            "640, 640, FOCUS, 0, 640"
+            "2560, 1440, WIDE, 420",
+            "1920, 1080, WIDE, 420",
+            "1366, 768, MEDIUM, 420",
+            "1024, 768, COMPACT, 420",
+            "640, 640, FOCUS, 420",
+            "320, 480, FOCUS, 320"
     })
-    void calculatesResponsivePanels(float width, float height, WorkspaceLayout.Mode mode,
-            float navigationWidth, float inspectorWidth) {
-        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(width, height, UISection.SIMULATION, true);
+    void calculatesOneLeftSidebarAndNoBottomBar(float width, float height, WorkspaceLayout.Mode mode,
+            float sidebarWidth) {
+        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(width, height, true);
 
         assertEquals(mode, layout.mode());
-        assertEquals(navigationWidth, layout.navigation().width());
-        assertEquals(inspectorWidth, layout.inspector().width());
+        assertEquals(sidebarWidth, layout.sidebar().width());
+        assertEquals(0.0f, layout.sidebar().x());
+        assertEquals(layout.commandBar().bottom(), layout.sidebar().y());
+        assertEquals(layout.sidebar().right(), layout.simulation().x());
+        assertEquals(layout.sidebar().y(), layout.simulation().y());
+        assertEquals(height, layout.sidebar().bottom());
+        assertEquals(height, layout.simulation().bottom());
         assertPanelsStayInBounds(layout, width, height);
     }
 
     @ParameterizedTest
     @CsvSource({
-            "2560, 1440, 368",
-            "1920, 1080, 368",
-            "1366, 768, 336",
-            "1024, 768, 320",
-            "700, 600, 700"
+            "2560, 1440",
+            "1024, 768",
+            "640, 640",
+            "0, 0"
     })
-    void interactionsUseTheSameInspectorWidthAsOtherSections(float width, float height, float inspectorWidth) {
-        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(width, height, UISection.INTERACTIONS, true);
+    void minimizedSidebarReturnsTheWholeWorkspaceToTheSimulation(float width, float height) {
+        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(width, height, false);
 
-        assertEquals(inspectorWidth, layout.inspector().width());
+        assertFalse(layout.sidebar().visible());
+        assertEquals(0.0f, layout.simulation().x());
+        assertEquals(width, layout.simulation().width());
+        assertEquals(layout.commandBar().bottom(), layout.simulation().y());
+        assertEquals(height, layout.simulation().bottom());
         assertPanelsStayInBounds(layout, width, height);
-    }
-
-    @org.junit.jupiter.api.Test
-    void commandControlsCenterOnVisibleSimulationInsteadOfWholeDisplay() {
-        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(2560.0f, 1440.0f, UISection.SIMULATION, true);
-
-        float controlsWidth = 246.0f;
-        float x = WorkspaceCommandBar.centeredControlsX(layout.simulation(), controlsWidth);
-
-        assertEquals(layout.simulation().x() + layout.simulation().width() * 0.5f,
-                x + controlsWidth * 0.5f);
     }
 
     private void assertPanelsStayInBounds(WorkspaceLayout layout, float width, float height) {
         for (WorkspaceLayout.Panel panel : new WorkspaceLayout.Panel[] {
-                layout.commandBar(), layout.navigation(), layout.simulation(), layout.inspector(), layout.statusBar() }) {
+                layout.commandBar(), layout.sidebar(), layout.simulation() }) {
             assertTrue(panel.x() >= 0.0f);
             assertTrue(panel.y() >= 0.0f);
             assertTrue(panel.right() <= width);
             assertTrue(panel.bottom() <= height);
         }
-        assertEquals(layout.commandBar().bottom(), layout.simulation().y());
-        assertEquals(layout.statusBar().y(), layout.simulation().bottom());
+        assertEquals(width, layout.commandBar().width());
+        assertEquals(0.0f, layout.commandBar().y());
     }
 }

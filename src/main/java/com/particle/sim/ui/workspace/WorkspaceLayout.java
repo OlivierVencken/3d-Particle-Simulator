@@ -3,10 +3,8 @@ package com.particle.sim.ui.workspace;
 record WorkspaceLayout(
         Mode mode,
         Panel commandBar,
-        Panel navigation,
-        Panel simulation,
-        Panel inspector,
-        Panel statusBar) {
+        Panel sidebar,
+        Panel simulation) {
 
     enum Mode {
         WIDE,

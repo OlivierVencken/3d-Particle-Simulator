@@ -146,7 +146,7 @@ final class InspectorSections {
             UIControls.settingSlider("Thickness", "trail-thickness", particles.trailThickness(),
                     SimulationDefaults.MIN_TRAIL_THICKNESS, particles.pointSize(), 1, particles::trailThickness,
                     changed);
-            String quality = WorkspaceStatusBar.qualityMessage(particles);
+            String quality = qualityMessage(particles);
             if (!quality.isEmpty()) ImGui.textDisabled(quality);
         }
     }
@@ -221,6 +221,21 @@ final class InspectorSections {
             labels[i] = Character.toUpperCase(raw.charAt(0)) + raw.substring(1);
         }
         return labels;
+    }
+
+    private static String qualityMessage(GpuParticleSystem particles) {
+        if (particles.effectiveTrailParticleStride() > 1) {
+            return "Adaptive quality: trails sample 1/%d particles"
+                    .formatted(particles.effectiveTrailParticleStride());
+        }
+        if (particles.effectiveTrailLength() > 0 && particles.effectiveTrailLength() < particles.trailLength()) {
+            return "Adaptive quality: trail length reduced to %d".formatted(particles.effectiveTrailLength());
+        }
+        if (particles.effectiveBloomDivisor() > 1) {
+            return "Adaptive quality: bloom rendered at 1/%d resolution"
+                    .formatted(particles.effectiveBloomDivisor());
+        }
+        return "";
     }
 
     int customSpawnAmount() { return customSpawnAmount.get(); }

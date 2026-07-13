@@ -1,9 +1,9 @@
 package com.particle.sim.ui.workspace;
 
 import com.particle.sim.particles.GpuParticleSystem;
-import com.particle.sim.ui.theme.UIColors;
-import com.particle.sim.ui.theme.UIFonts;
 import imgui.ImGui;
+import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiDir;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
@@ -12,122 +12,138 @@ final class WorkspaceCommandBar {
     private static final int WINDOW_FLAGS = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove
             | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoSavedSettings
             | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
+    private static final String SIMULATION_MENU = "##simulation-menu";
+    private static final String VIEW_MENU = "##view-menu";
+    private static final String INFO_MENU = "##info-menu";
     private static final String RESET_POPUP = "Reset simulation settings?";
 
     private final ImBoolean showHotkeys = new ImBoolean(false);
+    private final ImBoolean showAbout = new ImBoolean(false);
     private final HotkeyPopup hotkeyPopup = new HotkeyPopup();
+    private final AboutPopup aboutPopup = new AboutPopup();
 
     void render(WorkspaceLayout layout, WorkspaceState state, GpuParticleSystem particles, float fps,
-            boolean paused, Runnable togglePause, Runnable savePreset, Runnable loadPreset, Runnable resetSettings,
-            Runnable showDebug, Runnable hideUi, Runnable exitApplication) {
+            Runnable savePreset, Runnable loadPreset, Runnable resetSettings, ImBoolean showDebug,
+            Runnable hideUi, Runnable exitApplication) {
         WorkspaceLayout.Panel panel = layout.commandBar();
         ImGui.setNextWindowPos(panel.x(), panel.y());
         ImGui.setNextWindowSize(panel.width(), panel.height());
-        ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 12.0f, 6.0f);
+        ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 8.0f, 6.0f);
         if (ImGui.begin("##workspace-command-bar", WINDOW_FLAGS)) {
-            renderLeft(panel.width(), panel.height(), loadPreset, savePreset);
-            renderCenter(panel.width(), layout.simulation(), particles, paused, togglePause);
-            renderRight(panel.width(), state, particles, fps, paused, loadPreset, savePreset, showDebug, hideUi,
-                    exitApplication);
+            renderMenuButtons(state);
+            renderStatistics(panel.width(), particles, fps);
+            renderSimulationMenu(state, loadPreset, savePreset, exitApplication);
+            renderViewMenu(showDebug, hideUi);
+            renderInfoMenu();
         }
         ImGui.end();
         ImGui.popStyleVar();
+
         renderResetConfirmation(state, resetSettings);
         hotkeyPopup.render(showHotkeys);
+        aboutPopup.render(showAbout);
     }
 
-    private void renderLeft(float width, float height, Runnable loadPreset, Runnable savePreset) {
-        String title = width >= 900.0f ? "3D Particle Simulator" : "3DPS";
-        ImGui.pushFont(UIFonts.title());
-        float titleWidth = ImGui.calcTextSize(title).x;
-        ImGui.popFont();
-        ImGui.setCursorPosX(12.0f);
-        ImGui.setCursorPosY(6.0f);
-        ImGui.invisibleButton("##application-title", titleWidth, 32.0f);
-        int titleColor = ImGui.getColorU32(UIColors.TEXT_PRIMARY.vec4());
-        ImGui.getWindowDrawList().addText(UIFonts.title(), 20,
-                ImGui.getWindowPosX() + 12.0f,
-                ImGui.getWindowPosY() + Math.max(0.0f, (height - 20.0f) * 0.5f),
-                titleColor, title);
-        if (width >= 1100.0f) {
-            ImGui.sameLine(0.0f, 20.0f);
-            if (ImGui.button("Load##command-load", 72.0f, 32.0f)) {
-                loadPreset.run();
-            }
-            ImGui.sameLine();
-            if (ImGui.button("Save##command-save", 72.0f, 32.0f)) {
-                savePreset.run();
-            }
+    private void renderMenuButtons(WorkspaceState state) {
+        if (ImGui.arrowButton("##toggle-sidebar", state.sidebarVisible() ? ImGuiDir.Left : ImGuiDir.Right)) {
+            state.toggleSidebar();
         }
-    }
+        if (ImGui.isItemHovered()) {
+            ImGui.setTooltip(state.sidebarVisible() ? "Minimize settings sidebar" : "Show settings sidebar");
+        }
 
-    private void renderCenter(float width, WorkspaceLayout.Panel simulation, GpuParticleSystem particles,
-            boolean paused, Runnable togglePause) {
-        float controlsWidth = width >= 900.0f ? 246.0f : 92.0f;
-        ImGui.sameLine(Math.max(ImGui.getCursorPosX() + 12.0f, centeredControlsX(simulation, controlsWidth)));
-        if (ImGui.button(paused ? "Resume##command-pause" : "Pause##command-pause", 92.0f, 32.0f)) {
-            togglePause.run();
+        ImGui.sameLine(0.0f, 6.0f);
+        if (dropdownButton("Simulation", "simulation", 102.0f)) {
+            ImGui.openPopup(SIMULATION_MENU);
         }
-        if (width >= 900.0f) {
-            ImGui.sameLine();
-            ImGui.beginDisabled(!paused);
-            if (ImGui.button("Step##command-step", 68.0f, 32.0f)) {
-                particles.step();
-            }
-            ImGui.endDisabled();
-            ImGui.sameLine();
-            if (ImGui.button("Reset##command-reset-particles", 78.0f, 32.0f)) {
-                particles.reset();
-            }
+        ImGui.sameLine(0.0f, 6.0f);
+        if (dropdownButton("View", "view", 70.0f)) {
+            ImGui.openPopup(VIEW_MENU);
+        }
+        ImGui.sameLine(0.0f, 6.0f);
+        if (dropdownButton("Info", "info", 64.0f)) {
+            ImGui.openPopup(INFO_MENU);
         }
     }
 
-    private void renderRight(float width, WorkspaceState state, GpuParticleSystem particles, float fps, boolean paused,
-            Runnable loadPreset, Runnable savePreset, Runnable showDebug, Runnable hideUi, Runnable exitApplication) {
-        float buttonX = width - 12.0f - 38.0f;
-        if (width >= 1100.0f) {
-            String statistics = "%,d particles  ·  %.0f FPS".formatted(particles.particleCount(), fps);
-            float statisticsWidth = ImGui.calcTextSize(statistics).x;
-            ImGui.sameLine(Math.max(ImGui.getCursorPosX() + 8.0f, buttonX - statisticsWidth - 10.0f));
-            ImGui.alignTextToFramePadding();
-            ImGui.textDisabled(statistics);
-            ImGui.sameLine(buttonX);
-        } else {
-            ImGui.sameLine(Math.max(ImGui.getCursorPosX() + 8.0f, buttonX));
-        }
-        if (ImGui.button("...##command-overflow", 38.0f, 32.0f)) {
-            ImGui.openPopup("command-overflow-menu");
-        }
-        if (ImGui.beginPopup("command-overflow-menu")) {
-            if (width < 1100.0f && ImGui.menuItem("Load...")) loadPreset.run();
-            if (width < 1100.0f && ImGui.menuItem("Save...")) savePreset.run();
-            if (width < 900.0f) {
-                ImGui.beginDisabled(!paused);
-                if (ImGui.menuItem("Step")) particles.step();
-                ImGui.endDisabled();
-                if (ImGui.menuItem("Reset particles")) particles.reset();
-            }
-            if (!state.inspectorVisible() && ImGui.menuItem("Open inspector")) {
-                state.setInspectorVisible(true);
-            }
-            if (width < 1100.0f) {
-                ImGui.textDisabled("%,d particles | %.0f FPS".formatted(particles.particleCount(), fps));
-                ImGui.separator();
-            }
-            if (ImGui.menuItem("Debug")) showDebug.run();
-            if (ImGui.menuItem("Hotkeys")) showHotkeys.set(true);
-            if (ImGui.menuItem("Reset settings...")) {
-                state.requestResetConfirmation();
-            }
-            if (ImGui.menuItem("Hide UI")) hideUi.run();
-            ImGui.separator();
-            if (ImGui.menuItem("Exit")) exitApplication.run();
-            ImGui.endPopup();
-        }
+    private boolean dropdownButton(String label, String id, float width) {
+        boolean clicked = ImGui.button(label + "##command-" + id, width, 32.0f);
+        float right = ImGui.getItemRectMaxX();
+        float centerY = (ImGui.getItemRectMinY() + ImGui.getItemRectMaxY()) * 0.5f + 1.0f;
+        int color = ImGui.getColorU32(ImGuiCol.Text);
+        ImGui.getWindowDrawList().addTriangleFilled(
+                right - 15.0f, centerY - 2.5f,
+                right - 9.0f, centerY - 2.5f,
+                right - 12.0f, centerY + 2.0f,
+                color);
+        return clicked;
     }
 
-    static float centeredControlsX(WorkspaceLayout.Panel simulation, float controlsWidth) {
-        return simulation.x() + Math.max(0.0f, (simulation.width() - controlsWidth) * 0.5f);
+    private void renderStatistics(float width, GpuParticleSystem particles, float fps) {
+        if (width < 720.0f) {
+            return;
+        }
+        String statistics = "%,d particles  |  %.0f FPS".formatted(particles.particleCount(), fps);
+        float statisticsWidth = ImGui.calcTextSize(statistics).x;
+        float statisticsX = width - statisticsWidth - 12.0f;
+        float statisticsY = Math.max(0.0f,
+                (WorkspaceLayoutCalculator.COMMAND_BAR_HEIGHT - ImGui.getTextLineHeight()) * 0.5f);
+        ImGui.getWindowDrawList().addText(
+                ImGui.getWindowPosX() + statisticsX,
+                ImGui.getWindowPosY() + statisticsY,
+                ImGui.getColorU32(ImGuiCol.TextDisabled),
+                statistics);
+    }
+
+    private void renderSimulationMenu(WorkspaceState state, Runnable loadPreset, Runnable savePreset,
+            Runnable exitApplication) {
+        if (!ImGui.beginPopup(SIMULATION_MENU)) {
+            return;
+        }
+
+        if (ImGui.menuItem("Load...")) {
+            loadPreset.run();
+        }
+        if (ImGui.menuItem("Save...")) {
+            savePreset.run();
+        }
+        ImGui.separator();
+        if (ImGui.menuItem("Reset settings...")) {
+            state.requestResetConfirmation();
+        }
+        ImGui.separator();
+        if (ImGui.menuItem("Exit")) {
+            exitApplication.run();
+        }
+        ImGui.endPopup();
+    }
+
+    private void renderViewMenu(ImBoolean showDebug, Runnable hideUi) {
+        if (!ImGui.beginPopup(VIEW_MENU)) {
+            return;
+        }
+
+        if (ImGui.menuItem("Hide UI")) {
+            hideUi.run();
+        }
+        if (ImGui.menuItem(showDebug.get() ? "Hide debug menu" : "Show debug menu")) {
+            showDebug.set(!showDebug.get());
+        }
+        ImGui.endPopup();
+    }
+
+    private void renderInfoMenu() {
+        if (!ImGui.beginPopup(INFO_MENU)) {
+            return;
+        }
+
+        if (ImGui.menuItem("Hotkeys")) {
+            showHotkeys.set(true);
+        }
+        if (ImGui.menuItem("About")) {
+            showAbout.set(true);
+        }
+        ImGui.endPopup();
     }
 
     private void renderResetConfirmation(WorkspaceState state, Runnable resetSettings) {
@@ -137,7 +153,7 @@ final class WorkspaceCommandBar {
         }
         if (ImGui.beginPopupModal(RESET_POPUP, ImGuiWindowFlags.AlwaysAutoResize)) {
             ImGui.textUnformatted("Restore every simulation setting to its default value?");
-            ImGui.textDisabled("This does not reset the current particle positions.");
+            ImGui.textDisabled("This also regenerates the default particle population.");
             ImGui.spacing();
             if (ImGui.button("Reset settings", 128.0f, 32.0f)) {
                 resetSettings.run();

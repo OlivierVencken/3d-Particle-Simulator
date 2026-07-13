@@ -2,7 +2,8 @@ package com.particle.sim.ui.workspace;
 
 final class WorkspaceState {
     private UISection activeSection = UISection.SIMULATION;
-    private boolean inspectorVisible = true;
+    private boolean sidebarVisible = true;
+    private UISection requestedSection = UISection.SIMULATION;
     private boolean resetConfirmationOpen;
     private WorkspaceLayout.Mode layoutMode = WorkspaceLayout.Mode.WIDE;
 
@@ -12,15 +13,36 @@ final class WorkspaceState {
 
     void select(UISection section) {
         activeSection = section == null ? UISection.SIMULATION : section;
-        inspectorVisible = true;
+        sidebarVisible = true;
+        requestedSection = activeSection;
     }
 
-    boolean inspectorVisible() {
-        return inspectorVisible;
+    void activate(UISection section) {
+        UISection target = section == null ? UISection.SIMULATION : section;
+        if (requestedSection != null && requestedSection != target) {
+            return;
+        }
+        activeSection = target;
+        requestedSection = null;
     }
 
-    void setInspectorVisible(boolean visible) {
-        inspectorVisible = visible;
+    boolean selectionRequested(UISection section) {
+        return requestedSection == section;
+    }
+
+    boolean sidebarVisible() {
+        return sidebarVisible;
+    }
+
+    void setSidebarVisible(boolean visible) {
+        if (visible && !sidebarVisible) {
+            requestedSection = activeSection;
+        }
+        sidebarVisible = visible;
+    }
+
+    void toggleSidebar() {
+        setSidebarVisible(!sidebarVisible);
     }
 
     boolean resetConfirmationOpen() {
