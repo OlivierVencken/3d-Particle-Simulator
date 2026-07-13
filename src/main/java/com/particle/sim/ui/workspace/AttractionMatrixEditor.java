@@ -26,6 +26,7 @@ final class AttractionMatrixEditor {
 
 
     void renderSettings(GpuParticleSystem particles, Runnable settingsChanged) {
+        ImGui.dummy(0.0f, 4.0f);
         UIControls.settingSlider(
                 "Edit step",
                 matrixEditStep, 0.01f,
@@ -36,10 +37,10 @@ final class AttractionMatrixEditor {
 
         renderMatrixActions(particles, settingsChanged);
         ImGui.pushStyleColor(ImGuiCol.ChildBg, UIColors.TRANSPARENT.vec4());
-        ImGui.beginChild("matrix-scroll", 0.0f, Math.max(180.0f, ImGui.getContentRegionAvailY() - 34.0f), false,
-                imgui.flag.ImGuiWindowFlags.HorizontalScrollbar);
+        //ImGui.beginChild("matrix-scroll", 0.0f, Math.max(180.0f, ImGui.getContentRegionAvailY() - 34.0f), false,
+        //        imgui.flag.ImGuiWindowFlags.HorizontalScrollbar);
         renderMatrix(particles, settingsChanged);
-        ImGui.endChild();
+        //ImGui.endChild();
         ImGui.popStyleColor();
         renderLegend();
     }
@@ -66,6 +67,7 @@ final class AttractionMatrixEditor {
         }
     }
 
+    // todo: matrix adjust to aviable space and allows all 16 groups to be displayed without scrolling
     private void renderMatrix(GpuParticleSystem particles, Runnable settingsChanged) {
         ImGui.spacing();
 

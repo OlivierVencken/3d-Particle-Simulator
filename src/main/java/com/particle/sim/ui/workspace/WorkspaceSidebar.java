@@ -88,10 +88,7 @@ final class WorkspaceSidebar {
 
     private void renderSectionContent(UISection section, GpuParticleSystem particles, CameraController camera,
             Runnable settingsChanged) {
-        if (ImGui.beginChild("##settings-content-" + section.name(), 0.0f, 0.0f, false)) {
-            sections.render(section, particles, camera, settingsChanged);
-        }
-        ImGui.endChild();
+        sections.render(section, particles, camera, settingsChanged);
     }
 
     int customSpawnAmount() {

@@ -66,6 +66,8 @@ final class InspectorSections {
     }
 
     private void renderParticles(GpuParticleSystem particles, Runnable changed) {
+        ImGui.dummy(0.0f, 4.0f);
+        
         float summaryWidth = ImGui.getContentRegionAvailX();
         float particleCardWidth = Math.max(140.0f, (summaryWidth - 8.0f) * 0.62f);
         metricCard("particle-count", "PARTICLES", "%,d".formatted(particles.particleCount()), particleCardWidth);
