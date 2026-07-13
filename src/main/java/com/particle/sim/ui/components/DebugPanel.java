@@ -1,4 +1,4 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui.components;
 
 import com.particle.sim.AppInfo;
 import com.particle.sim.particles.GpuParticleSystem;
@@ -19,7 +19,7 @@ import static org.lwjgl.opengl.GL43C.GL_VENDOR;
 import static org.lwjgl.opengl.GL43C.GL_VERSION;
 import static org.lwjgl.opengl.GL43C.glGetString;
 
-final class DebugPanel {
+public final class DebugPanel {
     private final SystemLoadMonitor systemLoadMonitor = new SystemLoadMonitor();
 
     private String glVendor;
@@ -27,7 +27,8 @@ final class DebugPanel {
     private String glVersion;
     private String glslVersion;
 
-    void render(float deltaTime, float currentFps, int fpsCap, IntConsumer fpsCapChanged, Runnable settingsChanged,
+    public void render(float deltaTime, float currentFps, int fpsCap, IntConsumer fpsCapChanged,
+            Runnable settingsChanged,
             GpuParticleSystem particles, ImBoolean open) {
         cacheOpenGlInfo();
 

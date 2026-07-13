@@ -1,4 +1,4 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui.commandbar;
 
 import com.particle.sim.AppInfo;
 import com.particle.sim.ui.theme.UIFonts;

@@ -3,10 +3,18 @@ package com.particle.sim.ui;
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SimulationDefaults;
-import com.particle.sim.ui.workspace.WorkspaceShell;
+import com.particle.sim.ui.commandbar.CommandBar;
+import com.particle.sim.ui.components.DebugPanel;
+import com.particle.sim.ui.sidebar.Sidebar;
+import imgui.ImGui;
+import imgui.type.ImBoolean;
 
 public final class SimulationUI {
-    private final WorkspaceShell workspace = new WorkspaceShell();
+    private final UIState state = new UIState();
+    private final CommandBar commandBar = new CommandBar();
+    private final Sidebar sidebar = new Sidebar();
+    private final DebugPanel debugPanel = new DebugPanel();
+    private final ImBoolean showDebug = new ImBoolean(false);
 
     private float currentFps;
     private float fpsTimeAccumulator;
@@ -56,9 +64,15 @@ public final class SimulationUI {
             return;
         }
 
-        workspace.render(deltaTime, currentFps, fpsCap, particles, camera,
-                settingsChanged, resetSettings, savePreset, loadPreset, exitApplication, this::hide,
-                this::setFpsCap);
+        UILayout layout = UILayoutCalculator.calculate(
+                ImGui.getIO().getDisplaySizeX(), ImGui.getIO().getDisplaySizeY(), state.sidebarVisible());
+        state.setLayoutMode(layout.mode());
+        commandBar.render(layout, state, particles, currentFps, savePreset, loadPreset, resetSettings, showDebug,
+                this::hide, exitApplication);
+        sidebar.render(layout.sidebar(), state, particles, camera, settingsChanged);
+        if (showDebug.get()) {
+            debugPanel.render(deltaTime, currentFps, fpsCap, this::setFpsCap, settingsChanged, particles, showDebug);
+        }
     }
 
     private void updateFps(float deltaTime) {
@@ -81,19 +95,19 @@ public final class SimulationUI {
     }
 
     public float matrixEditStep() {
-        return workspace.matrixEditStep();
+        return sidebar.matrixEditStep();
     }
 
     public void setMatrixEditStep(float matrixEditStep) {
-        workspace.setMatrixEditStep(matrixEditStep);
+        sidebar.setMatrixEditStep(matrixEditStep);
     }
 
     public int customSpawnAmount() {
-        return workspace.customSpawnAmount();
+        return sidebar.customSpawnAmount();
     }
 
     public void setCustomSpawnAmount(int customSpawnAmount) {
-        workspace.setCustomSpawnAmount(customSpawnAmount);
+        sidebar.setCustomSpawnAmount(customSpawnAmount);
     }
 
     public int fpsCap() {
@@ -123,7 +137,7 @@ public final class SimulationUI {
     }
 
     public void toggleDebug() {
-        workspace.toggleDebug();
+        showDebug.set(!showDebug.get());
     }
 
     public boolean isHidden() {
@@ -139,6 +153,6 @@ public final class SimulationUI {
     }
 
     public void dispose() {
-        workspace.dispose();
+        commandBar.dispose();
     }
 }

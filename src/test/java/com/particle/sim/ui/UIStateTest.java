@@ -1,4 +1,6 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui;
+
+import com.particle.sim.ui.sidebar.SidebarSection;
 
 import org.junit.jupiter.api.Test;
 
@@ -6,21 +8,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class WorkspaceStateTest {
+class UIStateTest {
     @Test
     void selectingASectionReopensSidebar() {
-        WorkspaceState state = new WorkspaceState();
+        UIState state = new UIState();
         state.setSidebarVisible(false);
 
-        state.select(UISection.CAMERA);
+        state.select(SidebarSection.CAMERA);
 
-        assertEquals(UISection.CAMERA, state.activeSection());
+        assertEquals(SidebarSection.CAMERA, state.activeSection());
         assertTrue(state.sidebarVisible());
     }
 
     @Test
     void sidebarCanBeMinimizedAndRestored() {
-        WorkspaceState state = new WorkspaceState();
+        UIState state = new UIState();
 
         assertTrue(state.sidebarVisible());
 
@@ -33,37 +35,37 @@ class WorkspaceStateTest {
 
     @Test
     void selectingNullFallsBackToSimulation() {
-        WorkspaceState state = new WorkspaceState();
-        state.select(UISection.MATRIX);
+        UIState state = new UIState();
+        state.select(SidebarSection.MATRIX);
 
         state.select(null);
 
-        assertEquals(UISection.SIMULATION, state.activeSection());
+        assertEquals(SidebarSection.SIMULATION, state.activeSection());
     }
 
     @Test
     void selectingASectionMakesItActiveImmediately() {
-        WorkspaceState state = new WorkspaceState();
+        UIState state = new UIState();
 
-        state.select(UISection.CAMERA);
+        state.select(SidebarSection.CAMERA);
 
-        assertEquals(UISection.CAMERA, state.activeSection());
+        assertEquals(SidebarSection.CAMERA, state.activeSection());
     }
 
     @Test
     void restoringSidebarKeepsTheActiveSection() {
-        WorkspaceState state = new WorkspaceState();
-        state.select(UISection.MATRIX);
+        UIState state = new UIState();
+        state.select(SidebarSection.MATRIX);
         state.setSidebarVisible(false);
 
         state.setSidebarVisible(true);
 
-        assertEquals(UISection.MATRIX, state.activeSection());
+        assertEquals(SidebarSection.MATRIX, state.activeSection());
     }
 
     @Test
     void resetConfirmationIsExplicitlyOpenedAndClosed() {
-        WorkspaceState state = new WorkspaceState();
+        UIState state = new UIState();
 
         state.requestResetConfirmation();
         assertTrue(state.resetConfirmationOpen());
@@ -74,10 +76,10 @@ class WorkspaceStateTest {
 
     @Test
     void tracksResponsiveModeWithoutPersistingIt() {
-        WorkspaceState state = new WorkspaceState();
+        UIState state = new UIState();
 
-        state.setLayoutMode(WorkspaceLayout.Mode.COMPACT);
+        state.setLayoutMode(UILayout.Mode.COMPACT);
 
-        assertEquals(WorkspaceLayout.Mode.COMPACT, state.layoutMode());
+        assertEquals(UILayout.Mode.COMPACT, state.layoutMode());
     }
 }

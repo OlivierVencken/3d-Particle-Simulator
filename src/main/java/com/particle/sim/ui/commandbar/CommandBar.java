@@ -1,6 +1,9 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui.commandbar;
 
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.ui.UILayout;
+import com.particle.sim.ui.UIState;
+import com.particle.sim.ui.components.SvgIconTexture;
 import com.particle.sim.ui.theme.UIColors;
 import com.particle.sim.ui.theme.UIFonts;
 import imgui.ImGui;
@@ -9,7 +12,7 @@ import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 
-final class WorkspaceCommandBar {
+public final class CommandBar {
     private static final int WINDOW_FLAGS = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove
             | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoSavedSettings
             | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
@@ -33,17 +36,17 @@ final class WorkspaceCommandBar {
     private float infoMenuX;
     private float infoMenuY;
 
-    void render(WorkspaceLayout layout, WorkspaceState state, GpuParticleSystem particles, float fps,
+    public void render(UILayout layout, UIState state, GpuParticleSystem particles, float fps,
             Runnable savePreset, Runnable loadPreset, Runnable resetSettings, ImBoolean showDebug,
             Runnable hideUi, Runnable exitApplication) {
-        WorkspaceLayout.Panel panel = layout.commandBar();
+        UILayout.Panel panel = layout.commandBar();
         ImGui.setNextWindowPos(panel.x(), panel.y());
         ImGui.setNextWindowSize(panel.width(), panel.height());
         ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 4.0f, 4.0f);
-        if (ImGui.begin("##workspace-command-bar", WINDOW_FLAGS)) {
+        if (ImGui.begin("##command-bar", WINDOW_FLAGS)) {
             ImGui.pushFont(UIFonts.commandBar());
             renderMenuButtons(state);
-            renderStatistics(panel.width(), particles, fps);
+            renderStatistics(panel.width(), panel.height(), particles, fps);
             ImGui.popFont();
             renderSimulationMenu(state, loadPreset, savePreset, exitApplication);
             renderViewMenu(showDebug, hideUi);
@@ -57,7 +60,7 @@ final class WorkspaceCommandBar {
         aboutPopup.render(showAbout);
     }
 
-    private void renderMenuButtons(WorkspaceState state) {
+    private void renderMenuButtons(UIState state) {
         if (sidebarToggleButton()) {
             state.toggleSidebar();
         }
@@ -114,7 +117,7 @@ final class WorkspaceCommandBar {
         return clicked;
     }
 
-    void dispose() {
+    public void dispose() {
         sidebarToggleIcon.dispose();
     }
 
@@ -128,7 +131,7 @@ final class WorkspaceCommandBar {
         ImGui.popStyleColor();
     }
 
-    private void renderStatistics(float width, GpuParticleSystem particles, float fps) {
+    private void renderStatistics(float width, float height, GpuParticleSystem particles, float fps) {
         if (width < 720.0f) {
             return;
         }
@@ -136,7 +139,7 @@ final class WorkspaceCommandBar {
         float statisticsWidth = ImGui.calcTextSize(statistics).x;
         float statisticsX = width - statisticsWidth - 12.0f;
         float statisticsY = Math.max(0.0f,
-                (WorkspaceLayoutCalculator.COMMAND_BAR_HEIGHT - ImGui.getTextLineHeight()) * 0.5f);
+                (height - ImGui.getTextLineHeight()) * 0.5f);
         ImGui.getWindowDrawList().addText(
                 ImGui.getWindowPosX() + statisticsX,
                 ImGui.getWindowPosY() + statisticsY,
@@ -144,7 +147,7 @@ final class WorkspaceCommandBar {
                 statistics);
     }
 
-    private void renderSimulationMenu(WorkspaceState state, Runnable loadPreset, Runnable savePreset,
+    private void renderSimulationMenu(UIState state, Runnable loadPreset, Runnable savePreset,
             Runnable exitApplication) {
         if (!beginAnchoredPopup(SIMULATION_MENU, simulationMenuX, simulationMenuY)) {
             return;
@@ -202,7 +205,7 @@ final class WorkspaceCommandBar {
         return ImGui.beginPopup(id);
     }
 
-    private void renderResetConfirmation(WorkspaceState state, Runnable resetSettings) {
+    private void renderResetConfirmation(UIState state, Runnable resetSettings) {
         if (state.resetConfirmationOpen()) {
             ImGui.openPopup(RESET_POPUP);
             state.closeResetConfirmation();

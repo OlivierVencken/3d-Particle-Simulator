@@ -1,4 +1,4 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui.sidebar.sections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

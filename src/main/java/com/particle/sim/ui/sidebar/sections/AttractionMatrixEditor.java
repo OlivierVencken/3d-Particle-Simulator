@@ -1,7 +1,8 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui.sidebar.sections;
 
 import com.particle.sim.ui.theme.UIColor;
 import com.particle.sim.ui.theme.UIColors;
+import com.particle.sim.ui.components.UIControls;
 
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SimulationDefaults;

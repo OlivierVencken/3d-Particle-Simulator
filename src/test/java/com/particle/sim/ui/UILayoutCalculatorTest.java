@@ -1,4 +1,4 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class WorkspaceLayoutCalculatorTest {
+class UILayoutCalculatorTest {
     @ParameterizedTest
     @CsvSource({
             "2560, 1440, WIDE, 420",
@@ -17,9 +17,9 @@ class WorkspaceLayoutCalculatorTest {
             "640, 640, FOCUS, 420",
             "320, 480, FOCUS, 320"
     })
-    void calculatesOneLeftSidebarAndNoBottomBar(float width, float height, WorkspaceLayout.Mode mode,
+    void calculatesOneLeftSidebarAndNoBottomBar(float width, float height, UILayout.Mode mode,
             float sidebarWidth) {
-        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(width, height, true);
+        UILayout layout = UILayoutCalculator.calculate(width, height, true);
 
         assertEquals(mode, layout.mode());
         assertEquals(sidebarWidth, layout.sidebar().width());
@@ -39,8 +39,8 @@ class WorkspaceLayoutCalculatorTest {
             "640, 640",
             "0, 0"
     })
-    void minimizedSidebarReturnsTheWholeWorkspaceToTheSimulation(float width, float height) {
-        WorkspaceLayout layout = WorkspaceLayoutCalculator.calculate(width, height, false);
+    void minimizedSidebarReturnsAllContentSpaceToTheSimulation(float width, float height) {
+        UILayout layout = UILayoutCalculator.calculate(width, height, false);
 
         assertFalse(layout.sidebar().visible());
         assertEquals(0.0f, layout.simulation().x());
@@ -50,8 +50,8 @@ class WorkspaceLayoutCalculatorTest {
         assertPanelsStayInBounds(layout, width, height);
     }
 
-    private void assertPanelsStayInBounds(WorkspaceLayout layout, float width, float height) {
-        for (WorkspaceLayout.Panel panel : new WorkspaceLayout.Panel[] {
+    private void assertPanelsStayInBounds(UILayout layout, float width, float height) {
+        for (UILayout.Panel panel : new UILayout.Panel[] {
                 layout.commandBar(), layout.sidebar(), layout.simulation() }) {
             assertTrue(panel.x() >= 0.0f);
             assertTrue(panel.y() >= 0.0f);

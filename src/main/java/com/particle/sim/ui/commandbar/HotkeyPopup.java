@@ -1,4 +1,4 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui.commandbar;
 
 import com.particle.sim.input.AppHotkeys;
 import com.particle.sim.input.HotkeyDefinition;

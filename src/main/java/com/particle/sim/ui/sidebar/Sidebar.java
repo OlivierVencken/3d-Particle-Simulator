@@ -1,14 +1,17 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui.sidebar;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.ui.UILayout;
+import com.particle.sim.ui.UIState;
+import com.particle.sim.ui.sidebar.sections.SidebarContent;
 import com.particle.sim.ui.theme.UIColors;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 
-final class WorkspaceSidebar {
+public final class Sidebar {
     private static final int WINDOW_FLAGS = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove
             | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoSavedSettings
             | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
@@ -16,9 +19,9 @@ final class WorkspaceSidebar {
     private static final float SECTION_BUTTON_SPACING = 4.0f;
     private static final float MAX_SECTION_BUTTON_PADDING = 8.0f;
 
-    private final InspectorSections sections = new InspectorSections();
+    private final SidebarContent content = new SidebarContent();
 
-    void render(WorkspaceLayout.Panel panel, WorkspaceState state, GpuParticleSystem particles,
+    public void render(UILayout.Panel panel, UIState state, GpuParticleSystem particles,
             CameraController camera, Runnable settingsChanged) {
         if (!panel.visible()) {
             return;
@@ -26,17 +29,17 @@ final class WorkspaceSidebar {
 
         ImGui.setNextWindowPos(panel.x(), panel.y());
         ImGui.setNextWindowSize(panel.width(), panel.height());
-        if (ImGui.begin("##workspace-sidebar", WINDOW_FLAGS)) {
+        if (ImGui.begin("##sidebar", WINDOW_FLAGS)) {
             renderSectionButtons(state);
             renderSectionContent(state.activeSection(), particles, camera, settingsChanged);
         }
         ImGui.end();
     }
 
-    private void renderSectionButtons(WorkspaceState state) {
-        UISection[] availableSections = UISection.values();
+    private void renderSectionButtons(UIState state) {
+        SidebarSection[] availableSections = SidebarSection.values();
         float totalTextWidth = 0.0f;
-        for (UISection section : availableSections) {
+        for (SidebarSection section : availableSections) {
             totalTextWidth += ImGui.calcTextSize(section.label()).x;
         }
 
@@ -53,7 +56,7 @@ final class WorkspaceSidebar {
         ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, SECTION_BUTTON_SPACING, 10.0f);
         float rowWidth = 0.0f;
         for (int index = 0; index < availableSections.length; index++) {
-            UISection section = availableSections[index];
+            SidebarSection section = availableSections[index];
             float buttonWidth = ImGui.calcTextSize(section.label()).x + horizontalPadding * 2.0f;
             if (rowWidth > 0.0f && (fitsSingleRow
                     || rowWidth + SECTION_BUTTON_SPACING + buttonWidth <= contentWidth)) {
@@ -71,7 +74,7 @@ final class WorkspaceSidebar {
         ImGui.spacing();
     }
 
-    private boolean sectionButton(UISection section, boolean active) {
+    private boolean sectionButton(SidebarSection section, boolean active) {
         ImGui.pushStyleColor(ImGuiCol.Button,
                 (active ? UIColors.SURFACE_ACTIVE : UIColors.TRANSPARENT).vec4());
         ImGui.pushStyleColor(ImGuiCol.ButtonHovered,
@@ -87,24 +90,24 @@ final class WorkspaceSidebar {
         return clicked;
     }
 
-    private void renderSectionContent(UISection section, GpuParticleSystem particles, CameraController camera,
+    private void renderSectionContent(SidebarSection section, GpuParticleSystem particles, CameraController camera,
             Runnable settingsChanged) {
-        sections.render(section, particles, camera, settingsChanged);
+        content.render(section, particles, camera, settingsChanged);
     }
 
-    int customSpawnAmount() {
-        return sections.customSpawnAmount();
+    public int customSpawnAmount() {
+        return content.customSpawnAmount();
     }
 
-    void setCustomSpawnAmount(int amount) {
-        sections.setCustomSpawnAmount(amount);
+    public void setCustomSpawnAmount(int amount) {
+        content.setCustomSpawnAmount(amount);
     }
 
-    float matrixEditStep() {
-        return sections.matrixEditStep();
+    public float matrixEditStep() {
+        return content.matrixEditStep();
     }
 
-    void setMatrixEditStep(float step) {
-        sections.setMatrixEditStep(step);
+    public void setMatrixEditStep(float step) {
+        content.setMatrixEditStep(step);
     }
 }

@@ -1,4 +1,4 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui.components;
 
 import java.nio.ByteBuffer;
 
@@ -28,24 +28,24 @@ import static org.lwjgl.opengl.GL43C.glGenTextures;
 import static org.lwjgl.opengl.GL43C.glTexImage2D;
 import static org.lwjgl.opengl.GL43C.glTexParameteri;
 
-final class SvgIconTexture {
+public final class SvgIconTexture {
     private final String resourcePath;
     private final int rasterSize;
     private int textureId;
 
-    SvgIconTexture(String resourcePath, int rasterSize) {
+    public SvgIconTexture(String resourcePath, int rasterSize) {
         this.resourcePath = resourcePath;
         this.rasterSize = rasterSize;
     }
 
-    int textureId() {
+    public int textureId() {
         if (textureId == 0) {
             textureId = loadTexture();
         }
         return textureId;
     }
 
-    void dispose() {
+    public void dispose() {
         if (textureId != 0) {
             glDeleteTextures(textureId);
             textureId = 0;
@@ -67,7 +67,7 @@ final class SvgIconTexture {
         return texture;
     }
 
-    static ByteBuffer rasterizeResource(String resourcePath, int rasterSize) {
+    public static ByteBuffer rasterizeResource(String resourcePath, int rasterSize) {
         NSVGImage image = nsvgParse(ResourceLoader.loadString(resourcePath), "px", 96.0f);
         if (image == null) {
             throw new IllegalStateException("Could not parse SVG resource: " + resourcePath);

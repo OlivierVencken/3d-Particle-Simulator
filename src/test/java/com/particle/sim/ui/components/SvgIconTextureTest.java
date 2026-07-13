@@ -1,4 +1,4 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui.components;
 
 import java.nio.ByteBuffer;
 

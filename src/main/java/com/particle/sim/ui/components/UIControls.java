@@ -1,21 +1,23 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui.components;
 
 import com.particle.sim.ui.theme.UIFonts;
 
 import imgui.ImGui;
+import imgui.type.ImBoolean;
+import imgui.type.ImInt;
 
-final class UIControls {
+public final class UIControls {
     private UIControls() {
     }
 
-    static void settingSlider(String label, float value, float min, float max, int decimals, FloatSetter setter,
+    public static void settingSlider(String label, float value, float min, float max, int decimals, FloatSetter setter,
             Runnable settingsChanged) {
         if (slider(label, value, min, max, decimals, setter)) {
             settingsChanged.run();
         }
     }
 
-    static void settingSlider(String label, String id, float value, float min, float max, int decimals,
+    public static void settingSlider(String label, String id, float value, float min, float max, int decimals,
             FloatSetter setter, Runnable settingsChanged) {
         settingLabel(label, ("%." + decimals + "f").formatted(value));
         ImGui.setNextItemWidth(-1.0f);
@@ -24,19 +26,55 @@ final class UIControls {
         }
     }
 
-    static void settingIntSlider(String label, int value, int min, int max, int decimals, IntSetter setter, Runnable settingsChanged) {
+    public static void settingIntSlider(String label, int value, int min, int max, int decimals, IntSetter setter,
+            Runnable settingsChanged) {
         if (slider(label, value, min, max, decimals, setter)) {
             settingsChanged.run();
         }
     }
 
-    static void settingIntSlider(String label, String id, int value, int min, int max, int decimals,
+    public static void settingIntSlider(String label, String id, int value, int min, int max, int decimals,
             IntSetter setter, Runnable settingsChanged) {
         settingLabel(label, Integer.toString(value));
         ImGui.setNextItemWidth(-1.0f);
         if (slider("##" + id, value, min, max, decimals, setter)) {
             settingsChanged.run();
         }
+    }
+
+    public static void settingCheckbox(String label, String id, boolean value, BooleanSetter setter,
+            Runnable settingsChanged) {
+        ImBoolean valueRef = new ImBoolean(value);
+        if (ImGui.checkbox(label + "##" + id, valueRef)) {
+            setter.set(valueRef.get());
+            settingsChanged.run();
+        }
+    }
+
+    public static void settingCombo(String label, String id, int value, String[] values, IntSetter setter,
+            Runnable settingsChanged) {
+        ImGui.textDisabled(label);
+        ImInt valueRef = new ImInt(value);
+        ImGui.setNextItemWidth(-1.0f);
+        if (ImGui.combo("##" + id, valueRef, values)) {
+            setter.set(valueRef.get());
+            settingsChanged.run();
+        }
+    }
+
+    public static void sectionHeading(String label) {
+        ImGui.pushFont(UIFonts.section());
+        ImGui.text(label);
+        ImGui.popFont();
+    }
+
+    public static String[] enumLabels(Enum<?>[] values) {
+        String[] labels = new String[values.length];
+        for (int index = 0; index < values.length; index++) {
+            String raw = values[index].name().toLowerCase().replace('_', ' ');
+            labels[index] = Character.toUpperCase(raw.charAt(0)) + raw.substring(1);
+        }
+        return labels;
     }
 
     private static void settingLabel(String label, String value) {
@@ -70,12 +108,17 @@ final class UIControls {
     }
 
     @FunctionalInterface
-    interface FloatSetter {
+    public interface FloatSetter {
         void set(float value);
     }
 
     @FunctionalInterface
-    interface IntSetter {
+    public interface IntSetter {
         void set(int value);
+    }
+
+    @FunctionalInterface
+    public interface BooleanSetter {
+        void set(boolean value);
     }
 }

@@ -1,32 +1,32 @@
-package com.particle.sim.ui.workspace;
+package com.particle.sim.ui;
 
-record WorkspaceLayout(
+public record UILayout(
         Mode mode,
         Panel commandBar,
         Panel sidebar,
         Panel simulation) {
 
-    enum Mode {
+    public enum Mode {
         WIDE,
         MEDIUM,
         COMPACT,
         FOCUS
     }
 
-    record Panel(float x, float y, float width, float height) {
-        static Panel hidden() {
+    public record Panel(float x, float y, float width, float height) {
+        public static Panel hidden() {
             return new Panel(0.0f, 0.0f, 0.0f, 0.0f);
         }
 
-        boolean visible() {
+        public boolean visible() {
             return width > 0.0f && height > 0.0f;
         }
 
-        float right() {
+        public float right() {
             return x + width;
         }
 
-        float bottom() {
+        public float bottom() {
             return y + height;
         }
     }
