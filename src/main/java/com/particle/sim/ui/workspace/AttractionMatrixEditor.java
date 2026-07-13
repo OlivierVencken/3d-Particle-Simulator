@@ -18,13 +18,9 @@ final class AttractionMatrixEditor {
 
     private static final float MATRIX_GAP = 4.0f;
     private static final float HEADER_CIRCLE_RADIUS_SCALE = 0.34f;
-    private static final float MIN_CELL_SIZE = 28.0f;
-    private static final float MAX_CELL_SIZE = 44.0f;
+    private static final float CELL_TEXT_PADDING = 4.0f;
 
     private float matrixEditStep = SimulationDefaults.MATRIX_EDIT_STEP;
-
-
-
     void renderSettings(GpuParticleSystem particles, Runnable settingsChanged) {
         ImGui.dummy(0.0f, 4.0f);
         UIControls.settingSlider(
@@ -37,10 +33,7 @@ final class AttractionMatrixEditor {
 
         renderMatrixActions(particles, settingsChanged);
         ImGui.pushStyleColor(ImGuiCol.ChildBg, UIColors.TRANSPARENT.vec4());
-        //ImGui.beginChild("matrix-scroll", 0.0f, Math.max(180.0f, ImGui.getContentRegionAvailY() - 34.0f), false,
-        //        imgui.flag.ImGuiWindowFlags.HorizontalScrollbar);
         renderMatrix(particles, settingsChanged);
-        //ImGui.endChild();
         ImGui.popStyleColor();
         renderLegend();
     }
@@ -67,7 +60,6 @@ final class AttractionMatrixEditor {
         }
     }
 
-    // todo: matrix adjust to aviable space and allows all 16 groups to be displayed without scrolling
     private void renderMatrix(GpuParticleSystem particles, Runnable settingsChanged) {
         ImGui.spacing();
 
@@ -77,10 +69,8 @@ final class AttractionMatrixEditor {
             return;
         }
 
-        float availableWidth = ImGui.getContentRegionAvailX();
-
-        float fittedCellSize = (availableWidth - (groupCount * MATRIX_GAP)) / (groupCount + 1);
-        float cellSize = Math.max(MIN_CELL_SIZE, Math.min(MAX_CELL_SIZE, fittedCellSize));
+        float availableWidth = Math.max(0.0f, ImGui.getContentRegionAvailX());
+        float cellSize = fittedCellSize(availableWidth, groupCount);
 
         float totalSize = (groupCount + 1) * cellSize + groupCount * MATRIX_GAP;
 
@@ -113,6 +103,14 @@ final class AttractionMatrixEditor {
         }
         ImGui.setCursorScreenPos(origin.x, origin.y);
         ImGui.dummy(totalSize, totalSize);
+    }
+
+    static float fittedCellSize(float availableWidth, int groupCount) {
+        if (availableWidth <= 0.0f || groupCount <= 0) {
+            return 0.0f;
+        }
+        return Math.max(0.0f,
+                (availableWidth - groupCount * MATRIX_GAP) / (groupCount + 1));
     }
 
     private void drawEmptyCorner(float x, float y, float cellSize, ImDrawList drawList) {
@@ -191,9 +189,13 @@ final class AttractionMatrixEditor {
 
         String display = "%.1f".formatted(value);
         float textWidth = ImGui.calcTextSize(display).x;
-        int textColor = ImGui.getColorU32(UIColors.TEXT_PRIMARY.vec4());
-        drawList.addText(x + Math.max(2.0f, (size - textWidth) * 0.5f),
-                y + Math.max(2.0f, (size - ImGui.getTextLineHeight()) * 0.5f), textColor, display);
+        float textHeight = ImGui.getTextLineHeight();
+        float widestTextWidth = ImGui.calcTextSize("-1.0").x;
+        if (widestTextWidth + CELL_TEXT_PADDING <= size && textHeight + CELL_TEXT_PADDING <= size) {
+            int textColor = ImGui.getColorU32(UIColors.TEXT_PRIMARY.vec4());
+            drawList.addText(x + (size - textWidth) * 0.5f,
+                    y + (size - textHeight) * 0.5f, textColor, display);
+        }
 
         ImGui.popID();
     }
