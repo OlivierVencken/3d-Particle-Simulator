@@ -19,14 +19,12 @@ public final class CommandBar {
     private static final String SIMULATION_MENU = "##simulation-menu";
     private static final String VIEW_MENU = "##view-menu";
     private static final String INFO_MENU = "##info-menu";
-    private static final String RESET_POPUP = "Reset simulation settings?";
     private static final float SIDEBAR_ICON_SIZE = 18.0f;
     private static final float BUTTON_HEIGHT = 28.0f;
 
-    private final ImBoolean showHotkeys = new ImBoolean(false);
-    private final ImBoolean showAbout = new ImBoolean(false);
     private final HotkeyPopup hotkeyPopup = new HotkeyPopup();
     private final AboutPopup aboutPopup = new AboutPopup();
+    private final ResetSettingsPopup resetSettingsPopup = new ResetSettingsPopup();
     private final SvgIconTexture sidebarToggleIcon = new SvgIconTexture(
             "/assets/icons/sidebar-toggle.svg", 64);
     private float simulationMenuX;
@@ -48,16 +46,16 @@ public final class CommandBar {
             renderMenuButtons(state);
             renderStatistics(panel.width(), panel.height(), particles, fps);
             ImGui.popFont();
-            renderSimulationMenu(state, loadPreset, savePreset, exitApplication);
+            renderSimulationMenu(loadPreset, savePreset, exitApplication);
             renderViewMenu(showDebug, hideUi);
             renderInfoMenu();
         }
         ImGui.end();
         ImGui.popStyleVar();
 
-        renderResetConfirmation(state, resetSettings);
-        hotkeyPopup.render(showHotkeys);
-        aboutPopup.render(showAbout);
+        resetSettingsPopup.render(resetSettings);
+        hotkeyPopup.render();
+        aboutPopup.render();
     }
 
     private void renderMenuButtons(UIState state) {
@@ -147,7 +145,7 @@ public final class CommandBar {
                 statistics);
     }
 
-    private void renderSimulationMenu(UIState state, Runnable loadPreset, Runnable savePreset,
+    private void renderSimulationMenu(Runnable loadPreset, Runnable savePreset,
             Runnable exitApplication) {
         if (!beginAnchoredPopup(SIMULATION_MENU, simulationMenuX, simulationMenuY)) {
             return;
@@ -161,7 +159,7 @@ public final class CommandBar {
         }
         ImGui.separator();
         if (ImGui.menuItem("Reset settings...")) {
-            state.requestResetConfirmation();
+            resetSettingsPopup.open();
         }
         ImGui.separator();
         if (ImGui.menuItem("Exit")) {
@@ -190,10 +188,10 @@ public final class CommandBar {
         }
 
         if (ImGui.menuItem("Hotkeys")) {
-            showHotkeys.set(true);
+            hotkeyPopup.open();
         }
         if (ImGui.menuItem("About")) {
-            showAbout.set(true);
+            aboutPopup.open();
         }
         ImGui.endPopup();
     }
@@ -205,24 +203,4 @@ public final class CommandBar {
         return ImGui.beginPopup(id);
     }
 
-    private void renderResetConfirmation(UIState state, Runnable resetSettings) {
-        if (state.resetConfirmationOpen()) {
-            ImGui.openPopup(RESET_POPUP);
-            state.closeResetConfirmation();
-        }
-        if (ImGui.beginPopupModal(RESET_POPUP, ImGuiWindowFlags.AlwaysAutoResize)) {
-            ImGui.textUnformatted("Restore every simulation setting to its default value?");
-            ImGui.textDisabled("This also regenerates the default particle population.");
-            ImGui.spacing();
-            if (ImGui.button("Reset settings", 128.0f, 32.0f)) {
-                resetSettings.run();
-                ImGui.closeCurrentPopup();
-            }
-            ImGui.sameLine();
-            if (ImGui.button("Cancel", 88.0f, 32.0f)) {
-                ImGui.closeCurrentPopup();
-            }
-            ImGui.endPopup();
-        }
-    }
 }

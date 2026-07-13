@@ -64,17 +64,6 @@ class UIStateTest {
     }
 
     @Test
-    void resetConfirmationIsExplicitlyOpenedAndClosed() {
-        UIState state = new UIState();
-
-        state.requestResetConfirmation();
-        assertTrue(state.resetConfirmationOpen());
-
-        state.closeResetConfirmation();
-        assertFalse(state.resetConfirmationOpen());
-    }
-
-    @Test
     void tracksResponsiveModeWithoutPersistingIt() {
         UIState state = new UIState();
 

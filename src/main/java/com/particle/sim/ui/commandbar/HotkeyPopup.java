@@ -2,10 +2,11 @@ package com.particle.sim.ui.commandbar;
 
 import com.particle.sim.input.AppHotkeys;
 import com.particle.sim.input.HotkeyDefinition;
+import com.particle.sim.ui.components.PopupWindow;
+import com.particle.sim.ui.theme.UIFonts;
+
 import imgui.ImGui;
-import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiTableFlags;
-import imgui.type.ImBoolean;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_F;
@@ -16,21 +17,18 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_R;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 
-final class HotkeyPopup {
-    private static final String TITLE = "Hotkeys";
+final class HotkeyPopup extends PopupWindow {
+    HotkeyPopup() {
+        super("Hotkeys", "hotkeys-popup", 430.0f, 340.0f);
+    }
 
-    void render(ImBoolean open) {
-        if (!open.get()) {
-            return;
-        }
-
-        ImGui.setNextWindowSize(430.0f, 340.0f, ImGuiCond.FirstUseEver);
-        if (ImGui.begin(TITLE, open)) {
-            ImGui.textUnformatted("Keyboard shortcuts");
-            ImGui.separator();
-            renderHotkeys();
-        }
-        ImGui.end();
+    @Override
+    protected void renderContent() {
+        ImGui.pushFont(UIFonts.medium());
+        ImGui.textUnformatted("Keyboard shortcuts");
+        ImGui.separator();
+        renderHotkeys();
+        ImGui.popFont();
     }
 
     private void renderHotkeys() {

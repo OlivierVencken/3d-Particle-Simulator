@@ -5,7 +5,6 @@ import com.particle.sim.ui.sidebar.SidebarSection;
 public final class UIState {
     private SidebarSection activeSection = SidebarSection.SIMULATION;
     private boolean sidebarVisible = true;
-    private boolean resetConfirmationOpen;
     private UILayout.Mode layoutMode = UILayout.Mode.WIDE;
 
     public SidebarSection activeSection() {
@@ -27,18 +26,6 @@ public final class UIState {
 
     public void toggleSidebar() {
         setSidebarVisible(!sidebarVisible);
-    }
-
-    public boolean resetConfirmationOpen() {
-        return resetConfirmationOpen;
-    }
-
-    public void requestResetConfirmation() {
-        resetConfirmationOpen = true;
-    }
-
-    public void closeResetConfirmation() {
-        resetConfirmationOpen = false;
     }
 
     public UILayout.Mode layoutMode() {
