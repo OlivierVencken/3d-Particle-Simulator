@@ -55,22 +55,9 @@ final class WorkspaceSidebar {
     private void renderTabContent(UISection section, GpuParticleSystem particles, CameraController camera,
             Runnable settingsChanged) {
         if (ImGui.beginChild("##settings-content-" + section.name(), 0.0f, 0.0f, false)) {
-            ImGui.dummy(0.0f, 4.0f);
-            ImGui.textDisabled(sectionDescription(section));
-            ImGui.separator();
             sections.render(section, particles, camera, settingsChanged);
         }
         ImGui.endChild();
-    }
-
-    private String sectionDescription(UISection section) {
-        return switch (section) {
-            case SIMULATION -> "World boundaries and motion";
-            case PARTICLES -> "Population and spawning";
-            case APPEARANCE -> "Rendering, glow, and trails";
-            case CAMERA -> "Navigation and movement";
-            case INTERACTIONS -> "Attraction matrix and group forces";
-        };
     }
 
     int customSpawnAmount() {
