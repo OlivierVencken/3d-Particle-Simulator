@@ -36,6 +36,7 @@ public final class ImGuiLayer {
         byte[] medium = ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Medium.ttf");
         fontAtlas.addFontFromMemoryTTF(regular, 16.0f);
         UIFonts.setMedium(fontAtlas.addFontFromMemoryTTF(medium, 16.0f));
+        UIFonts.setCommandBar(fontAtlas.addFontFromMemoryTTF(medium, 17.0f));
         UIFonts.setSection(fontAtlas.addFontFromMemoryTTF(
                 ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Medium.ttf"), 18.0f));
         UIFonts.setTitle(fontAtlas.addFontFromMemoryTTF(

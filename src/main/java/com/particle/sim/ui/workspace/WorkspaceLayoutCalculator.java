@@ -1,7 +1,7 @@
 package com.particle.sim.ui.workspace;
 
 final class WorkspaceLayoutCalculator {
-    static final float COMMAND_BAR_HEIGHT = 44.0f;
+    static final float COMMAND_BAR_HEIGHT = 36.0f;
     static final float SIDEBAR_WIDTH = 420.0f;
 
     private WorkspaceLayoutCalculator() {

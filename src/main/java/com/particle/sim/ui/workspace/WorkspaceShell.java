@@ -31,4 +31,5 @@ public final class WorkspaceShell {
     public float matrixEditStep() { return sidebar.matrixEditStep(); }
     public void setMatrixEditStep(float step) { sidebar.setMatrixEditStep(step); }
     public void toggleDebug() { showDebug.set(!showDebug.get()); }
+    public void dispose() { commandBar.dispose(); }
 }

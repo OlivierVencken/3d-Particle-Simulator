@@ -1,9 +1,10 @@
 package com.particle.sim.ui.workspace;
 
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.ui.theme.UIColors;
+import com.particle.sim.ui.theme.UIFonts;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
-import imgui.flag.ImGuiDir;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
@@ -16,11 +17,21 @@ final class WorkspaceCommandBar {
     private static final String VIEW_MENU = "##view-menu";
     private static final String INFO_MENU = "##info-menu";
     private static final String RESET_POPUP = "Reset simulation settings?";
+    private static final float SIDEBAR_ICON_SIZE = 18.0f;
+    private static final float BUTTON_HEIGHT = 28.0f;
 
     private final ImBoolean showHotkeys = new ImBoolean(false);
     private final ImBoolean showAbout = new ImBoolean(false);
     private final HotkeyPopup hotkeyPopup = new HotkeyPopup();
     private final AboutPopup aboutPopup = new AboutPopup();
+    private final SvgIconTexture sidebarToggleIcon = new SvgIconTexture(
+            "/assets/icons/sidebar-toggle.svg", 64);
+    private float simulationMenuX;
+    private float simulationMenuY;
+    private float viewMenuX;
+    private float viewMenuY;
+    private float infoMenuX;
+    private float infoMenuY;
 
     void render(WorkspaceLayout layout, WorkspaceState state, GpuParticleSystem particles, float fps,
             Runnable savePreset, Runnable loadPreset, Runnable resetSettings, ImBoolean showDebug,
@@ -28,10 +39,12 @@ final class WorkspaceCommandBar {
         WorkspaceLayout.Panel panel = layout.commandBar();
         ImGui.setNextWindowPos(panel.x(), panel.y());
         ImGui.setNextWindowSize(panel.width(), panel.height());
-        ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 8.0f, 6.0f);
+        ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 4.0f, 4.0f);
         if (ImGui.begin("##workspace-command-bar", WINDOW_FLAGS)) {
+            ImGui.pushFont(UIFonts.commandBar());
             renderMenuButtons(state);
             renderStatistics(panel.width(), particles, fps);
+            ImGui.popFont();
             renderSimulationMenu(state, loadPreset, savePreset, exitApplication);
             renderViewMenu(showDebug, hideUi);
             renderInfoMenu();
@@ -45,38 +58,74 @@ final class WorkspaceCommandBar {
     }
 
     private void renderMenuButtons(WorkspaceState state) {
-        if (ImGui.arrowButton("##toggle-sidebar", state.sidebarVisible() ? ImGuiDir.Left : ImGuiDir.Right)) {
+        if (sidebarToggleButton()) {
             state.toggleSidebar();
         }
         if (ImGui.isItemHovered()) {
             ImGui.setTooltip(state.sidebarVisible() ? "Minimize settings sidebar" : "Show settings sidebar");
         }
 
-        ImGui.sameLine(0.0f, 6.0f);
-        if (dropdownButton("Simulation", "simulation", 102.0f)) {
+        ImGui.sameLine(0.0f, 4.0f);
+        boolean simulationClicked = dropdownButton("Simulation", "simulation");
+        simulationMenuX = ImGui.getItemRectMinX();
+        simulationMenuY = ImGui.getItemRectMaxY();
+        if (simulationClicked) {
             ImGui.openPopup(SIMULATION_MENU);
         }
-        ImGui.sameLine(0.0f, 6.0f);
-        if (dropdownButton("View", "view", 70.0f)) {
+        ImGui.sameLine(0.0f, 4.0f);
+        boolean viewClicked = dropdownButton("View", "view");
+        viewMenuX = ImGui.getItemRectMinX();
+        viewMenuY = ImGui.getItemRectMaxY();
+        if (viewClicked) {
             ImGui.openPopup(VIEW_MENU);
         }
-        ImGui.sameLine(0.0f, 6.0f);
-        if (dropdownButton("Info", "info", 64.0f)) {
+        ImGui.sameLine(0.0f, 4.0f);
+        boolean infoClicked = dropdownButton("Info", "info");
+        infoMenuX = ImGui.getItemRectMinX();
+        infoMenuY = ImGui.getItemRectMaxY();
+        if (infoClicked) {
             ImGui.openPopup(INFO_MENU);
         }
     }
 
-    private boolean dropdownButton(String label, String id, float width) {
-        boolean clicked = ImGui.button(label + "##command-" + id, width, 32.0f);
-        float right = ImGui.getItemRectMaxX();
-        float centerY = (ImGui.getItemRectMinY() + ImGui.getItemRectMaxY()) * 0.5f + 1.0f;
+    private boolean sidebarToggleButton() {
+        pushTopBarButtonStyle();
+        boolean clicked = ImGui.button("##toggle-sidebar", BUTTON_HEIGHT, BUTTON_HEIGHT);
+        popTopBarButtonStyle();
+
+        float centerX = (ImGui.getItemRectMinX() + ImGui.getItemRectMaxX()) * 0.5f;
+        float centerY = (ImGui.getItemRectMinY() + ImGui.getItemRectMaxY()) * 0.5f;
+        float iconMinX = centerX - SIDEBAR_ICON_SIZE * 0.5f;
+        float iconMinY = centerY - SIDEBAR_ICON_SIZE * 0.5f;
         int color = ImGui.getColorU32(ImGuiCol.Text);
-        ImGui.getWindowDrawList().addTriangleFilled(
-                right - 15.0f, centerY - 2.5f,
-                right - 9.0f, centerY - 2.5f,
-                right - 12.0f, centerY + 2.0f,
+        ImGui.getWindowDrawList().addImage(
+                sidebarToggleIcon.textureId(),
+                iconMinX, iconMinY,
+                iconMinX + SIDEBAR_ICON_SIZE, iconMinY + SIDEBAR_ICON_SIZE,
+                0.0f, 0.0f, 1.0f, 1.0f,
                 color);
         return clicked;
+    }
+
+    private boolean dropdownButton(String label, String id) {
+        pushTopBarButtonStyle();
+        boolean clicked = ImGui.button(label + "##command-" + id, 0.0f, BUTTON_HEIGHT);
+        popTopBarButtonStyle();
+        return clicked;
+    }
+
+    void dispose() {
+        sidebarToggleIcon.dispose();
+    }
+
+    private void pushTopBarButtonStyle() {
+        ImGui.pushStyleColor(ImGuiCol.Button, UIColors.TRANSPARENT.vec4());
+        ImGui.pushStyleVar(ImGuiStyleVar.FrameBorderSize, 0.0f);
+    }
+
+    private void popTopBarButtonStyle() {
+        ImGui.popStyleVar();
+        ImGui.popStyleColor();
     }
 
     private void renderStatistics(float width, GpuParticleSystem particles, float fps) {
@@ -97,7 +146,7 @@ final class WorkspaceCommandBar {
 
     private void renderSimulationMenu(WorkspaceState state, Runnable loadPreset, Runnable savePreset,
             Runnable exitApplication) {
-        if (!ImGui.beginPopup(SIMULATION_MENU)) {
+        if (!beginAnchoredPopup(SIMULATION_MENU, simulationMenuX, simulationMenuY)) {
             return;
         }
 
@@ -119,7 +168,7 @@ final class WorkspaceCommandBar {
     }
 
     private void renderViewMenu(ImBoolean showDebug, Runnable hideUi) {
-        if (!ImGui.beginPopup(VIEW_MENU)) {
+        if (!beginAnchoredPopup(VIEW_MENU, viewMenuX, viewMenuY)) {
             return;
         }
 
@@ -133,7 +182,7 @@ final class WorkspaceCommandBar {
     }
 
     private void renderInfoMenu() {
-        if (!ImGui.beginPopup(INFO_MENU)) {
+        if (!beginAnchoredPopup(INFO_MENU, infoMenuX, infoMenuY)) {
             return;
         }
 
@@ -144,6 +193,13 @@ final class WorkspaceCommandBar {
             showAbout.set(true);
         }
         ImGui.endPopup();
+    }
+
+    private boolean beginAnchoredPopup(String id, float x, float y) {
+        if (ImGui.isPopupOpen(id)) {
+            ImGui.setNextWindowPos(x, y);
+        }
+        return ImGui.beginPopup(id);
     }
 
     private void renderResetConfirmation(WorkspaceState state, Runnable resetSettings) {

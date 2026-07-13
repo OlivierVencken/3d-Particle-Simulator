@@ -137,4 +137,8 @@ public final class SimulationUI {
     public void show() {
         hidden = false;
     }
+
+    public void dispose() {
+        workspace.dispose();
+    }
 }

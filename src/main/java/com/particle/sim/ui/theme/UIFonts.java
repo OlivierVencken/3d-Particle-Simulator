@@ -4,6 +4,7 @@ import imgui.ImFont;
 
 public final class UIFonts {
     private static ImFont medium;
+    private static ImFont commandBar;
     private static ImFont section;
     private static ImFont title;
 
@@ -16,6 +17,14 @@ public final class UIFonts {
 
     public static ImFont medium() {
         return medium;
+    }
+
+    public static void setCommandBar(ImFont font) {
+        commandBar = font;
+    }
+
+    public static ImFont commandBar() {
+        return commandBar;
     }
 
     public static void setSection(ImFont font) {

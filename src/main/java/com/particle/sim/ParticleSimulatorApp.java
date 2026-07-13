@@ -112,26 +112,32 @@ public final class ParticleSimulatorApp {
             settingsController.flush();
         } finally {
             try {
-                if (particlesInitialized) {
-                    particles.dispose();
-                    particlesInitialized = false;
+                if (imguiInitialized) {
+                    ui.dispose();
                 }
             } finally {
                 try {
-                    if (imguiInitialized) {
-                        imgui.dispose();
-                        imguiInitialized = false;
+                    if (particlesInitialized) {
+                        particles.dispose();
+                        particlesInitialized = false;
                     }
                 } finally {
                     try {
-                        if (presetDialogInitialized) {
-                            PresetFileDialog.shutdown();
-                            presetDialogInitialized = false;
+                        if (imguiInitialized) {
+                            imgui.dispose();
+                            imguiInitialized = false;
                         }
                     } finally {
-                        if (windowInitialized) {
-                            window.dispose();
-                            windowInitialized = false;
+                        try {
+                            if (presetDialogInitialized) {
+                                PresetFileDialog.shutdown();
+                                presetDialogInitialized = false;
+                            }
+                        } finally {
+                            if (windowInitialized) {
+                                window.dispose();
+                                windowInitialized = false;
+                            }
                         }
                     }
                 }
