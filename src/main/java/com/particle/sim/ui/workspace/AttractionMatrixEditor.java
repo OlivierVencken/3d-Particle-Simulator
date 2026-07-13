@@ -18,11 +18,9 @@ final class AttractionMatrixEditor {
 
     private static final float MATRIX_GAP = 4.0f;
     private static final float HEADER_CIRCLE_RADIUS_SCALE = 0.34f;
-    private static final float CELL_TEXT_PADDING = 4.0f;
 
     private float matrixEditStep = SimulationDefaults.MATRIX_EDIT_STEP;
     void renderSettings(GpuParticleSystem particles, Runnable settingsChanged) {
-        ImGui.dummy(0.0f, 4.0f);
         UIControls.settingSlider(
                 "Edit step",
                 matrixEditStep, 0.01f,

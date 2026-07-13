@@ -44,6 +44,8 @@ final class InspectorSections {
                     particles::boundaryBounce, changed);
         }
 
+        ImGui.separatorText("");
+
         section("Dynamics");
         UIControls.settingSlider("Force", "dynamics-force", particles.forceFactor(), 0.0f, 10.0f, 1,
                 particles::forceFactor, changed);
@@ -66,14 +68,14 @@ final class InspectorSections {
     }
 
     private void renderParticles(GpuParticleSystem particles, Runnable changed) {
-        ImGui.dummy(0.0f, 4.0f);
-        
         float summaryWidth = ImGui.getContentRegionAvailX();
         float particleCardWidth = Math.max(140.0f, (summaryWidth - 8.0f) * 0.62f);
         metricCard("particle-count", "PARTICLES", "%,d".formatted(particles.particleCount()), particleCardWidth);
         ImGui.sameLine();
         metricCard("group-count", "GROUPS", Integer.toString(particles.groupCount()),
                 Math.max(88.0f, summaryWidth - particleCardWidth - 8.0f));
+
+        ImGui.separatorText("");
 
         section("Population");
         ImInt groups = new ImInt(particles.groupCount());
@@ -127,6 +129,8 @@ final class InspectorSections {
         enumCombo("Color mode", "visuals-color", particles.colorMode().ordinal(), COLOR_MODES,
                 value -> particles.colorMode(ColorMode.values()[value]), changed);
 
+        ImGui.separatorText("");
+
         effectHeader("Glow", EffectMode.GLOW, particles, changed);
         if (particles.effectEnabled(EffectMode.GLOW)) {
             UIControls.settingIntSlider("Passes", "glow-passes", particles.glowBlurPasses(), 1, 64, 0,
@@ -139,6 +143,8 @@ final class InspectorSections {
                     particles::glowFalloff, changed);
             ImGui.textDisabled("Bloom resolution: 1/%d per axis".formatted(particles.effectiveBloomDivisor()));
         }
+
+        ImGui.separatorText("");
 
         effectHeader("Trails", EffectMode.TRAILS, particles, changed);
         if (particles.effectEnabled(EffectMode.TRAILS)) {
@@ -210,9 +216,10 @@ final class InspectorSections {
     }
 
     private void section(String label) {
-        ImGui.spacing();
+        //ImGui.spacing();
         ImGui.pushFont(UIFonts.section());
-        ImGui.separatorText(label);
+        //ImGui.separatorText(label);
+        ImGui.text(label);
         ImGui.popFont();
     }
 

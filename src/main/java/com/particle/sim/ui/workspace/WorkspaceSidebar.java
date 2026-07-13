@@ -68,6 +68,7 @@ final class WorkspaceSidebar {
             rowWidth += buttonWidth;
         }
         ImGui.popStyleVar(2);
+        ImGui.spacing();
     }
 
     private boolean sectionButton(UISection section, boolean active) {
