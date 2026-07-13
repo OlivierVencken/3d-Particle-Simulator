@@ -3,9 +3,9 @@ package com.particle.sim.ui.workspace;
 enum UISection {
     SIMULATION("Simulation"),
     PARTICLES("Particles"),
-    APPEARANCE("Appearance"),
+    VISUALS("Visuals"),
     CAMERA("Camera"),
-    INTERACTIONS("Interactions");
+    MATRIX("Attraction Matrix");
 
     private final String label;
 

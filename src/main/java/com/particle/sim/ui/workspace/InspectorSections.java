@@ -28,9 +28,9 @@ final class InspectorSections {
         switch (section) {
             case SIMULATION -> renderSimulation(particles, settingsChanged);
             case PARTICLES -> renderParticles(particles, settingsChanged);
-            case APPEARANCE -> renderAppearance(particles, settingsChanged);
+            case VISUALS -> renderVisuals(particles, settingsChanged);
             case CAMERA -> renderCamera(camera, settingsChanged);
-            case INTERACTIONS -> matrixEditor.renderSettings(particles, settingsChanged);
+            case MATRIX -> matrixEditor.renderSettings(particles, settingsChanged);
         }
     }
 
@@ -116,13 +116,13 @@ final class InspectorSections {
         }
     }
 
-    private void renderAppearance(GpuParticleSystem particles, Runnable changed) {
+    private void renderVisuals(GpuParticleSystem particles, Runnable changed) {
         section("Particle rendering");
-        UIControls.settingSlider("Particle size", "appearance-size", particles.pointSize(), 1.0f, 8.0f, 1,
+        UIControls.settingSlider("Particle size", "visuals-size", particles.pointSize(), 1.0f, 8.0f, 1,
                 particles::pointSize, changed);
-        checkbox("Fixed screen size", "appearance-fixed-size", particles.fixedParticleScreenSize(),
+        checkbox("Fixed screen size", "visuals-fixed-size", particles.fixedParticleScreenSize(),
                 particles::fixedParticleScreenSize, changed);
-        enumCombo("Color mode", "appearance-color", particles.colorMode().ordinal(), COLOR_MODES,
+        enumCombo("Color mode", "visuals-color", particles.colorMode().ordinal(), COLOR_MODES,
                 value -> particles.colorMode(ColorMode.values()[value]), changed);
 
         effectHeader("Glow", EffectMode.GLOW, particles, changed);

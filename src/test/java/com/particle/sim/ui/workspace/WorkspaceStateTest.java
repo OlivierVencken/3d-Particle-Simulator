@@ -34,7 +34,7 @@ class WorkspaceStateTest {
     @Test
     void selectingNullFallsBackToSimulation() {
         WorkspaceState state = new WorkspaceState();
-        state.select(UISection.INTERACTIONS);
+        state.select(UISection.MATRIX);
 
         state.select(null);
 
@@ -42,31 +42,23 @@ class WorkspaceStateTest {
     }
 
     @Test
-    void pendingTabSelectionCannotBeOverwrittenByThePreviouslyVisibleTab() {
+    void selectingASectionMakesItActiveImmediately() {
         WorkspaceState state = new WorkspaceState();
-        state.activate(UISection.SIMULATION);
 
         state.select(UISection.CAMERA);
-        state.activate(UISection.SIMULATION);
 
         assertEquals(UISection.CAMERA, state.activeSection());
-        assertTrue(state.selectionRequested(UISection.CAMERA));
-
-        state.activate(UISection.CAMERA);
-        assertFalse(state.selectionRequested(UISection.CAMERA));
     }
 
     @Test
-    void restoringSidebarRequestsTheActiveTab() {
+    void restoringSidebarKeepsTheActiveSection() {
         WorkspaceState state = new WorkspaceState();
-        state.activate(UISection.SIMULATION);
-        state.select(UISection.INTERACTIONS);
-        state.activate(UISection.INTERACTIONS);
+        state.select(UISection.MATRIX);
         state.setSidebarVisible(false);
 
         state.setSidebarVisible(true);
 
-        assertTrue(state.selectionRequested(UISection.INTERACTIONS));
+        assertEquals(UISection.MATRIX, state.activeSection());
     }
 
     @Test
