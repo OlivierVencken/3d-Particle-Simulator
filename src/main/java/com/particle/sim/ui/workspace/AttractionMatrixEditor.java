@@ -141,7 +141,7 @@ final class AttractionMatrixEditor {
         drawList.addCircle(cx, cy, radius, border, 24, 2.0f);
 
         if (ImGui.isItemHovered()) {
-            ImGui.setTooltip("Group %d".formatted(group));
+            ImGui.setTooltip("Group %d".formatted(group + 1));
         }
 
         ImGui.popID();
@@ -184,17 +184,7 @@ final class AttractionMatrixEditor {
             settingsChanged.run();
         }
         if (hovered) {
-            ImGui.setTooltip("G%d → G%d: %.2f".formatted(row, column, value));
-        }
-
-        String display = "%.1f".formatted(value);
-        float textWidth = ImGui.calcTextSize(display).x;
-        float textHeight = ImGui.getTextLineHeight();
-        float widestTextWidth = ImGui.calcTextSize("-1.0").x;
-        if (widestTextWidth + CELL_TEXT_PADDING <= size && textHeight + CELL_TEXT_PADDING <= size) {
-            int textColor = ImGui.getColorU32(UIColors.TEXT_PRIMARY.vec4());
-            drawList.addText(x + (size - textWidth) * 0.5f,
-                    y + (size - textHeight) * 0.5f, textColor, display);
+            ImGui.setTooltip("Group %d to group %d: %.2f".formatted(row + 1, column + 1, value));
         }
 
         ImGui.popID();
