@@ -1,5 +1,7 @@
 package com.particle.sim.ui;
 
+import com.particle.sim.ui.theme.UIDesignTokens;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -8,6 +10,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UILayoutCalculatorTest {
+    @Test
+    void scalesChromeAndResponsiveBreakpointsWithDisplayScale() {
+        UIDesignTokens tokens = UIDesignTokens.atScale(2.0f);
+
+        UILayout layout = UILayoutCalculator.calculate(1920.0f, 1080.0f, true, tokens);
+
+        assertEquals(UILayout.Mode.COMPACT, layout.mode());
+        assertEquals(80.0f, layout.commandBar().height());
+        assertEquals(840.0f, layout.sidebar().width());
+        assertEquals(840.0f, layout.simulation().x());
+    }
+
     @ParameterizedTest
     @CsvSource({
             "2560, 1440, WIDE, 420",

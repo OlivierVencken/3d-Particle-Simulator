@@ -7,6 +7,8 @@ import com.particle.sim.ui.SimulationUiModel;
 import com.particle.sim.ui.components.UIControls;
 import com.particle.sim.ui.theme.UIColors;
 import com.particle.sim.ui.theme.UIFonts;
+import com.particle.sim.ui.theme.UIDesignTokens;
+import com.particle.sim.ui.theme.UITheme;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;
@@ -18,12 +20,16 @@ final class ParticlesSection {
     private final ImInt customSpawnAmount = new ImInt(SimulationDefaults.CUSTOM_SPAWN_AMOUNT);
 
     void render(SimulationUiModel.Particles particles, SimulationUiActions.Particles actions) {
+        UIDesignTokens tokens = UITheme.tokens();
         float summaryWidth = ImGui.getContentRegionAvailX();
-        float particleCardWidth = Math.max(140.0f, (summaryWidth - 8.0f) * 0.62f);
-        metricCard("particle-count", "PARTICLES", "%,d".formatted(particles.particleCount()), particleCardWidth);
+        float particleCardWidth = Math.max(
+                tokens.primaryMetricMinimumWidth(), (summaryWidth - tokens.spaceMd()) * 0.62f);
+        metricCard("particle-count", "PARTICLES", "%,d".formatted(particles.particleCount()),
+                particleCardWidth, tokens);
         ImGui.sameLine();
         metricCard("group-count", "GROUPS", Integer.toString(particles.groupCount()),
-                Math.max(88.0f, summaryWidth - particleCardWidth - 8.0f));
+                Math.max(tokens.secondaryMetricMinimumWidth(),
+                        summaryWidth - particleCardWidth - tokens.spaceMd()), tokens);
 
         ImGui.separatorText("");
 
@@ -38,27 +44,29 @@ final class ParticlesSection {
                 value -> actions.setSpawnMode(SpawnMode.values()[value]));
 
         UIControls.sectionHeading("Spawn particles");
-        float pairWidth = Math.max(80.0f, (ImGui.getContentRegionAvailX() - 8.0f) * 0.5f);
-        spawnButton("Add 1k", 1_000, pairWidth, actions);
+        float pairWidth = Math.max(tokens.pairedControlMinimumWidth(),
+                (ImGui.getContentRegionAvailX() - tokens.spaceMd()) * 0.5f);
+        spawnButton("Add 1k", 1_000, pairWidth, actions, tokens);
         ImGui.sameLine();
-        spawnButton("Remove 1k", -1_000, pairWidth, actions);
-        spawnButton("Add 10k", 10_000, pairWidth, actions);
+        spawnButton("Remove 1k", -1_000, pairWidth, actions, tokens);
+        spawnButton("Add 10k", 10_000, pairWidth, actions, tokens);
         ImGui.sameLine();
-        spawnButton("Remove 10k", -10_000, pairWidth, actions);
-        spawnButton("Add 100k", 100_000, pairWidth, actions);
+        spawnButton("Remove 10k", -10_000, pairWidth, actions, tokens);
+        spawnButton("Add 100k", 100_000, pairWidth, actions, tokens);
         ImGui.sameLine();
-        spawnButton("Remove 100k", -100_000, pairWidth, actions);
+        spawnButton("Remove 100k", -100_000, pairWidth, actions, tokens);
 
         customSpawnAmount.set(particles.customSpawnAmount());
         ImGui.spacing();
         ImGui.textDisabled("Custom amount");
-        ImGui.setNextItemWidth(Math.max(100.0f, ImGui.getContentRegionAvailX() - 72.0f));
+        ImGui.setNextItemWidth(Math.max(tokens.inputMinimumWidth(),
+                ImGui.getContentRegionAvailX() - tokens.buttonWidthSm() - tokens.spaceMd()));
         if (ImGui.inputInt("##custom-spawn-amount", customSpawnAmount, 100, 1_000)) {
             actions.setCustomSpawnAmount(customSpawnAmount.get());
         }
         customSpawnAmount.set(Math.max(0, customSpawnAmount.get()));
         ImGui.sameLine();
-        if (ImGui.button("Add##custom-spawn", 64.0f, 0.0f)) {
+        if (ImGui.button("Add##custom-spawn", tokens.buttonWidthSm(), tokens.controlHeight())) {
             actions.add(customSpawnAmount.get());
         }
         ImGui.spacing();
@@ -75,8 +83,9 @@ final class ParticlesSection {
         customSpawnAmount.set(Math.max(0, amount));
     }
 
-    private void spawnButton(String label, int amount, float width, SimulationUiActions.Particles actions) {
-        if (ImGui.button(label + "##spawn-" + amount, width, 32.0f)) {
+    private void spawnButton(String label, int amount, float width, SimulationUiActions.Particles actions,
+            UIDesignTokens tokens) {
+        if (ImGui.button(label + "##spawn-" + amount, width, tokens.controlHeight())) {
             if (amount > 0) {
                 actions.add(amount);
             } else {
@@ -85,10 +94,10 @@ final class ParticlesSection {
         }
     }
 
-    private void metricCard(String id, String label, String value, float width) {
+    private void metricCard(String id, String label, String value, float width, UIDesignTokens tokens) {
         ImGui.pushStyleColor(ImGuiCol.ChildBg, UIColors.SURFACE_DEFAULT.withAlpha(0.72f).vec4());
         int flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
-        if (ImGui.beginChild("##metric-" + id, width, 64.0f, true, flags)) {
+        if (ImGui.beginChild("##metric-" + id, width, tokens.metricCardHeight(), true, flags)) {
             ImGui.textDisabled(label);
             ImGui.pushFont(UIFonts.section());
             ImGui.textUnformatted(value);

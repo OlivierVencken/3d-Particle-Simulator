@@ -4,6 +4,7 @@ import com.particle.sim.input.AppHotkeys;
 import com.particle.sim.input.HotkeyDefinition;
 import com.particle.sim.ui.components.PopupWindow;
 import com.particle.sim.ui.theme.UIFonts;
+import com.particle.sim.ui.theme.UIDesignTokens;
 
 import imgui.ImGui;
 import imgui.flag.ImGuiTableFlags;
@@ -19,7 +20,8 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 
 final class HotkeyPopup extends PopupWindow {
     HotkeyPopup() {
-        super("Hotkeys", "hotkeys-popup", 430.0f, 340.0f);
+        super("Hotkeys", "hotkeys-popup",
+                UIDesignTokens.unscaled().popupWidth(), UIDesignTokens.unscaled().hotkeysPopupHeight());
     }
 
     @Override

@@ -6,6 +6,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.nanovg.NSVGImage;
 
 import com.particle.sim.util.ResourceLoader;
+import com.particle.sim.ui.theme.UIDesignTokens;
 
 import static org.lwjgl.nanovg.NanoSVG.nsvgCreateRasterizer;
 import static org.lwjgl.nanovg.NanoSVG.nsvgDelete;
@@ -29,6 +30,9 @@ import static org.lwjgl.opengl.GL43C.glTexImage2D;
 import static org.lwjgl.opengl.GL43C.glTexParameteri;
 
 public final class SvgIconTexture {
+    private static final int HIGH_DPI_RASTER_SIZE =
+            UIDesignTokens.atScale(UIDesignTokens.MAXIMUM_SCALE).iconRasterSize();
+
     private final String resourcePath;
     private final int rasterSize;
     private int textureId;
@@ -36,6 +40,10 @@ public final class SvgIconTexture {
     public SvgIconTexture(String resourcePath, int rasterSize) {
         this.resourcePath = resourcePath;
         this.rasterSize = rasterSize;
+    }
+
+    public static SvgIconTexture forUiIcon(String resourcePath) {
+        return new SvgIconTexture(resourcePath, HIGH_DPI_RASTER_SIZE);
     }
 
     public int textureId() {

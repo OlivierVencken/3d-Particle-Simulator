@@ -3,6 +3,8 @@ package com.particle.sim.ui.commandbar;
 import com.particle.sim.AppInfo;
 import com.particle.sim.ui.components.PopupWindow;
 import com.particle.sim.ui.theme.UIFonts;
+import com.particle.sim.ui.theme.UIDesignTokens;
+import com.particle.sim.ui.theme.UITheme;
 import imgui.ImGui;
 
 import java.awt.Desktop;
@@ -15,11 +17,13 @@ final class AboutPopup extends PopupWindow {
     private String linkError;
 
     AboutPopup() {
-        super("About 3D Particle Simulator", "about-popup", 430.0f, 230.0f);
+        super("About 3D Particle Simulator", "about-popup",
+                UIDesignTokens.unscaled().popupWidth(), UIDesignTokens.unscaled().aboutPopupHeight());
     }
 
     @Override
     protected void renderContent() {
+        UIDesignTokens tokens = UITheme.tokens();
         ImGui.pushFont(UIFonts.title());
         ImGui.textUnformatted("3D Particle Simulator");
         ImGui.popFont();
@@ -30,11 +34,11 @@ final class AboutPopup extends PopupWindow {
 
         ImGui.spacing();
         ImGui.textDisabled(REPOSITORY_URL);
-        if (ImGui.button("Open GitHub", 112.0f, 32.0f)) {
+        if (ImGui.button("Open GitHub", tokens.buttonWidthXl(), tokens.controlHeight())) {
             openRepository();
         }
         ImGui.sameLine();
-        if (ImGui.button("Copy link", 96.0f, 32.0f)) {
+        if (ImGui.button("Copy link", tokens.buttonWidthLg(), tokens.controlHeight())) {
             ImGui.setClipboardText(REPOSITORY_URL);
             linkError = null;
         }

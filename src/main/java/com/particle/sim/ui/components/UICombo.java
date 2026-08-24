@@ -2,6 +2,8 @@ package com.particle.sim.ui.components;
 
 import com.particle.sim.ui.theme.UIColors;
 import com.particle.sim.ui.theme.UIFonts;
+import com.particle.sim.ui.theme.UIDesignTokens;
+import com.particle.sim.ui.theme.UITheme;
 
 import imgui.ImDrawList;
 import imgui.ImGui;
@@ -11,10 +13,6 @@ import imgui.flag.ImGuiComboFlags;
 import imgui.type.ImInt;
 
 public final class UICombo {
-    private static final float ROUNDING = 4.0f;
-    private static final float HORIZONTAL_PADDING = 10.0f;
-    private static final float CHEVRON_WIDTH = 8.0f;
-
     private UICombo() {
     }
 
@@ -70,28 +68,31 @@ public final class UICombo {
 
     private static void drawPreview(ImDrawList drawList, ImVec2 origin, float width, float height, String preview,
             boolean hovered, boolean focused, boolean open) {
+        UIDesignTokens tokens = UITheme.tokens();
         int fillColor = ImGui.getColorU32(open ? ImGuiCol.FrameBgActive
                 : hovered ? ImGuiCol.FrameBgHovered : ImGuiCol.FrameBg);
         int borderColor = ImGui.getColorU32(focused ? ImGuiCol.NavHighlight
                 : hovered ? ImGuiCol.SeparatorHovered : ImGuiCol.Border);
-        float borderThickness = focused ? 2.0f : 1.0f;
+        float borderThickness = focused ? tokens.emphasizedBorderWidth() : tokens.borderWidth();
 
         float maxX = origin.x + width;
         float maxY = origin.y + height;
-        drawList.addRectFilled(origin.x, origin.y, maxX, maxY, fillColor, ROUNDING);
-        drawList.addRect(origin.x, origin.y, maxX, maxY, borderColor, ROUNDING, 0, borderThickness);
+        drawList.addRectFilled(origin.x, origin.y, maxX, maxY, fillColor, tokens.radiusMd());
+        drawList.addRect(origin.x, origin.y, maxX, maxY, borderColor, tokens.radiusMd(), 0, borderThickness);
 
         float textY = origin.y + (height - ImGui.getTextLineHeight()) * 0.5f;
-        drawList.addText(origin.x + HORIZONTAL_PADDING, textY, ImGui.getColorU32(ImGuiCol.Text), preview);
+        drawList.addText(origin.x + tokens.spaceLg(), textY, ImGui.getColorU32(ImGuiCol.Text), preview);
 
-        float centerX = maxX - HORIZONTAL_PADDING - CHEVRON_WIDTH * 0.5f;
+        float chevronWidth = tokens.chevronWidth();
+        float centerX = maxX - tokens.spaceLg() - chevronWidth * 0.5f;
         float centerY = origin.y + height * 0.5f;
         float direction = open ? -1.0f : 1.0f;
         int chevronColor = ImGui.getColorU32(ImGuiCol.TextDisabled);
-        drawList.addLine(centerX - CHEVRON_WIDTH * 0.5f, centerY - direction * 2.0f,
-                centerX, centerY + direction * 2.0f, chevronColor, 2.0f);
-        drawList.addLine(centerX, centerY + direction * 2.0f,
-                centerX + CHEVRON_WIDTH * 0.5f, centerY - direction * 2.0f, chevronColor, 2.0f);
+        drawList.addLine(centerX - chevronWidth * 0.5f, centerY - direction * tokens.spaceXxs(),
+                centerX, centerY + direction * tokens.spaceXxs(), chevronColor, tokens.emphasizedBorderWidth());
+        drawList.addLine(centerX, centerY + direction * tokens.spaceXxs(),
+                centerX + chevronWidth * 0.5f, centerY - direction * tokens.spaceXxs(),
+                chevronColor, tokens.emphasizedBorderWidth());
     }
 
     private static boolean isValidIndex(int value, String[] values) {

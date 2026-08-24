@@ -2,6 +2,8 @@ package com.particle.sim.ui.sidebar.sections;
 
 import com.particle.sim.ui.theme.UIColor;
 import com.particle.sim.ui.theme.UIColors;
+import com.particle.sim.ui.theme.UIDesignTokens;
+import com.particle.sim.ui.theme.UITheme;
 import com.particle.sim.ui.components.UIControls;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.SimulationUiActions;
@@ -17,7 +19,6 @@ final class AttractionMatrixEditor {
     private static final int LEFT_MOUSE_BUTTON = 0;
     private static final int RIGHT_MOUSE_BUTTON = 1;
 
-    private static final float MATRIX_GAP = 4.0f;
     private static final float HEADER_CIRCLE_RADIUS_SCALE = 0.34f;
 
     private float matrixEditStep = SimulationDefaults.MATRIX_EDIT_STEP;
@@ -55,6 +56,7 @@ final class AttractionMatrixEditor {
     }
 
     private void renderMatrix(SimulationUiModel.Particles particles, SimulationUiActions.Particles actions) {
+        UIDesignTokens tokens = UITheme.tokens();
         ImGui.spacing();
 
         int groupCount = particles.groupCount();
@@ -64,35 +66,38 @@ final class AttractionMatrixEditor {
         }
 
         float availableWidth = Math.max(0.0f, ImGui.getContentRegionAvailX());
-        float cellSize = fittedCellSize(availableWidth, groupCount);
+        float matrixGap = tokens.matrixGap();
+        float cellSize = fittedCellSize(availableWidth, groupCount, matrixGap);
 
-        float totalSize = (groupCount + 1) * cellSize + groupCount * MATRIX_GAP;
+        float totalSize = (groupCount + 1) * cellSize + groupCount * matrixGap;
 
         ImVec2 origin = ImGui.getCursorScreenPos();
         ImDrawList drawList = ImGui.getWindowDrawList();
 
-        int panelBg = ImGui.getColorU32(0.10f, 0.10f, 0.10f, 1.0f);
-        int panelBorder = ImGui.getColorU32(0.20f, 0.20f, 0.20f, 1.0f);
-        drawList.addRectFilled(origin.x, origin.y, origin.x + totalSize, origin.y + totalSize, panelBg, 6.0f);
-        drawList.addRect(origin.x, origin.y, origin.x + totalSize, origin.y + totalSize, panelBorder, 6.0f);
+        int panelBg = ImGui.getColorU32(UIColors.MATRIX_BACKGROUND.vec4());
+        int panelBorder = ImGui.getColorU32(UIColors.MATRIX_PANEL_BORDER.vec4());
+        drawList.addRectFilled(origin.x, origin.y, origin.x + totalSize, origin.y + totalSize,
+                panelBg, tokens.radiusLg());
+        drawList.addRect(origin.x, origin.y, origin.x + totalSize, origin.y + totalSize,
+                panelBorder, tokens.radiusLg());
 
-        drawEmptyCorner(origin.x, origin.y, cellSize, drawList);
+        drawEmptyCorner(origin.x, origin.y, cellSize, drawList, tokens);
 
         for (int column = 0; column < groupCount; column++) {
-            float x = origin.x + (column + 1) * (cellSize + MATRIX_GAP);
+            float x = origin.x + (column + 1) * (cellSize + matrixGap);
             float y = origin.y;
 
-            drawGroupHeaderCircle(particles, column, x, y, cellSize, true, drawList);
+            drawGroupHeaderCircle(particles, column, x, y, cellSize, true, drawList, tokens);
         }
 
         for (int row = 0; row < groupCount; row++) {
-            float y = origin.y + (row + 1) * (cellSize + MATRIX_GAP);
+            float y = origin.y + (row + 1) * (cellSize + matrixGap);
 
-            drawGroupHeaderCircle(particles, row, origin.x, y, cellSize, false, drawList);
+            drawGroupHeaderCircle(particles, row, origin.x, y, cellSize, false, drawList, tokens);
 
             for (int column = 0; column < groupCount; column++) {
-                float x = origin.x + (column + 1) * (cellSize + MATRIX_GAP);
-                drawMatrixTile(particles, actions, row, column, x, y, cellSize, drawList);
+                float x = origin.x + (column + 1) * (cellSize + matrixGap);
+                drawMatrixTile(particles, actions, row, column, x, y, cellSize, drawList, tokens);
             }
         }
         ImGui.setCursorScreenPos(origin.x, origin.y);
@@ -100,16 +105,21 @@ final class AttractionMatrixEditor {
     }
 
     static float fittedCellSize(float availableWidth, int groupCount) {
+        return fittedCellSize(availableWidth, groupCount, UIDesignTokens.unscaled().matrixGap());
+    }
+
+    static float fittedCellSize(float availableWidth, int groupCount, float matrixGap) {
         if (availableWidth <= 0.0f || groupCount <= 0) {
             return 0.0f;
         }
         return Math.max(0.0f,
-                (availableWidth - groupCount * MATRIX_GAP) / (groupCount + 1));
+                (availableWidth - groupCount * Math.max(0.0f, matrixGap)) / (groupCount + 1));
     }
 
-    private void drawEmptyCorner(float x, float y, float cellSize, ImDrawList drawList) {
-        int border = ImGui.getColorU32(0.0f, 0.0f, 0.0f, 0.0f);
-        drawList.addRect(x, y, x + cellSize, y + cellSize, border, 3.0f);
+    private void drawEmptyCorner(float x, float y, float cellSize, ImDrawList drawList,
+            UIDesignTokens tokens) {
+        int border = ImGui.getColorU32(UIColors.TRANSPARENT.vec4());
+        drawList.addRect(x, y, x + cellSize, y + cellSize, border, tokens.radiusSm());
     }
 
     private void drawGroupHeaderCircle(SimulationUiModel.Particles particles,
@@ -117,7 +127,8 @@ final class AttractionMatrixEditor {
             float x, float y,
             float cellSize,
             boolean columnHeader,
-            ImDrawList drawList) {
+            ImDrawList drawList,
+            UIDesignTokens tokens) {
         ImVec4 groupColor = groupColor(particles, group);
 
         float cx = x + cellSize * 0.5f;
@@ -125,14 +136,14 @@ final class AttractionMatrixEditor {
         float radius = cellSize * HEADER_CIRCLE_RADIUS_SCALE;
 
         int fill = ImGui.getColorU32(groupColor.x, groupColor.y, groupColor.z, groupColor.w);
-        int border = ImGui.getColorU32(0.12f, 0.12f, 0.12f, 1.0f);
+        int border = ImGui.getColorU32(UIColors.MATRIX_HEADER_BORDER.vec4());
 
         ImGui.pushID((columnHeader ? "col-" : "row-") + group);
         ImGui.setCursorScreenPos(new ImVec2(x, y));
         ImGui.invisibleButton("##group-header", new ImVec2(cellSize, cellSize));
 
         drawList.addCircleFilled(cx, cy, radius, fill, 24);
-        drawList.addCircle(cx, cy, radius, border, 24, 2.0f);
+        drawList.addCircle(cx, cy, radius, border, 24, tokens.emphasizedBorderWidth());
 
         if (ImGui.isItemHovered()) {
             ImGui.setTooltip("Group %d".formatted(group + 1));
@@ -145,29 +156,31 @@ final class AttractionMatrixEditor {
             SimulationUiActions.Particles actions,
             int row, int column,
             float x, float y, float size,
-            ImDrawList drawList) {
+            ImDrawList drawList,
+            UIDesignTokens tokens) {
         float value = particles.attraction(row, column);
         ImVec4 color = attractionColor(value);
 
         int fill = ImGui.getColorU32(color.x, color.y, color.z, color.w);
-        int border = ImGui.getColorU32(0.16f, 0.16f, 0.16f, 1.0f);
-        int hoverBorder = ImGui.getColorU32(1.0f, 1.0f, 1.0f, 1.0f);
+        int border = ImGui.getColorU32(UIColors.MATRIX_CELL_BORDER.vec4());
+        int hoverBorder = ImGui.getColorU32(UIColors.MATRIX_CELL_HOVER.vec4());
+        float inset = tokens.matrixCellInset();
 
         ImGui.pushID(row * 10_000 + column);
         ImGui.setCursorScreenPos(new ImVec2(x, y));
-        ImGui.invisibleButton("##tile", new ImVec2(size - 1.0f, size - 1.0f));
+        ImGui.invisibleButton("##tile", new ImVec2(size - inset, size - inset));
 
         boolean hovered = ImGui.isItemHovered();
         boolean leftClick = ImGui.isItemClicked(LEFT_MOUSE_BUTTON);
         boolean rightClick = ImGui.isItemClicked(RIGHT_MOUSE_BUTTON);
 
-        drawList.addRectFilled(x, y, x + size - 1.0f, y + size - 1.0f, fill, 3.0f);
+        drawList.addRectFilled(x, y, x + size - inset, y + size - inset, fill, tokens.radiusSm());
         drawList.addRect(
-                x, y, x + size - 1.0f, y + size - 1.0f,
+                x, y, x + size - inset, y + size - inset,
                 hovered ? hoverBorder : border,
-                3.0f,
+                tokens.radiusSm(),
                 0,
-                hovered ? 2.0f : 1.0f);
+                hovered ? tokens.emphasizedBorderWidth() : tokens.borderWidth());
 
         if (leftClick) {
             actions.adjustAttraction(row, column, particles.matrixEditStep());

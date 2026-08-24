@@ -2,6 +2,8 @@ package com.particle.sim.ui.components;
 
 import com.particle.sim.ui.theme.UIColor;
 import com.particle.sim.ui.theme.UIColors;
+import com.particle.sim.ui.theme.UIDesignTokens;
+import com.particle.sim.ui.theme.UITheme;
 import imgui.ImGui;
 import imgui.ImGuiViewport;
 import imgui.flag.ImGuiCol;
@@ -13,7 +15,6 @@ import imgui.flag.ImGuiWindowFlags;
  * Shared placement and styling for modal and non-modal popup windows.
  */
 public abstract class PopupBase {
-    private static final float DEFAULT_ROUNDING = 6.0f;
     private static final UIColor OPAQUE_BACKGROUND = UIColors.BACKGROUND_WINDOW.withAlpha(1.0f);
 
     private final String label;
@@ -49,7 +50,7 @@ public abstract class PopupBase {
     }
 
     protected float windowRounding() {
-        return DEFAULT_ROUNDING;
+        return UITheme.tokens().radiusLg();
     }
 
     protected int windowFlags() {
@@ -61,20 +62,25 @@ public abstract class PopupBase {
     }
 
     protected final void prepareWindow() {
+        UIDesignTokens tokens = UITheme.tokens();
         ImGuiViewport viewport = ImGui.getMainViewport();
         ImGui.setNextWindowPos(
                 viewport.getWorkCenterX(), viewport.getWorkCenterY(),
                 ImGuiCond.Appearing, 0.5f, 0.5f);
 
         if (defaultWidth > 0.0f && defaultHeight > 0.0f) {
-            ImGui.setNextWindowSize(defaultWidth, defaultHeight, ImGuiCond.Appearing);
+            ImGui.setNextWindowSize(tokens.dp(defaultWidth), tokens.dp(defaultHeight), ImGuiCond.Appearing);
         }
 
         if (resizable()) {
             ImGui.setNextWindowSizeConstraints(
-                    minimumWidth(), minimumHeight(),
-                    maximumWidth(), maximumHeight());
+                    tokens.dp(minimumWidth()), tokens.dp(minimumHeight()),
+                    scaledMaximum(tokens, maximumWidth()), scaledMaximum(tokens, maximumHeight()));
         }
+    }
+
+    private float scaledMaximum(UIDesignTokens tokens, float maximum) {
+        return maximum == Float.MAX_VALUE ? Float.MAX_VALUE : tokens.dp(maximum);
     }
 
     protected final int resolvedWindowFlags() {

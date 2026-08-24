@@ -6,7 +6,11 @@ import com.particle.sim.ui.UILayout;
 import com.particle.sim.ui.UIState;
 import com.particle.sim.ui.components.SvgIconTexture;
 import com.particle.sim.ui.theme.UIColors;
+import com.particle.sim.ui.theme.UIComponentPalette;
+import com.particle.sim.ui.theme.UIComponentVariant;
+import com.particle.sim.ui.theme.UIDesignTokens;
 import com.particle.sim.ui.theme.UIFonts;
+import com.particle.sim.ui.theme.UITheme;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
@@ -20,14 +24,11 @@ public final class CommandBar {
     private static final String SIMULATION_MENU = "##simulation-menu";
     private static final String VIEW_MENU = "##view-menu";
     private static final String INFO_MENU = "##info-menu";
-    private static final float SIDEBAR_ICON_SIZE = 18.0f;
-    private static final float BUTTON_HEIGHT = 28.0f;
-
     private final HotkeyPopup hotkeyPopup = new HotkeyPopup();
     private final AboutPopup aboutPopup = new AboutPopup();
     private final ResetSettingsPopup resetSettingsPopup = new ResetSettingsPopup();
-    private final SvgIconTexture sidebarToggleIcon = new SvgIconTexture(
-            "/assets/icons/sidebar-toggle.svg", 64);
+    private final SvgIconTexture sidebarToggleIcon = SvgIconTexture.forUiIcon(
+            "/assets/icons/sidebar-toggle.svg");
     private float simulationMenuX;
     private float simulationMenuY;
     private float viewMenuX;
@@ -38,13 +39,14 @@ public final class CommandBar {
     public void render(UILayout layout, UIState state, SimulationUiModel model, SimulationUiActions actions,
             float fps, ImBoolean showDebug) {
         UILayout.Panel panel = layout.commandBar();
+        UIDesignTokens tokens = UITheme.tokens();
         ImGui.setNextWindowPos(panel.x(), panel.y());
         ImGui.setNextWindowSize(panel.width(), panel.height());
-        ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 4.0f, 4.0f);
+        ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, tokens.spaceXs(), tokens.spaceXs());
         if (ImGui.begin("##command-bar", WINDOW_FLAGS)) {
             ImGui.pushFont(UIFonts.commandBar());
-            renderMenuButtons(state);
-            renderStatistics(panel.width(), panel.height(), model.particles(), fps);
+            renderMenuButtons(state, tokens);
+            renderStatistics(panel.width(), panel.height(), model.particles(), fps, tokens);
             ImGui.popFont();
             renderSimulationMenu(actions.application());
             renderViewMenu(showDebug, actions.application());
@@ -58,30 +60,30 @@ public final class CommandBar {
         aboutPopup.render();
     }
 
-    private void renderMenuButtons(UIState state) {
-        if (sidebarToggleButton()) {
+    private void renderMenuButtons(UIState state, UIDesignTokens tokens) {
+        if (sidebarToggleButton(tokens)) {
             state.toggleSidebar();
         }
         if (ImGui.isItemHovered()) {
             ImGui.setTooltip(state.sidebarVisible() ? "Minimize settings sidebar" : "Show settings sidebar");
         }
 
-        ImGui.sameLine(0.0f, 4.0f);
-        boolean simulationClicked = dropdownButton("Simulation", "simulation");
+        ImGui.sameLine(0.0f, tokens.spaceXs());
+        boolean simulationClicked = dropdownButton("Simulation", "simulation", tokens);
         simulationMenuX = ImGui.getItemRectMinX();
         simulationMenuY = ImGui.getItemRectMaxY();
         if (simulationClicked) {
             ImGui.openPopup(SIMULATION_MENU);
         }
-        ImGui.sameLine(0.0f, 4.0f);
-        boolean viewClicked = dropdownButton("View", "view");
+        ImGui.sameLine(0.0f, tokens.spaceXs());
+        boolean viewClicked = dropdownButton("View", "view", tokens);
         viewMenuX = ImGui.getItemRectMinX();
         viewMenuY = ImGui.getItemRectMaxY();
         if (viewClicked) {
             ImGui.openPopup(VIEW_MENU);
         }
-        ImGui.sameLine(0.0f, 4.0f);
-        boolean infoClicked = dropdownButton("Info", "info");
+        ImGui.sameLine(0.0f, tokens.spaceXs());
+        boolean infoClicked = dropdownButton("Info", "info", tokens);
         infoMenuX = ImGui.getItemRectMinX();
         infoMenuY = ImGui.getItemRectMaxY();
         if (infoClicked) {
@@ -89,28 +91,30 @@ public final class CommandBar {
         }
     }
 
-    private boolean sidebarToggleButton() {
+    private boolean sidebarToggleButton(UIDesignTokens tokens) {
         pushTopBarButtonStyle();
-        boolean clicked = ImGui.button("##toggle-sidebar", BUTTON_HEIGHT, BUTTON_HEIGHT);
+        boolean clicked = ImGui.button(
+                "##toggle-sidebar", tokens.compactControlHeight(), tokens.compactControlHeight());
         popTopBarButtonStyle();
 
         float centerX = (ImGui.getItemRectMinX() + ImGui.getItemRectMaxX()) * 0.5f;
         float centerY = (ImGui.getItemRectMinY() + ImGui.getItemRectMaxY()) * 0.5f;
-        float iconMinX = centerX - SIDEBAR_ICON_SIZE * 0.5f;
-        float iconMinY = centerY - SIDEBAR_ICON_SIZE * 0.5f;
+        float iconSize = tokens.iconSize();
+        float iconMinX = centerX - iconSize * 0.5f;
+        float iconMinY = centerY - iconSize * 0.5f;
         int color = ImGui.getColorU32(ImGuiCol.Text);
         ImGui.getWindowDrawList().addImage(
                 sidebarToggleIcon.textureId(),
                 iconMinX, iconMinY,
-                iconMinX + SIDEBAR_ICON_SIZE, iconMinY + SIDEBAR_ICON_SIZE,
+                iconMinX + iconSize, iconMinY + iconSize,
                 0.0f, 0.0f, 1.0f, 1.0f,
                 color);
         return clicked;
     }
 
-    private boolean dropdownButton(String label, String id) {
+    private boolean dropdownButton(String label, String id, UIDesignTokens tokens) {
         pushTopBarButtonStyle();
-        boolean clicked = ImGui.button(label + "##command-" + id, 0.0f, BUTTON_HEIGHT);
+        boolean clicked = ImGui.button(label + "##command-" + id, 0.0f, tokens.compactControlHeight());
         popTopBarButtonStyle();
         return clicked;
     }
@@ -120,22 +124,26 @@ public final class CommandBar {
     }
 
     private void pushTopBarButtonStyle() {
-        ImGui.pushStyleColor(ImGuiCol.Button, UIColors.TRANSPARENT.vec4());
+        UIComponentPalette palette = UITheme.palette(UIComponentVariant.GHOST);
+        ImGui.pushStyleColor(ImGuiCol.Button, palette.background().vec4());
+        ImGui.pushStyleColor(ImGuiCol.ButtonHovered, palette.hovered().vec4());
+        ImGui.pushStyleColor(ImGuiCol.ButtonActive, palette.active().vec4());
         ImGui.pushStyleVar(ImGuiStyleVar.FrameBorderSize, 0.0f);
     }
 
     private void popTopBarButtonStyle() {
         ImGui.popStyleVar();
-        ImGui.popStyleColor();
+        ImGui.popStyleColor(3);
     }
 
-    private void renderStatistics(float width, float height, SimulationUiModel.Particles particles, float fps) {
-        if (width < 720.0f) {
+    private void renderStatistics(float width, float height, SimulationUiModel.Particles particles, float fps,
+            UIDesignTokens tokens) {
+        if (width < tokens.compactBreakpoint()) {
             return;
         }
         String statistics = "%,d particles  |  %.0f FPS".formatted(particles.particleCount(), fps);
         float statisticsWidth = ImGui.calcTextSize(statistics).x;
-        float statisticsX = width - statisticsWidth - 12.0f;
+        float statisticsX = width - statisticsWidth - tokens.spaceXl();
         float statisticsY = Math.max(0.0f,
                 (height - ImGui.getTextLineHeight()) * 0.5f);
         ImGui.getWindowDrawList().addText(

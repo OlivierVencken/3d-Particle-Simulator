@@ -5,30 +5,60 @@ import imgui.ImGuiStyle;
 import imgui.flag.ImGuiCol;
 
 public final class UITheme {
+    private static final UIComponentPalette PRIMARY = new UIComponentPalette(
+            UIColors.PRIMARY_DEFAULT, UIColors.PRIMARY_HOVER, UIColors.PRIMARY_ACTIVE,
+            UIColors.PRIMARY_HOVER, UIColors.TEXT_PRIMARY);
+    private static final UIComponentPalette SECONDARY = new UIComponentPalette(
+            UIColors.CONTROL_DEFAULT, UIColors.CONTROL_HOVER, UIColors.CONTROL_ACTIVE,
+            UIColors.BORDER_DEFAULT, UIColors.TEXT_PRIMARY);
+    private static final UIComponentPalette GHOST = new UIComponentPalette(
+            UIColors.TRANSPARENT, UIColors.SURFACE_HOVER, UIColors.CONTROL_ACTIVE,
+            UIColors.TRANSPARENT, UIColors.TEXT_PRIMARY);
+    private static final UIComponentPalette DESTRUCTIVE = new UIComponentPalette(
+            UIColors.DESTRUCTIVE_DEFAULT, UIColors.DESTRUCTIVE_HOVER, UIColors.DESTRUCTIVE_ACTIVE,
+            UIColors.DESTRUCTIVE_HOVER, UIColors.TEXT_PRIMARY);
+    private static final UIComponentPalette SELECTED = new UIComponentPalette(
+            UIColors.SURFACE_ACTIVE, UIColors.CONTROL_ACTIVE, UIColors.CONTROL_ACTIVE,
+            UIColors.BORDER_STRONG, UIColors.TEXT_PRIMARY);
+    private static final UIComponentPalette DISABLED = new UIComponentPalette(
+            UIColors.SURFACE_DEFAULT, UIColors.SURFACE_DEFAULT, UIColors.SURFACE_DEFAULT,
+            UIColors.BORDER_SUBTLE, UIColors.TEXT_MUTED);
+
+    private static UIDesignTokens tokens = UIDesignTokens.unscaled();
+
     private UITheme() {
     }
 
     public static void applyDarkTheme() {
+        applyDarkTheme(1.0f);
+    }
+
+    /** Applies every style value from the unscaled design contract. */
+    public static void applyDarkTheme(float scale) {
+        tokens = UIDesignTokens.atScale(scale);
         ImGui.styleColorsDark();
 
         ImGuiStyle style = ImGui.getStyle();
-        style.setWindowPadding(16.0f, 12.0f);
-        style.setFramePadding(8.0f, 7.0f);
-        style.setItemSpacing(8.0f, 10.0f);
-        style.setItemInnerSpacing(8.0f, 6.0f);
-        style.setCellPadding(6.0f, 6.0f);
+        style.setWindowPadding(tokens.windowInsetHorizontal(), tokens.windowInsetVertical());
+        style.setFramePadding(tokens.frameInsetHorizontal(), tokens.frameInsetVertical());
+        style.setItemSpacing(tokens.spaceMd(), tokens.spaceLg());
+        style.setItemInnerSpacing(tokens.spaceMd(), tokens.spaceSm());
+        style.setCellPadding(tokens.cellInset(), tokens.cellInset());
+        style.setTouchExtraPadding(tokens.spaceXxs(), tokens.spaceXxs());
         style.setWindowRounding(0.0f);
         style.setChildRounding(0.0f);
-        style.setFrameRounding(3.0f);
-        style.setPopupRounding(5.0f);
-        style.setScrollbarRounding(3.0f);
-        style.setGrabRounding(3.0f);
-        style.setTabRounding(3.0f);
-        style.setWindowBorderSize(1.0f);
-        style.setFrameBorderSize(1.0f);
-        style.setPopupBorderSize(1.0f);
-        style.setSeparatorTextBorderSize(1.0f);
-        style.setSeparatorTextPadding(12.0f, 4.0f);
+        style.setFrameRounding(tokens.radiusSm());
+        style.setPopupRounding(tokens.radiusLg());
+        style.setScrollbarRounding(tokens.radiusSm());
+        style.setGrabRounding(tokens.radiusSm());
+        style.setTabRounding(tokens.radiusSm());
+        style.setWindowBorderSize(tokens.borderWidth());
+        style.setFrameBorderSize(tokens.borderWidth());
+        style.setPopupBorderSize(tokens.borderWidth());
+        style.setSeparatorTextBorderSize(tokens.borderWidth());
+        style.setSeparatorTextPadding(tokens.spaceXl(), tokens.spaceXs());
+        style.setScrollbarSize(tokens.minimumHitTarget());
+        style.setGrabMinSize(tokens.minimumHitTarget());
         style.setWindowTitleAlign(0.0f, 0.5f);
 
         color(ImGuiCol.Text, UIColors.TEXT_PRIMARY);
@@ -81,8 +111,23 @@ public final class UITheme {
         color(ImGuiCol.TableRowBg, UIColors.TRANSPARENT);
         color(ImGuiCol.TableRowBgAlt, UIColors.TABLE_ROW_ALTERNATE);
         color(ImGuiCol.TextSelectedBg, UIColors.TEXT_SELECTION);
-        color(ImGuiCol.NavHighlight, UIColors.BORDER_STRONG);
+        color(ImGuiCol.NavHighlight, UIColors.FOCUS_RING);
         color(ImGuiCol.ModalWindowDimBg, UIColors.SCRIM);
+    }
+
+    public static UIDesignTokens tokens() {
+        return tokens;
+    }
+
+    public static UIComponentPalette palette(UIComponentVariant variant) {
+        return switch (variant) {
+            case PRIMARY -> PRIMARY;
+            case SECONDARY -> SECONDARY;
+            case GHOST -> GHOST;
+            case DESTRUCTIVE -> DESTRUCTIVE;
+            case SELECTED -> SELECTED;
+            case DISABLED -> DISABLED;
+        };
     }
 
     private static void color(int target, UIColor color) {

@@ -7,6 +7,7 @@ import com.particle.sim.system.SystemLoadSnapshot;
 import com.particle.sim.ui.SimulationUiActions;
 import com.particle.sim.ui.SimulationUiDiagnostics;
 import com.particle.sim.ui.SimulationUiModel;
+import com.particle.sim.ui.theme.UITheme;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
@@ -53,7 +54,7 @@ public final class DebugPanel {
 
         if (!unlimitedFps.get()) {
             ImInt fpsCapRef = new ImInt(fpsCap);
-            ImGui.setNextItemWidth(120.0f);
+            ImGui.setNextItemWidth(UITheme.tokens().debugInputWidth());
             if (ImGui.inputInt("FPS cap", fpsCapRef, 5, 15)) {
                 actions.setFpsCap(fpsCapRef.get());
             }

@@ -25,4 +25,17 @@ class AttractionMatrixEditorTest {
         assertEquals(0.0f, AttractionMatrixEditor.fittedCellSize(404.0f, 0), EPSILON);
         assertEquals(0.0f, AttractionMatrixEditor.fittedCellSize(0.0f, 16), EPSILON);
     }
+
+    @Test
+    void cellSizeAccountsForScaledMatrixSpacing() {
+        float availableWidth = 808.0f;
+        float scaledGap = 8.0f;
+        int groupCount = 16;
+
+        float cellSize = AttractionMatrixEditor.fittedCellSize(availableWidth, groupCount, scaledGap);
+
+        assertEquals(availableWidth,
+                (groupCount + 1) * cellSize + groupCount * scaledGap,
+                EPSILON);
+    }
 }

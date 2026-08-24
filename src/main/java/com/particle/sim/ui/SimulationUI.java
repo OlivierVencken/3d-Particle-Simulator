@@ -4,6 +4,8 @@ import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.commandbar.CommandBar;
 import com.particle.sim.ui.components.DebugPanel;
 import com.particle.sim.ui.sidebar.Sidebar;
+import com.particle.sim.ui.theme.UIDesignTokens;
+import com.particle.sim.ui.theme.UITheme;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 
@@ -39,8 +41,10 @@ public final class SimulationUI {
             throw new IllegalStateException("Simulation UI must be connected before rendering");
         }
 
+        UIDesignTokens tokens = UITheme.tokens();
+        UiDisplayMetrics displayMetrics = UiDisplayMetrics.from(ImGui.getIO(), tokens.scale());
         UILayout layout = UILayoutCalculator.calculate(
-                ImGui.getIO().getDisplaySizeX(), ImGui.getIO().getDisplaySizeY(), state.sidebarVisible());
+                displayMetrics.logicalWidth(), displayMetrics.logicalHeight(), state.sidebarVisible(), tokens);
         state.setLayoutMode(layout.mode());
         commandBar.render(layout, state, model, actions, currentFps, showDebug);
         sidebar.render(layout.sidebar(), state, model, actions);

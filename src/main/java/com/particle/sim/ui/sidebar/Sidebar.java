@@ -6,6 +6,10 @@ import com.particle.sim.ui.SimulationUiActions;
 import com.particle.sim.ui.SimulationUiModel;
 import com.particle.sim.ui.sidebar.sections.SidebarContent;
 import com.particle.sim.ui.theme.UIColors;
+import com.particle.sim.ui.theme.UIComponentPalette;
+import com.particle.sim.ui.theme.UIComponentVariant;
+import com.particle.sim.ui.theme.UIDesignTokens;
+import com.particle.sim.ui.theme.UITheme;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
@@ -15,10 +19,6 @@ public final class Sidebar {
     private static final int WINDOW_FLAGS = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove
             | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoSavedSettings
             | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
-    private static final float SECTION_BUTTON_HEIGHT = 32.0f;
-    private static final float SECTION_BUTTON_SPACING = 4.0f;
-    private static final float MAX_SECTION_BUTTON_PADDING = 8.0f;
-
     private final SidebarContent content = new SidebarContent();
 
     public void render(UILayout.Panel panel, UIState state, SimulationUiModel model, SimulationUiActions actions) {
@@ -36,6 +36,7 @@ public final class Sidebar {
     }
 
     private void renderSectionButtons(UIState state) {
+        UIDesignTokens tokens = UITheme.tokens();
         SidebarSection[] availableSections = SidebarSection.values();
         float totalTextWidth = 0.0f;
         for (SidebarSection section : availableSections) {
@@ -43,28 +44,28 @@ public final class Sidebar {
         }
 
         float contentWidth = ImGui.getContentRegionAvailX();
-        float spacingWidth = SECTION_BUTTON_SPACING * (availableSections.length - 1);
+        float spacingWidth = tokens.spaceXs() * (availableSections.length - 1);
         float availablePadding = (contentWidth - totalTextWidth - spacingWidth)
                 / (availableSections.length * 2.0f);
         boolean fitsSingleRow = availablePadding >= 1.0f;
         float horizontalPadding = fitsSingleRow
-                ? Math.min(MAX_SECTION_BUTTON_PADDING, availablePadding)
-                : MAX_SECTION_BUTTON_PADDING;
+                ? Math.min(tokens.frameInsetHorizontal(), availablePadding)
+                : tokens.frameInsetHorizontal();
 
-        ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, horizontalPadding, 7.0f);
-        ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, SECTION_BUTTON_SPACING, 10.0f);
+        ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, horizontalPadding, tokens.frameInsetVertical());
+        ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, tokens.spaceXs(), tokens.spaceLg());
         float rowWidth = 0.0f;
         for (int index = 0; index < availableSections.length; index++) {
             SidebarSection section = availableSections[index];
             float buttonWidth = ImGui.calcTextSize(section.label()).x + horizontalPadding * 2.0f;
             if (rowWidth > 0.0f && (fitsSingleRow
-                    || rowWidth + SECTION_BUTTON_SPACING + buttonWidth <= contentWidth)) {
+                    || rowWidth + tokens.spaceXs() + buttonWidth <= contentWidth)) {
                 ImGui.sameLine();
-                rowWidth += SECTION_BUTTON_SPACING;
+                rowWidth += tokens.spaceXs();
             } else if (rowWidth > 0.0f) {
                 rowWidth = 0.0f;
             }
-            if (sectionButton(section, state.activeSection() == section)) {
+            if (sectionButton(section, state.activeSection() == section, tokens)) {
                 state.select(section);
             }
             rowWidth += buttonWidth;
@@ -73,17 +74,16 @@ public final class Sidebar {
         ImGui.spacing();
     }
 
-    private boolean sectionButton(SidebarSection section, boolean active) {
-        ImGui.pushStyleColor(ImGuiCol.Button,
-                (active ? UIColors.SURFACE_ACTIVE : UIColors.TRANSPARENT).vec4());
-        ImGui.pushStyleColor(ImGuiCol.ButtonHovered,
-                (active ? UIColors.CONTROL_ACTIVE : UIColors.SURFACE_HOVER).vec4());
-        ImGui.pushStyleColor(ImGuiCol.ButtonActive, UIColors.CONTROL_ACTIVE.vec4());
-        ImGui.pushStyleColor(ImGuiCol.Border,
-                (active ? UIColors.BORDER_STRONG : UIColors.TRANSPARENT).vec4());
-        ImGui.pushStyleVar(ImGuiStyleVar.FrameBorderSize, active ? 1.0f : 0.0f);
+    private boolean sectionButton(SidebarSection section, boolean active, UIDesignTokens tokens) {
+        UIComponentPalette palette = UITheme.palette(
+                active ? UIComponentVariant.SELECTED : UIComponentVariant.GHOST);
+        ImGui.pushStyleColor(ImGuiCol.Button, palette.background().vec4());
+        ImGui.pushStyleColor(ImGuiCol.ButtonHovered, palette.hovered().vec4());
+        ImGui.pushStyleColor(ImGuiCol.ButtonActive, palette.active().vec4());
+        ImGui.pushStyleColor(ImGuiCol.Border, palette.border().vec4());
+        ImGui.pushStyleVar(ImGuiStyleVar.FrameBorderSize, active ? tokens.borderWidth() : 0.0f);
         boolean clicked = ImGui.button(section.label() + "##section-button-" + section.name(),
-                0.0f, SECTION_BUTTON_HEIGHT);
+                0.0f, tokens.navigationControlHeight());
         ImGui.popStyleVar();
         ImGui.popStyleColor(4);
         return clicked;

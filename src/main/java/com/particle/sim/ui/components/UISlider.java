@@ -2,6 +2,8 @@ package com.particle.sim.ui.components;
 
 import com.particle.sim.ui.theme.UIColors;
 import com.particle.sim.ui.theme.UIFonts;
+import com.particle.sim.ui.theme.UIDesignTokens;
+import com.particle.sim.ui.theme.UITheme;
 
 import imgui.ImDrawList;
 import imgui.ImGui;
@@ -11,10 +13,6 @@ import imgui.flag.ImGuiSliderFlags;
 import imgui.flag.ImGuiStyleVar;
 
 public final class UISlider {
-    private static final float TRACK_HEIGHT = 6.0f;
-    private static final float THUMB_RADIUS = 7.0f;
-    private static final float NATIVE_GRAB_PADDING = 2.0f;
-
     private UISlider() {
     }
 
@@ -47,14 +45,16 @@ public final class UISlider {
     }
 
     private static void drawLabel(String label, String value) {
+        UIDesignTokens tokens = UITheme.tokens();
         ImGui.textUnformatted(label);
         float right = ImGui.getWindowContentRegionMaxX();
         float valueWidth = ImGui.calcTextSize(value).x;
-        ImGui.sameLine(Math.max(ImGui.getCursorPosX() + 8.0f, right - valueWidth));
+        ImGui.sameLine(Math.max(ImGui.getCursorPosX() + tokens.spaceMd(), right - valueWidth));
         ImGui.textDisabled(value);
     }
 
     private static void hideNativeSlider() {
+        UIDesignTokens tokens = UITheme.tokens();
         ImGui.pushStyleColor(ImGuiCol.FrameBg, UIColors.TRANSPARENT.vec4());
         ImGui.pushStyleColor(ImGuiCol.FrameBgHovered, UIColors.TRANSPARENT.vec4());
         ImGui.pushStyleColor(ImGuiCol.FrameBgActive, UIColors.TRANSPARENT.vec4());
@@ -62,7 +62,7 @@ public final class UISlider {
         ImGui.pushStyleColor(ImGuiCol.SliderGrabActive, UIColors.TRANSPARENT.vec4());
         ImGui.pushStyleColor(ImGuiCol.Border, UIColors.TRANSPARENT.vec4());
         ImGui.pushStyleColor(ImGuiCol.NavHighlight, UIColors.TRANSPARENT.vec4());
-        ImGui.pushStyleVar(ImGuiStyleVar.GrabMinSize, THUMB_RADIUS * 2.0f);
+        ImGui.pushStyleVar(ImGuiStyleVar.GrabMinSize, tokens.sliderThumbRadius() * 2.0f);
     }
 
     private static void restoreNativeSlider() {
@@ -71,32 +71,36 @@ public final class UISlider {
     }
 
     private static void drawTrack(float normalizedValue) {
+        UIDesignTokens tokens = UITheme.tokens();
         boolean hovered = ImGui.isItemHovered();
         boolean active = ImGui.isItemActive();
         boolean focused = ImGui.isItemFocused();
         ImVec2 min = ImGui.getItemRectMin();
         ImVec2 max = ImGui.getItemRectMax();
 
-        float trackStart = min.x + THUMB_RADIUS + NATIVE_GRAB_PADDING;
-        float trackEnd = max.x - THUMB_RADIUS - NATIVE_GRAB_PADDING;
+        float thumbRadius = tokens.sliderThumbRadius();
+        float trackHeight = tokens.sliderTrackHeight();
+        float trackStart = min.x + thumbRadius + tokens.sliderGrabPadding();
+        float trackEnd = max.x - thumbRadius - tokens.sliderGrabPadding();
         float centerY = (min.y + max.y) * 0.5f;
         float thumbX = trackStart + (trackEnd - trackStart) * normalizedValue;
-        float trackTop = centerY - TRACK_HEIGHT * 0.5f;
-        float trackBottom = centerY + TRACK_HEIGHT * 0.5f;
+        float trackTop = centerY - trackHeight * 0.5f;
+        float trackBottom = centerY + trackHeight * 0.5f;
 
         ImDrawList drawList = ImGui.getWindowDrawList();
         drawList.addRectFilled(trackStart, trackTop, trackEnd, trackBottom,
-                ImGui.getColorU32(hovered ? ImGuiCol.FrameBgHovered : ImGuiCol.FrameBg), TRACK_HEIGHT * 0.5f);
+                ImGui.getColorU32(hovered ? ImGuiCol.FrameBgHovered : ImGuiCol.FrameBg), trackHeight * 0.5f);
         if (thumbX > trackStart) {
             drawList.addRectFilled(trackStart, trackTop, thumbX, trackBottom,
                     ImGui.getColorU32(active ? ImGuiCol.SliderGrabActive : ImGuiCol.SliderGrab),
-                    TRACK_HEIGHT * 0.5f);
+                    trackHeight * 0.5f);
         }
 
         int thumbColor = ImGui.getColorU32(active || hovered ? ImGuiCol.SliderGrabActive : ImGuiCol.SliderGrab);
         int thumbBorder = ImGui.getColorU32(focused ? ImGuiCol.NavHighlight : ImGuiCol.Border);
-        drawList.addCircleFilled(thumbX, centerY, THUMB_RADIUS, thumbColor, 20);
-        drawList.addCircle(thumbX, centerY, THUMB_RADIUS, thumbBorder, 20, focused ? 2.0f : 1.0f);
+        drawList.addCircleFilled(thumbX, centerY, thumbRadius, thumbColor, 20);
+        drawList.addCircle(thumbX, centerY, thumbRadius, thumbBorder, 20,
+                focused ? tokens.emphasizedBorderWidth() : tokens.borderWidth());
     }
 
     static float normalize(float value, float min, float max) {
