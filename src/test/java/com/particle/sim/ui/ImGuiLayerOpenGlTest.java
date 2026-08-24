@@ -1,6 +1,19 @@
 package com.particle.sim.ui;
 
+import com.particle.sim.ui.components.UIAttractionMatrix;
+import com.particle.sim.ui.components.UIButton;
+import com.particle.sim.ui.components.UICheckbox;
+import com.particle.sim.ui.components.UICombo;
+import com.particle.sim.ui.components.UIIntegerInput;
+import com.particle.sim.ui.components.UIMetric;
+import com.particle.sim.ui.components.UISlider;
+import com.particle.sim.ui.components.UIText;
+import com.particle.sim.ui.testing.FakeSimulationUiModel;
+import com.particle.sim.ui.testing.RecordingSimulationUiActions;
+import com.particle.sim.ui.theme.UIComponentVariant;
 import imgui.ImGui;
+import imgui.type.ImBoolean;
+import imgui.type.ImInt;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.lwjgl.opengl.GL;
@@ -27,7 +40,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 @EnabledIfSystemProperty(named = "gpuTests", matches = "true")
 class ImGuiLayerOpenGlTest {
     @Test
-    void buildsAndUploadsTheScaledFontAtlas() {
+    void buildsFontAtlasAndRendersSharedComponents() {
         assertTrue(glfwInit(), "GLFW initialization failed");
         long window = NULL;
         ImGuiLayer layer = null;
@@ -44,8 +57,23 @@ class ImGuiLayerOpenGlTest {
             layer = new ImGuiLayer();
             layer.init(window);
             layer.beginFrame();
-            ImGui.begin("Font atlas smoke test");
+            ImGui.setNextWindowSize(700.0f, 800.0f);
+            ImGui.begin("Component library smoke test");
             ImGui.textUnformatted("IBM Plex Sans");
+            UIButton.text("Primary", "smoke-primary", UIComponentVariant.PRIMARY);
+            ImGui.sameLine();
+            UIButton.text("Disabled", "smoke-disabled", UIComponentVariant.DISABLED,
+                    0.0f, 32.0f, false);
+            UISlider.render("Float", "smoke-float", new float[] {0.5f}, 0.0f, 1.0f, 2);
+            UISlider.render("Integer", "smoke-integer", new int[] {4}, 0, 10);
+            UICheckbox.render("Checkbox", "smoke-checkbox", new ImBoolean(true));
+            UICombo.render("Combo", "smoke-combo", new ImInt(0), new String[] {"One", "Two"});
+            UIIntegerInput.render("Stepper", "smoke-stepper", new ImInt(4), 1, 2, 1, 16, 120.0f);
+            UIMetric.card("smoke-metric", "PARTICLES", "1,000", 140.0f);
+            UIText.helper("Shared helper text");
+            FakeSimulationUiModel model = new FakeSimulationUiModel();
+            RecordingSimulationUiActions actions = new RecordingSimulationUiActions();
+            UIAttractionMatrix.render(model.particles(), actions.particles());
             ImGui.end();
             layer.render();
 

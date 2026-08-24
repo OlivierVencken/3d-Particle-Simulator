@@ -21,6 +21,8 @@ import static org.lwjgl.opengl.GL43C.glGetString;
 
 public final class DebugPanel {
     private final SystemLoadMonitor systemLoadMonitor = new SystemLoadMonitor();
+    private final ImBoolean unlimitedFps = new ImBoolean();
+    private final ImInt fpsCapRef = new ImInt();
 
     private String glVendor;
     private String glRenderer;
@@ -47,15 +49,16 @@ public final class DebugPanel {
         ImGui.text("Frame time: %.2f ms".formatted(deltaTime * 1000.0f));
         renderSystemLoad();
 
-        ImBoolean unlimitedFps = new ImBoolean(fpsCap <= 0);
+        unlimitedFps.set(fpsCap <= 0);
         if (UIControls.checkbox("Unlimited FPS", "debug-unlimited-fps", unlimitedFps)) {
             actions.setFpsCap(unlimitedFps.get() ? 0 : SimulationDefaults.FPS_CAP);
         }
 
         if (!unlimitedFps.get()) {
-            ImInt fpsCapRef = new ImInt(fpsCap);
-            ImGui.setNextItemWidth(UITheme.tokens().debugInputWidth());
-            if (ImGui.inputInt("FPS cap", fpsCapRef, 5, 15)) {
+            fpsCapRef.set(fpsCap);
+            if (UIIntegerInput.render("FPS cap", "debug-fps-cap", fpsCapRef, 5, 15,
+                    SimulationDefaults.MIN_FPS_CAP, SimulationDefaults.MAX_FPS_CAP,
+                    UITheme.tokens().debugInputWidth())) {
                 actions.setFpsCap(fpsCapRef.get());
             }
         }

@@ -13,35 +13,64 @@ import imgui.flag.ImGuiSliderFlags;
 import imgui.flag.ImGuiStyleVar;
 
 public final class UISlider {
+    public enum NumericEntryPolicy {
+        KEYBOARD_ADJUSTMENT_ONLY(ImGuiSliderFlags.NoInput),
+        DIRECT_ENTRY(ImGuiSliderFlags.None);
+
+        private final int flags;
+
+        NumericEntryPolicy(int flags) {
+            this.flags = flags;
+        }
+
+        int flags() {
+            return flags;
+        }
+    }
+
     private UISlider() {
     }
 
     public static boolean render(String label, String id, float[] valueRef, float min, float max, int decimals) {
+        return render(label, id, valueRef, min, max, decimals, NumericEntryPolicy.KEYBOARD_ADJUSTMENT_ONLY, true);
+    }
+
+    public static boolean render(String label, String id, float[] valueRef, float min, float max, int decimals,
+            NumericEntryPolicy entryPolicy, boolean enabled) {
         ImGui.pushFont(UIFonts.medium());
         drawLabel(label, ("%." + decimals + "f").formatted(valueRef[0]));
 
         ImGui.setNextItemWidth(-1.0f);
         hideNativeSlider();
-        boolean changed = ImGui.sliderFloat("##slider-" + id, valueRef, min, max, "", ImGuiSliderFlags.NoInput);
+        ImGui.beginDisabled(!enabled);
+        boolean changed = ImGui.sliderFloat("###slider-" + id, valueRef, min, max, "", entryPolicy.flags());
+        ImGui.endDisabled();
         restoreNativeSlider();
 
-        drawTrack(normalize(valueRef[0], min, max));
+        drawTrack(normalize(valueRef[0], min, max), enabled);
         ImGui.popFont();
-        return changed;
+        return enabled && changed;
     }
 
     public static boolean render(String label, String id, int[] valueRef, int min, int max) {
+        return render(label, id, valueRef, min, max, NumericEntryPolicy.KEYBOARD_ADJUSTMENT_ONLY, true);
+    }
+
+    public static boolean render(String label, String id, int[] valueRef, int min, int max,
+            NumericEntryPolicy entryPolicy, boolean enabled) {
         ImGui.pushFont(UIFonts.medium());
         drawLabel(label, Integer.toString(valueRef[0]));
 
         ImGui.setNextItemWidth(-1.0f);
         hideNativeSlider();
-        boolean changed = ImGui.sliderInt("##slider-" + id, valueRef, min, max, "", ImGuiSliderFlags.NoInput);
+        ImGui.beginDisabled(!enabled);
+        boolean changed = ImGui.sliderInt("###slider-" + id, valueRef, min, max, "", entryPolicy.flags());
+        ImGui.endDisabled();
         restoreNativeSlider();
 
-        drawTrack(normalize(valueRef[0], min, max));
+        drawTrack(normalize(valueRef[0], min, max), enabled);
         ImGui.popFont();
-        return changed;
+        return enabled && changed;
     }
 
     private static void drawLabel(String label, String value) {
@@ -70,7 +99,7 @@ public final class UISlider {
         ImGui.popStyleColor(7);
     }
 
-    private static void drawTrack(float normalizedValue) {
+    private static void drawTrack(float normalizedValue, boolean enabled) {
         UIDesignTokens tokens = UITheme.tokens();
         boolean hovered = ImGui.isItemHovered();
         boolean active = ImGui.isItemActive();
@@ -96,7 +125,8 @@ public final class UISlider {
                     trackHeight * 0.5f);
         }
 
-        int thumbColor = ImGui.getColorU32(active || hovered ? ImGuiCol.SliderGrabActive : ImGuiCol.SliderGrab);
+        int thumbColor = ImGui.getColorU32(!enabled ? ImGuiCol.TextDisabled
+                : active || hovered ? ImGuiCol.SliderGrabActive : ImGuiCol.SliderGrab);
         int thumbBorder = ImGui.getColorU32(focused ? ImGuiCol.NavHighlight : ImGuiCol.Border);
         drawList.addCircleFilled(thumbX, centerY, thumbRadius, thumbColor, 20);
         drawList.addCircle(thumbX, centerY, thumbRadius, thumbBorder, 20,

@@ -5,13 +5,11 @@ import com.particle.sim.ui.UIState;
 import com.particle.sim.ui.SimulationUiActions;
 import com.particle.sim.ui.SimulationUiModel;
 import com.particle.sim.ui.sidebar.sections.SidebarContent;
-import com.particle.sim.ui.theme.UIColors;
-import com.particle.sim.ui.theme.UIComponentPalette;
-import com.particle.sim.ui.theme.UIComponentVariant;
+import com.particle.sim.ui.components.UINavigation;
+import com.particle.sim.ui.components.UIScrollRegion;
 import com.particle.sim.ui.theme.UIDesignTokens;
 import com.particle.sim.ui.theme.UITheme;
 import imgui.ImGui;
-import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 
@@ -30,7 +28,8 @@ public final class Sidebar {
         ImGui.setNextWindowSize(panel.width(), panel.height());
         if (ImGui.begin("##sidebar", WINDOW_FLAGS)) {
             renderSectionButtons(state);
-            renderSectionContent(state.activeSection(), model, actions);
+            UIScrollRegion.render("sidebar-content",
+                    () -> renderSectionContent(state.activeSection(), model, actions));
         }
         ImGui.end();
     }
@@ -75,18 +74,7 @@ public final class Sidebar {
     }
 
     private boolean sectionButton(SidebarSection section, boolean active, UIDesignTokens tokens) {
-        UIComponentPalette palette = UITheme.palette(
-                active ? UIComponentVariant.SELECTED : UIComponentVariant.GHOST);
-        ImGui.pushStyleColor(ImGuiCol.Button, palette.background().vec4());
-        ImGui.pushStyleColor(ImGuiCol.ButtonHovered, palette.hovered().vec4());
-        ImGui.pushStyleColor(ImGuiCol.ButtonActive, palette.active().vec4());
-        ImGui.pushStyleColor(ImGuiCol.Border, palette.border().vec4());
-        ImGui.pushStyleVar(ImGuiStyleVar.FrameBorderSize, active ? tokens.borderWidth() : 0.0f);
-        boolean clicked = ImGui.button(section.label() + "##section-button-" + section.name(),
-                0.0f, tokens.navigationControlHeight());
-        ImGui.popStyleVar();
-        ImGui.popStyleColor(4);
-        return clicked;
+        return UINavigation.item(section.label(), section.name(), active, tokens.navigationControlHeight());
     }
 
     private void renderSectionContent(SidebarSection section, SimulationUiModel model, SimulationUiActions actions) {

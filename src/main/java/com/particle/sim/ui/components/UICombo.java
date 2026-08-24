@@ -17,6 +17,10 @@ public final class UICombo {
     }
 
     public static boolean render(String label, String id, ImInt valueRef, String[] values) {
+        return render(label, id, valueRef, values, true);
+    }
+
+    public static boolean render(String label, String id, ImInt valueRef, String[] values, boolean enabled) {
         ImGui.pushFont(UIFonts.medium());
         ImGui.textUnformatted(label);
 
@@ -28,18 +32,23 @@ public final class UICombo {
 
         ImGui.setNextItemWidth(width);
         hideNativeCombo();
-        boolean open = ImGui.beginCombo("##combo-" + id, "", ImGuiComboFlags.NoArrowButton);
+        ImGui.beginDisabled(!enabled);
+        boolean open = ImGui.beginCombo("###combo-" + id, "", ImGuiComboFlags.NoArrowButton);
+        ImGui.endDisabled();
         restoreNativeCombo();
 
         boolean hovered = ImGui.isMouseHoveringRect(origin.x, origin.y, origin.x + width, origin.y + height);
         boolean focused = ImGui.isItemFocused();
-        drawPreview(drawList, origin, width, height, preview, hovered, focused, open);
+        drawPreview(drawList, origin, width, height, preview, hovered, focused, open, enabled);
+        if (ImGui.calcTextSize(preview).x > previewTextWidth(width, UITheme.tokens())) {
+            UITooltip.forLastItem(preview);
+        }
 
         boolean changed = false;
         if (open) {
             for (int index = 0; index < values.length; index++) {
                 boolean selected = index == valueRef.get();
-                if (ImGui.selectable(values[index] + "##combo-option-" + id + "-" + index, selected)) {
+                if (ImGui.selectable(UIButton.itemLabel(values[index], "combo-option-" + id + "-" + index), selected)) {
                     valueRef.set(index);
                     changed = true;
                 }
@@ -51,7 +60,7 @@ public final class UICombo {
         }
 
         ImGui.popFont();
-        return changed;
+        return enabled && changed;
     }
 
     private static void hideNativeCombo() {
@@ -67,9 +76,9 @@ public final class UICombo {
     }
 
     private static void drawPreview(ImDrawList drawList, ImVec2 origin, float width, float height, String preview,
-            boolean hovered, boolean focused, boolean open) {
+            boolean hovered, boolean focused, boolean open, boolean enabled) {
         UIDesignTokens tokens = UITheme.tokens();
-        int fillColor = ImGui.getColorU32(open ? ImGuiCol.FrameBgActive
+        int fillColor = ImGui.getColorU32(!enabled ? ImGuiCol.FrameBg : open ? ImGuiCol.FrameBgActive
                 : hovered ? ImGuiCol.FrameBgHovered : ImGuiCol.FrameBg);
         int borderColor = ImGui.getColorU32(focused ? ImGuiCol.NavHighlight
                 : hovered ? ImGuiCol.SeparatorHovered : ImGuiCol.Border);
@@ -81,7 +90,11 @@ public final class UICombo {
         drawList.addRect(origin.x, origin.y, maxX, maxY, borderColor, tokens.radiusMd(), 0, borderThickness);
 
         float textY = origin.y + (height - ImGui.getTextLineHeight()) * 0.5f;
-        drawList.addText(origin.x + tokens.spaceLg(), textY, ImGui.getColorU32(ImGuiCol.Text), preview);
+        float textStart = origin.x + tokens.spaceLg();
+        float textEnd = maxX - tokens.spaceLg() * 2.0f - tokens.chevronWidth();
+        drawList.pushClipRect(textStart, origin.y, Math.max(textStart, textEnd), maxY, true);
+        drawList.addText(textStart, textY, ImGui.getColorU32(enabled ? ImGuiCol.Text : ImGuiCol.TextDisabled), preview);
+        drawList.popClipRect();
 
         float chevronWidth = tokens.chevronWidth();
         float centerX = maxX - tokens.spaceLg() - chevronWidth * 0.5f;
@@ -95,7 +108,11 @@ public final class UICombo {
                 chevronColor, tokens.emphasizedBorderWidth());
     }
 
-    private static boolean isValidIndex(int value, String[] values) {
+    static boolean isValidIndex(int value, String[] values) {
         return value >= 0 && value < values.length;
+    }
+
+    static float previewTextWidth(float width, UIDesignTokens tokens) {
+        return Math.max(0.0f, width - tokens.spaceLg() * 3.0f - tokens.chevronWidth());
     }
 }

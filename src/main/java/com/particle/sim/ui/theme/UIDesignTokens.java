@@ -95,6 +95,8 @@ public final class UIDesignTokens {
     public float pairedControlMinimumWidth() { return dp(80.0f); }
     public float inputMinimumWidth() { return dp(100.0f); }
     public float debugInputWidth() { return dp(120.0f); }
+    public float tooltipWrapWidth() { return dp(320.0f); }
+    public float emptyStateMinimumHeight() { return dp(72.0f); }
 
     public float matrixGap() { return spaceXs(); }
     public float matrixCellInset() { return borderWidth(); }

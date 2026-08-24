@@ -5,8 +5,8 @@ import com.particle.sim.ui.SimulationUiModel;
 import com.particle.sim.ui.UILayout;
 import com.particle.sim.ui.UIState;
 import com.particle.sim.ui.components.SvgIconTexture;
-import com.particle.sim.ui.theme.UIColors;
-import com.particle.sim.ui.theme.UIComponentPalette;
+import com.particle.sim.ui.components.UIButton;
+import com.particle.sim.ui.components.UIMenu;
 import com.particle.sim.ui.theme.UIComponentVariant;
 import com.particle.sim.ui.theme.UIDesignTokens;
 import com.particle.sim.ui.theme.UIFonts;
@@ -61,11 +61,8 @@ public final class CommandBar {
     }
 
     private void renderMenuButtons(UIState state, UIDesignTokens tokens) {
-        if (sidebarToggleButton(tokens)) {
+        if (sidebarToggleButton(state)) {
             state.toggleSidebar();
-        }
-        if (ImGui.isItemHovered()) {
-            ImGui.setTooltip(state.sidebarVisible() ? "Minimize settings sidebar" : "Show settings sidebar");
         }
 
         ImGui.sameLine(0.0f, tokens.spaceXs());
@@ -91,32 +88,14 @@ public final class CommandBar {
         }
     }
 
-    private boolean sidebarToggleButton(UIDesignTokens tokens) {
-        pushTopBarButtonStyle();
-        boolean clicked = ImGui.button(
-                "##toggle-sidebar", tokens.compactControlHeight(), tokens.compactControlHeight());
-        popTopBarButtonStyle();
-
-        float centerX = (ImGui.getItemRectMinX() + ImGui.getItemRectMaxX()) * 0.5f;
-        float centerY = (ImGui.getItemRectMinY() + ImGui.getItemRectMaxY()) * 0.5f;
-        float iconSize = tokens.iconSize();
-        float iconMinX = centerX - iconSize * 0.5f;
-        float iconMinY = centerY - iconSize * 0.5f;
-        int color = ImGui.getColorU32(ImGuiCol.Text);
-        ImGui.getWindowDrawList().addImage(
-                sidebarToggleIcon.textureId(),
-                iconMinX, iconMinY,
-                iconMinX + iconSize, iconMinY + iconSize,
-                0.0f, 0.0f, 1.0f, 1.0f,
-                color);
-        return clicked;
+    private boolean sidebarToggleButton(UIState state) {
+        return UIButton.icon(state.sidebarVisible() ? "Minimize settings sidebar" : "Show settings sidebar",
+                "toggle-sidebar", sidebarToggleIcon.textureId(), false, true);
     }
 
     private boolean dropdownButton(String label, String id, UIDesignTokens tokens) {
-        pushTopBarButtonStyle();
-        boolean clicked = ImGui.button(label + "##command-" + id, 0.0f, tokens.compactControlHeight());
-        popTopBarButtonStyle();
-        return clicked;
+        return UIButton.text(label, "command-" + id, UIComponentVariant.GHOST,
+                0.0f, tokens.compactControlHeight());
     }
 
     public void dispose() {
@@ -129,19 +108,6 @@ public final class CommandBar {
 
     public boolean hasOpenWindow() {
         return hasOpenModal() || hotkeyPopup.isOpen() || aboutPopup.isOpen();
-    }
-
-    private void pushTopBarButtonStyle() {
-        UIComponentPalette palette = UITheme.palette(UIComponentVariant.GHOST);
-        ImGui.pushStyleColor(ImGuiCol.Button, palette.background().vec4());
-        ImGui.pushStyleColor(ImGuiCol.ButtonHovered, palette.hovered().vec4());
-        ImGui.pushStyleColor(ImGuiCol.ButtonActive, palette.active().vec4());
-        ImGui.pushStyleVar(ImGuiStyleVar.FrameBorderSize, 0.0f);
-    }
-
-    private void popTopBarButtonStyle() {
-        ImGui.popStyleVar();
-        ImGui.popStyleColor(3);
     }
 
     private void renderStatistics(float width, float height, SimulationUiModel.Particles particles, float fps,
@@ -162,60 +128,54 @@ public final class CommandBar {
     }
 
     private void renderSimulationMenu(SimulationUiActions.Application actions) {
-        if (!beginAnchoredPopup(SIMULATION_MENU, simulationMenuX, simulationMenuY)) {
+        if (!UIMenu.beginAnchored(SIMULATION_MENU, simulationMenuX, simulationMenuY)) {
             return;
         }
 
-        if (ImGui.menuItem("Load...")) {
+        if (UIMenu.item("Load...", "load-preset")) {
             actions.loadPreset();
         }
-        if (ImGui.menuItem("Save...")) {
+        if (UIMenu.item("Save...", "save-preset")) {
             actions.savePreset();
         }
-        ImGui.separator();
-        if (ImGui.menuItem("Reset settings...")) {
+        UIMenu.separator();
+        if (UIMenu.item("Reset settings...", "reset-settings")) {
             resetSettingsPopup.open();
         }
-        ImGui.separator();
-        if (ImGui.menuItem("Exit")) {
+        UIMenu.separator();
+        if (UIMenu.item("Exit", "exit")) {
             actions.exit();
         }
         ImGui.endPopup();
     }
 
     private void renderViewMenu(ImBoolean showDebug, SimulationUiActions.Application actions) {
-        if (!beginAnchoredPopup(VIEW_MENU, viewMenuX, viewMenuY)) {
+        if (!UIMenu.beginAnchored(VIEW_MENU, viewMenuX, viewMenuY)) {
             return;
         }
 
-        if (ImGui.menuItem("Hide UI")) {
+        if (UIMenu.item("Hide UI", "hide-ui")) {
             actions.hideUi();
         }
-        if (ImGui.menuItem(showDebug.get() ? "Hide debug menu" : "Show debug menu")) {
+        if (UIMenu.item(showDebug.get() ? "Hide debug menu" : "Show debug menu", "toggle-debug",
+                showDebug.get(), true)) {
             showDebug.set(!showDebug.get());
         }
         ImGui.endPopup();
     }
 
     private void renderInfoMenu() {
-        if (!beginAnchoredPopup(INFO_MENU, infoMenuX, infoMenuY)) {
+        if (!UIMenu.beginAnchored(INFO_MENU, infoMenuX, infoMenuY)) {
             return;
         }
 
-        if (ImGui.menuItem("Hotkeys")) {
+        if (UIMenu.item("Hotkeys", "hotkeys")) {
             hotkeyPopup.open();
         }
-        if (ImGui.menuItem("About")) {
+        if (UIMenu.item("About", "about")) {
             aboutPopup.open();
         }
         ImGui.endPopup();
-    }
-
-    private boolean beginAnchoredPopup(String id, float x, float y) {
-        if (ImGui.isPopupOpen(id)) {
-            ImGui.setNextWindowPos(x, y);
-        }
-        return ImGui.beginPopup(id);
     }
 
 }

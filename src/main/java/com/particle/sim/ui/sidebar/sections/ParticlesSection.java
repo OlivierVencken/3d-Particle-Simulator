@@ -5,42 +5,42 @@ import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.SimulationUiActions;
 import com.particle.sim.ui.SimulationUiModel;
 import com.particle.sim.ui.components.UIControls;
-import com.particle.sim.ui.theme.UIColors;
-import com.particle.sim.ui.theme.UIFonts;
+import com.particle.sim.ui.components.UIButton;
+import com.particle.sim.ui.components.UIIntegerInput;
+import com.particle.sim.ui.components.UIMetric;
+import com.particle.sim.ui.components.UIText;
+import com.particle.sim.ui.theme.UIComponentVariant;
 import com.particle.sim.ui.theme.UIDesignTokens;
 import com.particle.sim.ui.theme.UITheme;
 import imgui.ImGui;
-import imgui.flag.ImGuiCol;
-import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImInt;
 
 final class ParticlesSection {
     private static final String[] SPAWN_MODES = UIControls.enumLabels(SpawnMode.values());
 
     private final ImInt customSpawnAmount = new ImInt(SimulationDefaults.CUSTOM_SPAWN_AMOUNT);
+    private final ImInt groupCount = new ImInt(SimulationDefaults.GROUP_COUNT);
+    private final UIControls controls = new UIControls();
 
     void render(SimulationUiModel.Particles particles, SimulationUiActions.Particles actions) {
         UIDesignTokens tokens = UITheme.tokens();
         float summaryWidth = ImGui.getContentRegionAvailX();
         float particleCardWidth = Math.max(
                 tokens.primaryMetricMinimumWidth(), (summaryWidth - tokens.spaceMd()) * 0.62f);
-        metricCard("particle-count", "PARTICLES", "%,d".formatted(particles.particleCount()),
-                particleCardWidth, tokens);
+        UIMetric.card("particle-count", "PARTICLES", "%,d".formatted(particles.particleCount()), particleCardWidth);
         ImGui.sameLine();
-        metricCard("group-count", "GROUPS", Integer.toString(particles.groupCount()),
-                Math.max(tokens.secondaryMetricMinimumWidth(),
-                        summaryWidth - particleCardWidth - tokens.spaceMd()), tokens);
+        UIMetric.card("group-count", "GROUPS", Integer.toString(particles.groupCount()),
+                Math.max(tokens.secondaryMetricMinimumWidth(), summaryWidth - particleCardWidth - tokens.spaceMd()));
 
-        ImGui.separatorText("");
+        UIText.divider();
 
         UIControls.sectionHeading("Population");
-        ImInt groups = new ImInt(particles.groupCount());
-        ImGui.textDisabled("Groups");
-        ImGui.setNextItemWidth(-1.0f);
-        if (ImGui.inputInt("##particle-groups", groups, 1, 2)) {
-            actions.setGroupCount(groups.get());
+        groupCount.set(particles.groupCount());
+        if (UIIntegerInput.render("Groups", "particle-groups", groupCount, 1, 2,
+                1, SimulationDefaults.MAX_GROUP_COUNT, -1.0f)) {
+            actions.setGroupCount(groupCount.get());
         }
-        UIControls.settingCombo("Spawn mode", "particle-spawn-mode", particles.spawnMode().ordinal(), SPAWN_MODES,
+        controls.settingCombo("Spawn mode", "particle-spawn-mode", particles.spawnMode().ordinal(), SPAWN_MODES,
                 value -> actions.setSpawnMode(SpawnMode.values()[value]));
 
         UIControls.sectionHeading("Spawn particles");
@@ -58,19 +58,19 @@ final class ParticlesSection {
 
         customSpawnAmount.set(particles.customSpawnAmount());
         ImGui.spacing();
-        ImGui.textDisabled("Custom amount");
-        ImGui.setNextItemWidth(Math.max(tokens.inputMinimumWidth(),
-                ImGui.getContentRegionAvailX() - tokens.buttonWidthSm() - tokens.spaceMd()));
-        if (ImGui.inputInt("##custom-spawn-amount", customSpawnAmount, 100, 1_000)) {
+        float inputWidth = Math.max(tokens.inputMinimumWidth(),
+                ImGui.getContentRegionAvailX() - tokens.buttonWidthSm() - tokens.spaceMd());
+        if (UIIntegerInput.render("Custom amount", "custom-spawn-amount", customSpawnAmount,
+                100, 1_000, 0, SimulationDefaults.MAX_PARTICLE_COUNT, inputWidth)) {
             actions.setCustomSpawnAmount(customSpawnAmount.get());
         }
-        customSpawnAmount.set(Math.max(0, customSpawnAmount.get()));
         ImGui.sameLine();
-        if (ImGui.button("Add##custom-spawn", tokens.buttonWidthSm(), tokens.controlHeight())) {
+        if (UIButton.text("Add", "custom-spawn", UIComponentVariant.PRIMARY,
+                tokens.buttonWidthSm(), tokens.controlHeight())) {
             actions.add(customSpawnAmount.get());
         }
         ImGui.spacing();
-        if (ImGui.button("Clear particles##clear-particles")) {
+        if (UIButton.text("Clear particles", "clear-particles", UIComponentVariant.DESTRUCTIVE)) {
             actions.clear();
         }
     }
@@ -85,7 +85,9 @@ final class ParticlesSection {
 
     private void spawnButton(String label, int amount, float width, SimulationUiActions.Particles actions,
             UIDesignTokens tokens) {
-        if (ImGui.button(label + "##spawn-" + amount, width, tokens.controlHeight())) {
+        if (UIButton.text(label, "spawn-" + amount,
+                amount > 0 ? UIComponentVariant.SECONDARY : UIComponentVariant.GHOST,
+                width, tokens.controlHeight())) {
             if (amount > 0) {
                 actions.add(amount);
             } else {
@@ -94,16 +96,4 @@ final class ParticlesSection {
         }
     }
 
-    private void metricCard(String id, String label, String value, float width, UIDesignTokens tokens) {
-        ImGui.pushStyleColor(ImGuiCol.ChildBg, UIColors.SURFACE_DEFAULT.withAlpha(0.72f).vec4());
-        int flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
-        if (ImGui.beginChild("##metric-" + id, width, tokens.metricCardHeight(), true, flags)) {
-            ImGui.textDisabled(label);
-            ImGui.pushFont(UIFonts.section());
-            ImGui.textUnformatted(value);
-            ImGui.popFont();
-        }
-        ImGui.endChild();
-        ImGui.popStyleColor();
-    }
 }

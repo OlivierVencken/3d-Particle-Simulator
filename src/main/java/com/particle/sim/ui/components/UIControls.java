@@ -1,38 +1,37 @@
 package com.particle.sim.ui.components;
 
-import com.particle.sim.ui.theme.UIFonts;
-
-import imgui.ImGui;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
 
 public final class UIControls {
-    private UIControls() {
-    }
+    private final ImBoolean booleanRef = new ImBoolean();
+    private final ImInt integerRef = new ImInt();
+    private final float[] floatRef = new float[1];
+    private final int[] intRef = new int[1];
 
-    public static void settingSlider(String label, float value, float min, float max, int decimals,
+    public void settingSlider(String label, float value, float min, float max, int decimals,
             FloatSetter setter) {
         slider(label, label, value, min, max, decimals, setter);
     }
 
-    public static void settingSlider(String label, String id, float value, float min, float max, int decimals,
+    public void settingSlider(String label, String id, float value, float min, float max, int decimals,
             FloatSetter setter) {
         slider(label, id, value, min, max, decimals, setter);
     }
 
-    public static void settingIntSlider(String label, int value, int min, int max, int decimals, IntSetter setter) {
+    public void settingIntSlider(String label, int value, int min, int max, int decimals, IntSetter setter) {
         slider(label, label, value, min, max, setter);
     }
 
-    public static void settingIntSlider(String label, String id, int value, int min, int max, int decimals,
+    public void settingIntSlider(String label, String id, int value, int min, int max, int decimals,
             IntSetter setter) {
         slider(label, id, value, min, max, setter);
     }
 
-    public static void settingCheckbox(String label, String id, boolean value, BooleanSetter setter) {
-        ImBoolean valueRef = new ImBoolean(value);
-        if (checkbox(label, id, valueRef)) {
-            setter.set(valueRef.get());
+    public void settingCheckbox(String label, String id, boolean value, BooleanSetter setter) {
+        booleanRef.set(value);
+        if (checkbox(label, id, booleanRef)) {
+            setter.set(booleanRef.get());
         }
     }
 
@@ -40,17 +39,15 @@ public final class UIControls {
         return UICheckbox.render(label, id, valueRef);
     }
 
-    public static void settingCombo(String label, String id, int value, String[] values, IntSetter setter) {
-        ImInt valueRef = new ImInt(value);
-        if (UICombo.render(label, id, valueRef, values)) {
-            setter.set(valueRef.get());
+    public void settingCombo(String label, String id, int value, String[] values, IntSetter setter) {
+        integerRef.set(value);
+        if (UICombo.render(label, id, integerRef, values)) {
+            setter.set(integerRef.get());
         }
     }
 
     public static void sectionHeading(String label) {
-        ImGui.pushFont(UIFonts.section());
-        ImGui.text(label);
-        ImGui.popFont();
+        UIText.sectionHeading(label);
     }
 
     public static String[] enumLabels(Enum<?>[] values) {
@@ -62,20 +59,20 @@ public final class UIControls {
         return labels;
     }
 
-    private static boolean slider(String label, String id, float value, float min, float max, int decimals,
+    private boolean slider(String label, String id, float value, float min, float max, int decimals,
             FloatSetter setter) {
-        float[] valueRef = { value };
-        if (UISlider.render(label, id, valueRef, min, max, decimals)) {
-            setter.set(valueRef[0]);
+        floatRef[0] = value;
+        if (UISlider.render(label, id, floatRef, min, max, decimals)) {
+            setter.set(floatRef[0]);
             return true;
         }
         return false;
     }
 
-    private static boolean slider(String label, String id, int value, int min, int max, IntSetter setter) {
-        int[] valueRef = { value };
-        if (UISlider.render(label, id, valueRef, min, max)) {
-            setter.set(valueRef[0]);
+    private boolean slider(String label, String id, int value, int min, int max, IntSetter setter) {
+        intRef[0] = value;
+        if (UISlider.render(label, id, intRef, min, max)) {
+            setter.set(intRef[0]);
             return true;
         }
         return false;

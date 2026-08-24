@@ -6,6 +6,8 @@ public final class UIColors {
 
     public static final UIColor TEXT_PRIMARY = UIColor.fromHex("#E8E8E8");
     public static final UIColor TEXT_MUTED = UIColor.fromHex("#9A9A9A");
+    public static final UIColor TEXT_WARNING = UIColor.fromHex("#E6B85C");
+    public static final UIColor TEXT_ERROR = UIColor.fromHex("#F08080");
     public static final UIColor TEXT_SELECTION = UIColor.fromHex("#68686866");
     public static final UIColor FOCUS_RING = UIColor.fromHex("#8AB4F8");
 

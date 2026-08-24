@@ -2,6 +2,9 @@ package com.particle.sim.ui.commandbar;
 
 import com.particle.sim.AppInfo;
 import com.particle.sim.ui.components.PopupWindow;
+import com.particle.sim.ui.components.UIButton;
+import com.particle.sim.ui.components.UIText;
+import com.particle.sim.ui.theme.UIComponentVariant;
 import com.particle.sim.ui.theme.UIFonts;
 import com.particle.sim.ui.theme.UIDesignTokens;
 import com.particle.sim.ui.theme.UITheme;
@@ -29,21 +32,23 @@ final class AboutPopup extends PopupWindow {
         ImGui.popFont();
         ImGui.pushFont(UIFonts.medium());
         ImGui.textDisabled("Version " + AppInfo.version());
-        ImGui.separator();
+        UIText.divider();
         ImGui.textWrapped("An interactive GPU-powered 3D particle-life sandbox.");
 
         ImGui.spacing();
         ImGui.textDisabled(REPOSITORY_URL);
-        if (ImGui.button("Open GitHub", tokens.buttonWidthXl(), tokens.controlHeight())) {
+        if (UIButton.text("Open GitHub", "about-open-github", UIComponentVariant.PRIMARY,
+                tokens.buttonWidthXl(), tokens.controlHeight())) {
             openRepository();
         }
         ImGui.sameLine();
-        if (ImGui.button("Copy link", tokens.buttonWidthLg(), tokens.controlHeight())) {
+        if (UIButton.text("Copy link", "about-copy-link", UIComponentVariant.SECONDARY,
+                tokens.buttonWidthLg(), tokens.controlHeight())) {
             ImGui.setClipboardText(REPOSITORY_URL);
             linkError = null;
         }
         if (linkError != null) {
-            ImGui.textWrapped(linkError);
+            UIText.error(linkError);
         }
         ImGui.popFont();
     }

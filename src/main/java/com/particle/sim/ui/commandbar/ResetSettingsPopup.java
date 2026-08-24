@@ -2,6 +2,9 @@ package com.particle.sim.ui.commandbar;
 
 import com.particle.sim.ui.SimulationUiActions;
 import com.particle.sim.ui.components.ModalPopup;
+import com.particle.sim.ui.components.UIButton;
+import com.particle.sim.ui.components.UIPopupActions;
+import com.particle.sim.ui.theme.UIComponentVariant;
 import com.particle.sim.ui.theme.UIFonts;
 import com.particle.sim.ui.theme.UIDesignTokens;
 import com.particle.sim.ui.theme.UITheme;
@@ -32,15 +35,20 @@ final class ResetSettingsPopup extends ModalPopup {
         ImGui.pushFont(UIFonts.medium());
         ImGui.textUnformatted("Restore every simulation setting to its default value?");
         ImGui.textDisabled("This also regenerates the default particle population.");
-        ImGui.spacing();
-        if (ImGui.button("Reset settings", tokens.buttonWidthXxl(), tokens.controlHeight())) {
+        UIPopupActions.row(() -> renderActions(tokens));
+        ImGui.popFont();
+    }
+
+    private void renderActions(UIDesignTokens tokens) {
+        if (UIButton.text("Reset settings", "confirm-reset-settings", UIComponentVariant.DESTRUCTIVE,
+                tokens.buttonWidthXxl(), tokens.controlHeight())) {
             actions.resetSettings();
             close();
         }
         ImGui.sameLine();
-        if (ImGui.button("Cancel", tokens.buttonWidthMd(), tokens.controlHeight())) {
+        if (UIButton.text("Cancel", "cancel-reset-settings", UIComponentVariant.SECONDARY,
+                tokens.buttonWidthMd(), tokens.controlHeight())) {
             close();
         }
-        ImGui.popFont();
     }
 }
