@@ -15,6 +15,11 @@ public abstract class PopupWindow extends PopupBase {
         super(title, id, defaultWidth, defaultHeight);
     }
 
+    protected PopupWindow(String title, String id, float defaultWidth, float defaultHeight,
+            String returnFocusWindow) {
+        super(title, id, defaultWidth, defaultHeight, returnFocusWindow);
+    }
+
     public final void open() {
         open.set(true);
     }
@@ -25,9 +30,11 @@ public abstract class PopupWindow extends PopupBase {
 
     public final void render() {
         if (!open.get()) {
+            restoreFocusIfRequested();
             return;
         }
 
+        boolean openAtFrameStart = open.get();
         prepareWindow();
         pushPopupStyle();
         if (ImGui.begin(label(), open, resolvedWindowFlags())) {
@@ -39,9 +46,14 @@ public abstract class PopupWindow extends PopupBase {
         }
         ImGui.end();
         popPopupStyle();
+        if (openAtFrameStart && !open.get()) {
+            requestFocusRestore();
+        }
+        restoreFocusIfRequested();
     }
 
     protected final void close() {
         open.set(false);
+        requestFocusRestore();
     }
 }

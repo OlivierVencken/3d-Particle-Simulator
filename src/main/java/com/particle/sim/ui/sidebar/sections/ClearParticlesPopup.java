@@ -16,7 +16,7 @@ final class ClearParticlesPopup extends ModalPopup {
     private int particleCount;
 
     ClearParticlesPopup() {
-        super("Clear all particles?", "clear-particles-popup");
+        super("Clear all particles?", "clear-particles-popup", "##sidebar");
     }
 
     void open(int particleCount) {

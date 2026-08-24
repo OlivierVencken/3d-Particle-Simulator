@@ -71,7 +71,7 @@ public final class UIDesignTokens {
 
     public float borderWidth() { return dp(0.8f); }
     public float emphasizedBorderWidth() { return dp(1.6f); }
-    public float scrollbarWidth() { return dp(8.0f); }
+    public float scrollbarWidth() { return dp(9.6f); }
     public float checkmarkWidth() { return dp(1.8f); }
     public float radiusSm() { return dp(2.4f); }
     public float radiusMd() { return spaceXs(); }
@@ -84,8 +84,10 @@ public final class UIDesignTokens {
     public float titleFontSize() { return dp(25.6f); }
 
     public float popupWidth() { return dp(344.0f); }
-    public float aboutPopupHeight() { return dp(184.0f); }
-    public float hotkeysPopupHeight() { return dp(272.0f); }
+    public float aboutPopupHeight() { return dp(208.0f); }
+    public float hotkeysPopupHeight() { return dp(304.0f); }
+    public float errorPopupHeight() { return dp(152.0f); }
+    public float tooltipWrapWidth() { return dp(256.0f); }
     public float buttonWidthSm() { return dp(51.2f); }
     public float buttonWidthMd() { return dp(70.4f); }
     public float buttonWidthLg() { return dp(76.8f); }

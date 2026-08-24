@@ -23,7 +23,8 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 final class HotkeyPopup extends PopupWindow {
     HotkeyPopup() {
         super("Hotkeys", "hotkeys-popup",
-                UIDesignTokens.unscaled().popupWidth(), UIDesignTokens.unscaled().hotkeysPopupHeight());
+                UIDesignTokens.unscaled().popupWidth(), UIDesignTokens.unscaled().hotkeysPopupHeight(),
+                "##command-bar");
     }
 
     @Override

@@ -16,7 +16,7 @@ final class ResetSettingsPopup extends ModalPopup {
     private SimulationUiActions.Application actions;
 
     ResetSettingsPopup() {
-        super("Reset simulation settings?", "reset-settings-popup");
+        super("Reset simulation settings?", "reset-settings-popup", "##command-bar");
     }
 
     void render(SimulationUiActions.Application actions) {

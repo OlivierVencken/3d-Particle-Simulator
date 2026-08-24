@@ -19,6 +19,15 @@ public abstract class ModalPopup extends PopupBase {
         super(title, id, defaultWidth, defaultHeight);
     }
 
+    protected ModalPopup(String title, String id, String returnFocusWindow) {
+        super(title, id, 0.0f, 0.0f, returnFocusWindow);
+    }
+
+    protected ModalPopup(String title, String id, float defaultWidth, float defaultHeight,
+            String returnFocusWindow) {
+        super(title, id, defaultWidth, defaultHeight, returnFocusWindow);
+    }
+
     public final void open() {
         openRequested = true;
         open = true;
@@ -35,7 +44,11 @@ public abstract class ModalPopup extends PopupBase {
         }
 
         if (!ImGui.isPopupOpen(label())) {
+            if (open) {
+                requestFocusRestore();
+            }
             open = false;
+            restoreFocusIfRequested();
             return;
         }
 
@@ -50,10 +63,12 @@ public abstract class ModalPopup extends PopupBase {
             ImGui.endPopup();
         }
         popPopupStyle();
+        restoreFocusIfRequested();
     }
 
     protected final void close() {
         open = false;
         ImGui.closeCurrentPopup();
+        requestFocusRestore();
     }
 }

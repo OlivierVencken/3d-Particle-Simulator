@@ -21,7 +21,8 @@ final class AboutPopup extends PopupWindow {
 
     AboutPopup() {
         super("About 3D Particle Simulator", "about-popup",
-                UIDesignTokens.unscaled().popupWidth(), UIDesignTokens.unscaled().aboutPopupHeight());
+                UIDesignTokens.unscaled().popupWidth(), UIDesignTokens.unscaled().aboutPopupHeight(),
+                "##command-bar");
     }
 
     @Override

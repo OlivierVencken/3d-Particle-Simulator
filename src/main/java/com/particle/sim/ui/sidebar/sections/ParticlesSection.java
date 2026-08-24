@@ -54,7 +54,6 @@ final class ParticlesSection {
                 1, particles.maximumGroupCount(), -1.0f)) {
             actions.setGroupCount(groupCount.get());
         }
-        UIText.helper("Interaction groups: 1–%d".formatted(particles.maximumGroupCount()));
         controls.settingCombo("Spawn mode", "particle-spawn-mode", particles.spawnMode().ordinal(), SPAWN_MODES,
                 value -> actions.setSpawnMode(SpawnMode.values()[value]));
 

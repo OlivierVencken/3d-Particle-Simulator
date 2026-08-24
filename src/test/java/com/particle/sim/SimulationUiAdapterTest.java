@@ -80,6 +80,14 @@ class SimulationUiAdapterTest {
     }
 
     @Test
+    void playbackPauseIsTransient() {
+        actions.simulation().togglePause();
+
+        assertTrue(ui.isPaused());
+        assertEquals(0, settings.saveRequests);
+    }
+
+    @Test
     void diagnosticsArePreparedOnceAndSharedForTheWholeFrame() {
         SimulationUiDiagnostics unavailable = adapter.model().performance().diagnostics();
 

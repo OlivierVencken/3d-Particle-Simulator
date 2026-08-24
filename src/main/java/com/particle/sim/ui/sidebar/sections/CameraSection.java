@@ -15,10 +15,8 @@ final class CameraSection {
         UIControls.sectionHeading("Movement");
         controls.settingSlider("Sensitivity", "camera-sensitivity", camera.sensitivity(), 0.0001f, 0.01f, 4,
                 actions::setSensitivity);
-        UIText.helper("Mouse-look sensitivity: 0.0001–0.0100");
         controls.settingSlider("Fly speed", "camera-speed", camera.flySpeed(), 0.1f, 30.0f, 1,
                 actions::setFlySpeed);
-        UIText.helper("Movement speed: 0.1–30.0 world units per second");
         ImGui.spacing();
         if (UIButton.text("Reset camera", "camera-reset", UIComponentVariant.SECONDARY)) {
             actions.reset();

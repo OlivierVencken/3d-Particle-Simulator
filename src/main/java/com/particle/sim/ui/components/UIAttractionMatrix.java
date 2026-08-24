@@ -156,6 +156,8 @@ public final class UIAttractionMatrix {
                         ImGui.getColorU32(focused ? ImGuiCol.NavHighlight : ImGuiCol.SeparatorHovered),
                         tokens.radiusSm(), 0,
                         focused ? tokens.emphasizedBorderWidth() : tokens.borderWidth());
+                UITooltip.forLastItem("Group %d %s".formatted(
+                        group + 1, column ? "column" : "row"));
             }
         } finally {
             ImGui.popID();
@@ -193,6 +195,11 @@ public final class UIAttractionMatrix {
                 actions.adjustAttraction(row, column, particles.matrixEditStep());
             } else if (rightClick) {
                 actions.adjustAttraction(row, column, -particles.matrixEditStep());
+            }
+            if (hovered || focused) {
+                UITooltip.forLastItem("Group %d toward group %d: %+.2f\n"
+                        .formatted(row + 1, column + 1, value)
+                        + "Activate to increase; right-click to decrease.");
             }
         } finally {
             ImGui.popID();

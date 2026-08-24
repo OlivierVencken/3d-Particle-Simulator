@@ -84,16 +84,26 @@ public final class ParticleSimulatorApp {
 
     private void initSettings() {
         ui.connect(uiAdapter.model(), uiAdapter.actions());
-        uiAdapter.onSavePreset(() -> PresetFileDialog.showSaveDialog()
-                .ifPresent(settingsController::savePresetTo));
-        uiAdapter.onLoadPreset(() -> PresetFileDialog.showOpenDialog()
-                .ifPresent(settingsController::loadPresetFrom));
+        uiAdapter.onSavePreset(() -> runPresetAction(
+                "Could not save the preset.",
+                () -> PresetFileDialog.showSaveDialog().ifPresent(settingsController::savePresetTo)));
+        uiAdapter.onLoadPreset(() -> runPresetAction(
+                "Could not load the preset.",
+                () -> PresetFileDialog.showOpenDialog().ifPresent(settingsController::loadPresetFrom)));
         uiAdapter.onExitApplication(() -> {
             settingsController.flush();
             window.requestClose();
         });
 
         settingsController.load();
+    }
+
+    private void runPresetAction(String summary, Runnable action) {
+        try {
+            action.run();
+        } catch (RuntimeException exception) {
+            ui.showError(summary, exception.getMessage());
+        }
     }
 
     public WindowManager getWindow() {

@@ -20,7 +20,7 @@ class UIThemeTest {
             assertEquals(16.0f, ImGui.getStyle().getWindowPaddingX());
             assertEquals(8.0f, ImGui.getStyle().getFramePaddingX());
             assertEquals(1.0f, ImGui.getStyle().getFrameBorderSize());
-            assertEquals(10.0f, ImGui.getStyle().getScrollbarSize());
+            assertEquals(12.0f, ImGui.getStyle().getScrollbarSize());
         } finally {
             UITheme.applyDarkTheme(1.0f);
             ImGui.destroyContext();

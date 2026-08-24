@@ -25,12 +25,9 @@ final class SimulationSection {
                 actions::setToroidalWrap);
         controls.settingSlider("Bounds", "world-bounds", simulation.bounds(), 2.0f, 10.0f, 1,
                 actions::setBounds);
-        UIText.helper("Half-size of the cubic world: 2.0–10.0 units");
         if (!simulation.toroidalWrap()) {
             controls.settingSlider("Boundary bounce", "world-bounce", simulation.boundaryBounce(), 0.0f, 1.0f, 2,
                     actions::setBoundaryBounce);
-        } else {
-            UIText.helper("Particles crossing an edge re-enter from the opposite side.");
         }
 
         UIText.divider();
@@ -46,7 +43,6 @@ final class SimulationSection {
                 3, actions::setVelocityDamping);
         controls.settingSlider("Max velocity", "dynamics-max-velocity", simulation.maxVelocity(), 0.5f, 16.0f, 1,
                 actions::setMaxVelocity);
-        UIText.helper("Distances and velocity are measured in world units.");
         controls.settingCombo("Distance metric", "dynamics-distance", simulation.distanceMetric().ordinal(),
                 DISTANCE_METRICS, value -> actions.setDistanceMetric(DistanceMetric.values()[value]));
 
@@ -58,28 +54,34 @@ final class SimulationSection {
         if (simulation.densityRegulationEnabled()) {
             controls.settingSlider("Density limit", "dynamics-density-limit", simulation.densityLimit(), 0.0f,
                     500.0f, 0, actions::setDensityLimit);
-            UIText.helper("Soft particle limit per interaction neighborhood.");
-        } else {
-            UIText.helper("Enable to reduce crowding in dense neighborhoods.");
         }
     }
 
     private void renderPlayback(SimulationUiModel.Application application, SimulationUiActions.Simulation actions) {
         UIDesignTokens tokens = UITheme.tokens();
         UIControls.sectionHeading("Simulation actions");
-        float buttonWidth = Math.max(tokens.pairedControlMinimumWidth(),
-                (ImGui.getContentRegionAvailX() - tokens.spaceMd()) * 0.5f);
+        float availableWidth = ImGui.getContentRegionAvailX();
+        boolean inline = playbackControlsFitInline(availableWidth, tokens);
+        float buttonWidth = inline ? (availableWidth - tokens.spaceMd()) * 0.5f : availableWidth;
+        if (UIButton.text(application.paused() ? "Resume" : "Pause", "sidebar-simulation-pause",
+                application.paused() ? UIComponentVariant.SELECTED : UIComponentVariant.PRIMARY,
+                buttonWidth, tokens.controlHeight())) {
+            actions.togglePause();
+        }
+        if (inline) {
+            ImGui.sameLine();
+        }
         if (UIButton.text("Step once", "sidebar-simulation-step", UIComponentVariant.SECONDARY,
                 buttonWidth, tokens.controlHeight(), application.paused())) {
             actions.step();
         }
-        ImGui.sameLine();
         if (UIButton.text("Reset particles", "sidebar-reset-particles", UIComponentVariant.GHOST,
-                buttonWidth, tokens.controlHeight())) {
+                availableWidth, tokens.controlHeight())) {
             actions.resetParticles();
         }
-        if (!application.paused()) {
-            UIText.helper("Pause with Space to advance one fixed step at a time.");
-        }
+    }
+
+    static boolean playbackControlsFitInline(float availableWidth, UIDesignTokens tokens) {
+        return availableWidth >= tokens.pairedControlMinimumWidth() * 2.0f + tokens.spaceMd();
     }
 }

@@ -18,6 +18,8 @@ public interface SimulationUiActions {
     Application application();
 
     interface Simulation {
+        void togglePause();
+
         void step();
 
         void resetParticles();

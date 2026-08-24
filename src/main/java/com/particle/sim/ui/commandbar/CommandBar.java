@@ -28,6 +28,7 @@ public final class CommandBar {
     private final HotkeyPopup hotkeyPopup = new HotkeyPopup();
     private final AboutPopup aboutPopup = new AboutPopup();
     private final ResetSettingsPopup resetSettingsPopup = new ResetSettingsPopup();
+    private final ErrorPopup errorPopup = new ErrorPopup();
     private final SvgIconTexture sidebarToggleIcon = SvgIconTexture.forUiIcon(
             "/assets/icons/sidebar-toggle.svg");
     private float simulationMenuX;
@@ -48,10 +49,11 @@ public final class CommandBar {
         ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, tokens.spaceXs(), tokens.spaceXs());
         if (ImGui.begin("##command-bar", WINDOW_FLAGS)) {
             ImGui.pushFont(UIFonts.commandBar());
-            renderMenuButtons(layout.mode(), panel.width(), state, tokens);
+            renderMenuButtons(layout.mode(), panel.width(), state,
+                    model.application(), actions.simulation(), tokens);
             renderStatistics(panel.width(), panel.height(), model.particles(), fps, tokens);
             ImGui.popFont();
-            renderSimulationMenu(actions.application());
+            renderSimulationMenu(model.application(), actions.simulation(), actions.application());
             renderViewMenu(showDebug, actions.application());
             renderInfoMenu();
             renderCompactMenu(showDebug, model, actions);
@@ -62,9 +64,12 @@ public final class CommandBar {
         resetSettingsPopup.render(actions.application());
         hotkeyPopup.render();
         aboutPopup.render();
+        errorPopup.render();
     }
 
-    private void renderMenuButtons(UILayout.Mode mode, float width, UIState state, UIDesignTokens tokens) {
+    private void renderMenuButtons(UILayout.Mode mode, float width, UIState state,
+            SimulationUiModel.Application application, SimulationUiActions.Simulation actions,
+            UIDesignTokens tokens) {
         if (sidebarToggleButton(state)) {
             state.toggleSidebar();
         }
@@ -102,6 +107,14 @@ public final class CommandBar {
         if (infoClicked) {
             ImGui.openPopup(INFO_MENU);
         }
+
+        ImGui.sameLine(0.0f, tokens.spaceXs());
+        boolean paused = application.paused();
+        if (UIButton.text(paused ? "Resume" : "Pause", "command-pause",
+                paused ? UIComponentVariant.SELECTED : UIComponentVariant.GHOST,
+                0.0f, tokens.compactControlHeight())) {
+            actions.togglePause();
+        }
     }
 
     private boolean sidebarToggleButton(UIState state) {
@@ -129,7 +142,11 @@ public final class CommandBar {
     }
 
     public boolean hasOpenWindow() {
-        return hasOpenModal() || hotkeyPopup.isOpen() || aboutPopup.isOpen();
+        return hasOpenModal() || hotkeyPopup.isOpen() || aboutPopup.isOpen() || errorPopup.isOpen();
+    }
+
+    public void showError(String summary, String details) {
+        errorPopup.open(summary, details);
     }
 
     private void renderStatistics(float width, float height, SimulationUiModel.Particles particles, float fps,
@@ -148,16 +165,29 @@ public final class CommandBar {
                 statistics);
     }
 
-    private void renderSimulationMenu(SimulationUiActions.Application actions) {
+    private void renderSimulationMenu(SimulationUiModel.Application application,
+            SimulationUiActions.Simulation simulationActions,
+            SimulationUiActions.Application applicationActions) {
         if (!UIMenu.beginAnchored(SIMULATION_MENU, simulationMenuX, simulationMenuY)) {
             return;
         }
 
+        if (UIMenu.item(application.paused() ? "Resume simulation" : "Pause simulation",
+                "toggle-pause", application.paused(), true)) {
+            simulationActions.togglePause();
+        }
+        if (UIMenu.item("Step simulation", "step", false, application.paused())) {
+            simulationActions.step();
+        }
+        if (UIMenu.item("Reset particle state", "reset-particles")) {
+            simulationActions.resetParticles();
+        }
+        UIMenu.separator();
         if (UIMenu.item("Load...", "load-preset")) {
-            actions.loadPreset();
+            applicationActions.loadPreset();
         }
         if (UIMenu.item("Save...", "save-preset")) {
-            actions.savePreset();
+            applicationActions.savePreset();
         }
         UIMenu.separator();
         if (UIMenu.item("Reset settings...", "reset-settings")) {
@@ -165,7 +195,7 @@ public final class CommandBar {
         }
         UIMenu.separator();
         if (UIMenu.item("Exit", "exit")) {
-            actions.exit();
+            applicationActions.exit();
         }
         ImGui.endPopup();
     }
@@ -202,6 +232,10 @@ public final class CommandBar {
     private void renderCompactMenu(ImBoolean showDebug, SimulationUiModel model, SimulationUiActions actions) {
         if (!UIMenu.beginAnchored(COMPACT_MENU, compactMenuX, compactMenuY)) {
             return;
+        }
+        if (UIMenu.item(model.application().paused() ? "Resume simulation" : "Pause simulation",
+                "compact-toggle-pause", model.application().paused(), true)) {
+            actions.simulation().togglePause();
         }
         if (UIMenu.item("Step simulation", "compact-step", false, model.application().paused())) {
             actions.simulation().step();

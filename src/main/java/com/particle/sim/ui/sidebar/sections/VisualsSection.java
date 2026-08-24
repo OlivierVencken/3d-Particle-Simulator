@@ -20,7 +20,6 @@ final class VisualsSection {
                 actions::setFixedParticleScreenSize);
         controls.settingCombo("Color mode", "visuals-color", visuals.colorMode().ordinal(), COLOR_MODES,
                 value -> actions.setColorMode(ColorMode.values()[value]));
-        UIText.helper("Particle size: 1.0–8.0 pixels at the reference distance");
 
         UIText.divider();
 
@@ -35,8 +34,6 @@ final class VisualsSection {
             controls.settingSlider("Falloff", "glow-falloff", visuals.glowFalloff(), 0.05f, 3.0f, 2,
                     actions::setGlowFalloff);
             UIText.helper("Bloom resolution: 1/%d per axis".formatted(visuals.effectiveBloomDivisor()));
-        } else {
-            UIText.helper("Enable glow to adjust bloom passes, strength, radius, and falloff.");
         }
 
         UIText.divider();
@@ -48,8 +45,6 @@ final class VisualsSection {
                     actions::setTrailLength);
             controls.settingSlider("Thickness", "trail-thickness", visuals.trailThickness(),
                     SimulationDefaults.MIN_TRAIL_THICKNESS, visuals.pointSize(), 1, actions::setTrailThickness);
-        } else {
-            UIText.helper("Enable trails to adjust history length and line thickness.");
         }
 
         String quality = qualityMessage(visuals);

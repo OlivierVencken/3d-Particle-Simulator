@@ -167,6 +167,11 @@ public final class SimulationUI {
         hidden = false;
     }
 
+    public void showError(String summary, String details) {
+        hidden = false;
+        commandBar.showError(summary, details);
+    }
+
     public void dispose() {
         commandBar.dispose();
     }

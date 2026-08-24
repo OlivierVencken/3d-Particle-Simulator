@@ -29,6 +29,7 @@ public final class RecordingSimulationUiActions implements SimulationUiActions {
     }
 
     public final class SimulationActions implements SimulationUiActions.Simulation {
+        @Override public void togglePause() { record("simulation.togglePause"); }
         @Override public void step() { record("simulation.step"); }
         @Override public void resetParticles() { record("simulation.resetParticles"); }
         @Override public void setToroidalWrap(boolean value) { record("simulation.toroidalWrap"); }

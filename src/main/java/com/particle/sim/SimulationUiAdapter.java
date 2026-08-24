@@ -152,6 +152,11 @@ final class SimulationUiAdapter {
 
     private final class SimulationDomain implements SimulationUiModel.Simulation, SimulationUiActions.Simulation {
         @Override
+        public void togglePause() {
+            ui.togglePause();
+        }
+
+        @Override
         public void step() {
             particles.step();
         }

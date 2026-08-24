@@ -22,19 +22,17 @@ public final class Sidebar {
     private final SidebarContent content = new SidebarContent();
 
     public void render(UILayout.Panel panel, UIState state, SimulationUiModel model, SimulationUiActions actions) {
-        if (!panel.visible()) {
-            return;
+        if (panel.visible()) {
+            ImGui.setNextWindowPos(panel.x(), panel.y());
+            ImGui.setNextWindowSize(panel.width(), panel.height());
+            if (ImGui.begin("##sidebar", WINDOW_FLAGS)) {
+                renderOverlayHeader(state);
+                renderSectionButtons(state);
+                UIScrollRegion.render("sidebar-content",
+                        () -> renderSectionContent(state.activeSection(), model, actions));
+            }
+            ImGui.end();
         }
-
-        ImGui.setNextWindowPos(panel.x(), panel.y());
-        ImGui.setNextWindowSize(panel.width(), panel.height());
-        if (ImGui.begin("##sidebar", WINDOW_FLAGS)) {
-            renderOverlayHeader(state);
-            renderSectionButtons(state);
-            UIScrollRegion.render("sidebar-content",
-                    () -> renderSectionContent(state.activeSection(), model, actions));
-        }
-        ImGui.end();
         content.renderPopups(actions);
     }
 

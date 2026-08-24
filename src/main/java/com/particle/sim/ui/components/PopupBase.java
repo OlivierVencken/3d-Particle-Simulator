@@ -20,11 +20,19 @@ public abstract class PopupBase {
     private final String label;
     private final float defaultWidth;
     private final float defaultHeight;
+    private final String returnFocusWindow;
+    private boolean focusRestoreRequested;
 
     protected PopupBase(String title, String id, float defaultWidth, float defaultHeight) {
+        this(title, id, defaultWidth, defaultHeight, null);
+    }
+
+    protected PopupBase(String title, String id, float defaultWidth, float defaultHeight,
+            String returnFocusWindow) {
         this.label = title + "###" + id;
         this.defaultWidth = defaultWidth;
         this.defaultHeight = defaultHeight;
+        this.returnFocusWindow = returnFocusWindow;
     }
 
     protected abstract void renderContent();
@@ -97,5 +105,19 @@ public abstract class PopupBase {
     protected final void popPopupStyle() {
         ImGui.popStyleVar();
         ImGui.popStyleColor(2);
+    }
+
+    protected final void requestFocusRestore() {
+        focusRestoreRequested = true;
+    }
+
+    protected final void restoreFocusIfRequested() {
+        if (!focusRestoreRequested) {
+            return;
+        }
+        focusRestoreRequested = false;
+        if (returnFocusWindow != null && !returnFocusWindow.isBlank()) {
+            ImGui.setWindowFocus(returnFocusWindow);
+        }
     }
 }
