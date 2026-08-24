@@ -24,6 +24,7 @@ public final class SimulationUI {
     private int fpsCap = SimulationDefaults.FPS_CAP;
     private boolean paused;
     private boolean hidden;
+    private PreparedUiFrame preparedFrame;
     private SimulationUiModel model;
     private SimulationUiActions actions;
 
@@ -41,16 +42,40 @@ public final class SimulationUI {
             throw new IllegalStateException("Simulation UI must be connected before rendering");
         }
 
-        UIDesignTokens tokens = UITheme.tokens();
-        UiDisplayMetrics displayMetrics = UiDisplayMetrics.from(ImGui.getIO(), tokens.scale());
-        UILayout layout = UILayoutCalculator.calculate(
-                displayMetrics.logicalWidth(), displayMetrics.logicalHeight(), state.sidebarVisible(), tokens);
+        if (preparedFrame == null) {
+            throw new IllegalStateException("Simulation UI frame must be prepared before rendering");
+        }
+
+        UILayout layout = preparedFrame.layout();
         state.setLayoutMode(layout.mode());
         commandBar.render(layout, state, model, actions, currentFps, showDebug);
         sidebar.render(layout.sidebar(), state, model, actions);
         if (showDebug.get()) {
             debugPanel.render(deltaTime, currentFps, model, actions, showDebug);
         }
+    }
+
+    public PreparedUiFrame prepareFrame(int framebufferWidth, int framebufferHeight) {
+        UIDesignTokens tokens = UITheme.tokens();
+        UiDisplayMetrics displayMetrics = UiDisplayMetrics.from(
+                ImGui.getIO(), tokens.scale(), framebufferWidth, framebufferHeight);
+        UILayout layout = UILayoutCalculator.calculate(
+                displayMetrics.logicalWidth(), displayMetrics.logicalHeight(),
+                state.sidebarVisible(), !hidden, tokens);
+        preparedFrame = new PreparedUiFrame(
+                displayMetrics,
+                layout,
+                displayMetrics.toFramebuffer(layout.simulation()),
+                !hidden);
+        state.setLayoutMode(layout.mode());
+        return preparedFrame;
+    }
+
+    public PreparedUiFrame preparedFrame() {
+        if (preparedFrame == null) {
+            throw new IllegalStateException("Simulation UI frame has not been prepared");
+        }
+        return preparedFrame;
     }
 
     private void updateFps(float deltaTime) {

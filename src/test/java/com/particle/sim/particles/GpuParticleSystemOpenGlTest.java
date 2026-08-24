@@ -1,9 +1,12 @@
 package com.particle.sim.particles;
 
 import com.particle.sim.settings.SimulationDefaults;
+import com.particle.sim.ui.FramebufferViewport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.lwjgl.opengl.GL;
+
+import java.nio.ByteBuffer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -20,9 +23,19 @@ import static org.lwjgl.glfw.GLFW.glfwInit;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwTerminate;
 import static org.lwjgl.glfw.GLFW.glfwWindowHint;
+import static org.lwjgl.opengl.GL43C.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL43C.GL_NO_ERROR;
+import static org.lwjgl.opengl.GL43C.GL_RGBA;
+import static org.lwjgl.opengl.GL43C.GL_SCISSOR_TEST;
+import static org.lwjgl.opengl.GL43C.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL43C.glClear;
+import static org.lwjgl.opengl.GL43C.glClearColor;
+import static org.lwjgl.opengl.GL43C.glDisable;
 import static org.lwjgl.opengl.GL43C.glFinish;
 import static org.lwjgl.opengl.GL43C.glGetError;
+import static org.lwjgl.opengl.GL43C.glReadPixels;
+import static org.lwjgl.opengl.GL43C.glViewport;
+import static org.lwjgl.BufferUtils.createByteBuffer;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 @EnabledIfSystemProperty(named = "gpuTests", matches = "true")
@@ -37,7 +50,7 @@ class GpuParticleSystemOpenGlTest {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
             glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-            window = glfwCreateWindow(64, 64, "GPU smoke test", NULL, NULL);
+            window = glfwCreateWindow(96, 80, "GPU smoke test", NULL, NULL);
             assertNotEquals(NULL, window, "OpenGL 4.3 context creation failed");
             glfwMakeContextCurrent(window);
             GL.createCapabilities();
@@ -54,14 +67,26 @@ class GpuParticleSystemOpenGlTest {
             for (int i = 0; i < 6; i++) {
                 system.step();
             }
-            system.render(64, 64, new float[] {
+            float[] identity = {
                     1, 0, 0, 0,
                     0, 1, 0, 0,
                     0, 0, 1, 0,
                     0, 0, 0, 1
-            });
+            };
+            glDisable(GL_SCISSOR_TEST);
+            glViewport(0, 0, 96, 80);
+            glClearColor(0.75f, 0.125f, 0.5f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            system.render(new FramebufferViewport(24, 16, 48, 40), identity);
             glFinish();
 
+            assertEquals(GL_NO_ERROR, glGetError());
+            assertPixelClose(new int[] { 191, 32, 128, 255 }, readPixel(2, 2), 2);
+
+            system.render(new FramebufferViewport(8, 8, 32, 24), identity);
+            system.render(new FramebufferViewport(0, 0, 96, 80), identity);
+            system.render(new FramebufferViewport(0, 0, 0, 0), identity);
+            glFinish();
             assertEquals(GL_NO_ERROR, glGetError());
             assertTrue(system.performanceSnapshot().simulationMilliseconds() >= 0.0);
 
@@ -100,6 +125,25 @@ class GpuParticleSystemOpenGlTest {
                 glfwDestroyWindow(window);
             }
             glfwTerminate();
+        }
+    }
+
+    private static int[] readPixel(int x, int y) {
+        ByteBuffer pixel = createByteBuffer(4);
+        glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+        return new int[] {
+                Byte.toUnsignedInt(pixel.get(0)),
+                Byte.toUnsignedInt(pixel.get(1)),
+                Byte.toUnsignedInt(pixel.get(2)),
+                Byte.toUnsignedInt(pixel.get(3))
+        };
+    }
+
+    private static void assertPixelClose(int[] expected, int[] actual, int tolerance) {
+        assertEquals(expected.length, actual.length);
+        for (int channel = 0; channel < expected.length; channel++) {
+            assertEquals(expected[channel], actual[channel], tolerance,
+                    "Pixel differs at channel " + channel);
         }
     }
 

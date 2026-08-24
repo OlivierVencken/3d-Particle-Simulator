@@ -49,6 +49,7 @@ public final class UIDesignTokens {
 
     public float commandBarHeight() { return dp(40.0f); }
     public float sidebarWidth() { return dp(420.0f); }
+    public float mediumSidebarWidth() { return dp(360.0f); }
     public float compactBreakpoint() { return dp(720.0f); }
     public float mediumBreakpoint() { return dp(1100.0f); }
     public float wideBreakpoint() { return dp(1440.0f); }

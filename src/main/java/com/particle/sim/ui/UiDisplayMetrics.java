@@ -25,16 +25,33 @@ public record UiDisplayMetrics(
     public static UiDisplayMetrics from(ImGuiIO io, float uiScale) {
         float width = io.getDisplaySizeX();
         float height = io.getDisplaySizeY();
-        float scaleX = io.getDisplayFramebufferScaleX();
-        float scaleY = io.getDisplayFramebufferScaleY();
+        float scaleX = positiveOrOne(io.getDisplayFramebufferScaleX());
+        float scaleY = positiveOrOne(io.getDisplayFramebufferScaleY());
+        return from(io, uiScale,
+                Math.max(0, Math.round(width * scaleX)),
+                Math.max(0, Math.round(height * scaleY)));
+    }
+
+    public static UiDisplayMetrics from(ImGuiIO io, float uiScale,
+            int framebufferWidth, int framebufferHeight) {
+        float width = io.getDisplaySizeX();
+        float height = io.getDisplaySizeY();
+        int safeFramebufferWidth = Math.max(0, framebufferWidth);
+        int safeFramebufferHeight = Math.max(0, framebufferHeight);
+        float scaleX = width > 0.0f && safeFramebufferWidth > 0
+                ? safeFramebufferWidth / width
+                : io.getDisplayFramebufferScaleX();
+        float scaleY = height > 0.0f && safeFramebufferHeight > 0
+                ? safeFramebufferHeight / height
+                : io.getDisplayFramebufferScaleY();
         return new UiDisplayMetrics(
                 width,
                 height,
                 uiScale,
                 scaleX,
                 scaleY,
-                Math.max(0, Math.round(width * positiveOrOne(scaleX))),
-                Math.max(0, Math.round(height * positiveOrOne(scaleY))));
+                safeFramebufferWidth,
+                safeFramebufferHeight);
     }
 
     public FramebufferViewport toFramebuffer(UILayout.Panel panel) {

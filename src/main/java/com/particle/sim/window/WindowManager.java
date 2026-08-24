@@ -191,8 +191,8 @@ public final class WindowManager {
             IntBuffer pHeight = stack.mallocInt(1);
 
             glfwGetFramebufferSize(handle, pWidth, pHeight);
-            width = Math.max(pWidth.get(0), 1);
-            height = Math.max(pHeight.get(0), 1);
+            width = Math.max(pWidth.get(0), 0);
+            height = Math.max(pHeight.get(0), 0);
         }
     }
 

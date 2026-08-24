@@ -19,31 +19,56 @@ class UILayoutCalculatorTest {
         assertEquals(UILayout.Mode.COMPACT, layout.mode());
         assertEquals(80.0f, layout.commandBar().height());
         assertEquals(840.0f, layout.sidebar().width());
-        assertEquals(840.0f, layout.simulation().x());
+        assertEquals(0.0f, layout.simulation().x());
+        assertEquals(1920.0f, layout.simulation().width());
     }
 
     @ParameterizedTest
     @CsvSource({
-            "2560, 1440, WIDE, 420",
-            "1920, 1080, WIDE, 420",
-            "1366, 768, MEDIUM, 420",
-            "1024, 768, COMPACT, 420",
-            "640, 640, FOCUS, 420",
-            "320, 480, FOCUS, 320"
+            "2560, 1440, WIDE, 420, 420, 2140",
+            "1920, 1080, WIDE, 420, 420, 1500",
+            "1366, 768, MEDIUM, 360, 360, 1006",
+            "1024, 768, COMPACT, 420, 0, 1024",
+            "640, 640, FOCUS, 640, 0, 640",
+            "320, 480, FOCUS, 320, 0, 320"
     })
-    void calculatesOneLeftSidebarAndNoBottomBar(float width, float height, UILayout.Mode mode,
-            float sidebarWidth) {
+    void appliesResponsivePersistentAndOverlaySidebarPolicies(float width, float height, UILayout.Mode mode,
+            float sidebarWidth, float simulationX, float simulationWidth) {
         UILayout layout = UILayoutCalculator.calculate(width, height, true);
 
         assertEquals(mode, layout.mode());
         assertEquals(sidebarWidth, layout.sidebar().width());
         assertEquals(0.0f, layout.sidebar().x());
         assertEquals(layout.commandBar().bottom(), layout.sidebar().y());
-        assertEquals(layout.sidebar().right(), layout.simulation().x());
+        assertEquals(simulationX, layout.simulation().x());
+        assertEquals(simulationWidth, layout.simulation().width());
         assertEquals(layout.sidebar().y(), layout.simulation().y());
         assertEquals(height, layout.sidebar().bottom());
         assertEquals(height, layout.simulation().bottom());
         assertPanelsStayInBounds(layout, width, height);
+    }
+
+    @Test
+    void hiddenUiReturnsTheCompleteDisplayToTheSimulation() {
+        UILayout layout = UILayoutCalculator.calculate(
+                1366.0f, 768.0f, true, false, UIDesignTokens.unscaled());
+
+        assertFalse(layout.commandBar().visible());
+        assertFalse(layout.sidebar().visible());
+        assertEquals(new UILayout.Panel(0.0f, 0.0f, 1366.0f, 768.0f), layout.simulation());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "719, FOCUS",
+            "720, COMPACT",
+            "1099, COMPACT",
+            "1100, MEDIUM",
+            "1439, MEDIUM",
+            "1440, WIDE"
+    })
+    void changesModeAtDocumentedBoundaries(float width, UILayout.Mode expectedMode) {
+        assertEquals(expectedMode, UILayoutCalculator.calculate(width, 800.0f, true).mode());
     }
 
     @ParameterizedTest
