@@ -32,9 +32,6 @@ public final class UIButton {
             ImGui.endDisabled();
             popStyle();
         }
-        if (labelOverflows(label, width, UITheme.tokens())) {
-            UITooltip.forLastItem(label);
-        }
         return enabled && clicked;
     }
 
@@ -61,19 +58,11 @@ public final class UIButton {
                 centerX - iconSize * 0.5f, centerY - iconSize * 0.5f,
                 centerX + iconSize * 0.5f, centerY + iconSize * 0.5f,
                 0.0f, 0.0f, 1.0f, 1.0f, color);
-        UITooltip.forLastItem(accessibleLabel);
         return enabled && clicked;
     }
 
     static String itemLabel(String visibleLabel, String stableId) {
         return visibleLabel + "###" + stableId;
-    }
-
-    static boolean labelOverflows(String label, float width, UIDesignTokens tokens) {
-        if (label == null || width <= 0.0f) {
-            return false;
-        }
-        return ImGui.calcTextSize(label).x > Math.max(0.0f, width - tokens.frameInsetHorizontal() * 2.0f);
     }
 
     private static void pushStyle(UIComponentVariant variant) {

@@ -65,7 +65,7 @@ public final class SimulationUI {
         UILayout layout = UILayoutCalculator.calculate(
                 displayMetrics.logicalWidth(), displayMetrics.logicalHeight(),
                 state.sidebarVisible(), !hidden, tokens);
-        boolean modalOpen = !hidden && commandBar.hasOpenModal();
+        boolean modalOpen = !hidden && (commandBar.hasOpenModal() || sidebar.hasOpenModal());
         boolean popupOpen = !hidden && (commandBar.hasOpenWindow()
                 || ImGui.isPopupOpen("", ImGuiPopupFlags.AnyPopup));
         UiInputOwnership inputOwnership = UiInputOwnership.resolve(

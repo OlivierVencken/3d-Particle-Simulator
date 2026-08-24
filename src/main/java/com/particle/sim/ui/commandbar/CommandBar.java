@@ -24,6 +24,7 @@ public final class CommandBar {
     private static final String SIMULATION_MENU = "##simulation-menu";
     private static final String VIEW_MENU = "##view-menu";
     private static final String INFO_MENU = "##info-menu";
+    private static final String COMPACT_MENU = "##compact-menu";
     private final HotkeyPopup hotkeyPopup = new HotkeyPopup();
     private final AboutPopup aboutPopup = new AboutPopup();
     private final ResetSettingsPopup resetSettingsPopup = new ResetSettingsPopup();
@@ -35,6 +36,8 @@ public final class CommandBar {
     private float viewMenuY;
     private float infoMenuX;
     private float infoMenuY;
+    private float compactMenuX;
+    private float compactMenuY;
 
     public void render(UILayout layout, UIState state, SimulationUiModel model, SimulationUiActions actions,
             float fps, ImBoolean showDebug) {
@@ -45,12 +48,13 @@ public final class CommandBar {
         ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, tokens.spaceXs(), tokens.spaceXs());
         if (ImGui.begin("##command-bar", WINDOW_FLAGS)) {
             ImGui.pushFont(UIFonts.commandBar());
-            renderMenuButtons(state, tokens);
+            renderMenuButtons(layout.mode(), panel.width(), state, tokens);
             renderStatistics(panel.width(), panel.height(), model.particles(), fps, tokens);
             ImGui.popFont();
             renderSimulationMenu(actions.application());
             renderViewMenu(showDebug, actions.application());
             renderInfoMenu();
+            renderCompactMenu(showDebug, model, actions);
         }
         ImGui.end();
         ImGui.popStyleVar();
@@ -60,27 +64,39 @@ public final class CommandBar {
         aboutPopup.render();
     }
 
-    private void renderMenuButtons(UIState state, UIDesignTokens tokens) {
+    private void renderMenuButtons(UILayout.Mode mode, float width, UIState state, UIDesignTokens tokens) {
         if (sidebarToggleButton(state)) {
             state.toggleSidebar();
         }
 
         ImGui.sameLine(0.0f, tokens.spaceXs());
-        boolean simulationClicked = dropdownButton("Simulation", "simulation", tokens);
+        if (usesUnifiedMenu(mode, width, tokens)) {
+            boolean compactClicked = dropdownButton("Menu", "compact", tokens, COMPACT_MENU);
+            compactMenuX = ImGui.getItemRectMinX();
+            compactMenuY = ImGui.getItemRectMaxY();
+            if (compactClicked) {
+                ImGui.openPopup(COMPACT_MENU);
+            }
+            return;
+        }
+
+        boolean compactLabels = mode == UILayout.Mode.COMPACT || mode == UILayout.Mode.FOCUS;
+        boolean simulationClicked = dropdownButton(compactLabels ? "Sim" : "Simulation",
+                "simulation", tokens, SIMULATION_MENU);
         simulationMenuX = ImGui.getItemRectMinX();
         simulationMenuY = ImGui.getItemRectMaxY();
         if (simulationClicked) {
             ImGui.openPopup(SIMULATION_MENU);
         }
         ImGui.sameLine(0.0f, tokens.spaceXs());
-        boolean viewClicked = dropdownButton("View", "view", tokens);
+        boolean viewClicked = dropdownButton("View", "view", tokens, VIEW_MENU);
         viewMenuX = ImGui.getItemRectMinX();
         viewMenuY = ImGui.getItemRectMaxY();
         if (viewClicked) {
             ImGui.openPopup(VIEW_MENU);
         }
         ImGui.sameLine(0.0f, tokens.spaceXs());
-        boolean infoClicked = dropdownButton("Info", "info", tokens);
+        boolean infoClicked = dropdownButton("Info", "info", tokens, INFO_MENU);
         infoMenuX = ImGui.getItemRectMinX();
         infoMenuY = ImGui.getItemRectMaxY();
         if (infoClicked) {
@@ -93,9 +109,15 @@ public final class CommandBar {
                 "toggle-sidebar", sidebarToggleIcon.textureId(), false, true);
     }
 
-    private boolean dropdownButton(String label, String id, UIDesignTokens tokens) {
-        return UIButton.text(label, "command-" + id, UIComponentVariant.GHOST,
+    private boolean dropdownButton(String label, String id, UIDesignTokens tokens, String popupId) {
+        UIComponentVariant variant = ImGui.isPopupOpen(popupId)
+                ? UIComponentVariant.SELECTED : UIComponentVariant.GHOST;
+        return UIButton.text(label, "command-" + id, variant,
                 0.0f, tokens.compactControlHeight());
+    }
+
+    static boolean usesUnifiedMenu(UILayout.Mode mode, float width, UIDesignTokens tokens) {
+        return mode == UILayout.Mode.FOCUS && width < tokens.compactCommandMenuBreakpoint();
     }
 
     public void dispose() {
@@ -112,14 +134,13 @@ public final class CommandBar {
 
     private void renderStatistics(float width, float height, SimulationUiModel.Particles particles, float fps,
             UIDesignTokens tokens) {
-        if (width < tokens.compactBreakpoint()) {
+        if (width < tokens.mediumBreakpoint()) {
             return;
         }
         String statistics = "%,d particles  |  %.0f FPS".formatted(particles.particleCount(), fps);
         float statisticsWidth = ImGui.calcTextSize(statistics).x;
         float statisticsX = width - statisticsWidth - tokens.spaceXl();
-        float statisticsY = Math.max(0.0f,
-                (height - ImGui.getTextLineHeight()) * 0.5f);
+        float statisticsY = Math.max(0.0f, (height - ImGui.getTextLineHeight()) * 0.5f);
         ImGui.getWindowDrawList().addText(
                 ImGui.getWindowPosX() + statisticsX,
                 ImGui.getWindowPosY() + statisticsY,
@@ -174,6 +195,48 @@ public final class CommandBar {
         }
         if (UIMenu.item("About", "about")) {
             aboutPopup.open();
+        }
+        ImGui.endPopup();
+    }
+
+    private void renderCompactMenu(ImBoolean showDebug, SimulationUiModel model, SimulationUiActions actions) {
+        if (!UIMenu.beginAnchored(COMPACT_MENU, compactMenuX, compactMenuY)) {
+            return;
+        }
+        if (UIMenu.item("Step simulation", "compact-step", false, model.application().paused())) {
+            actions.simulation().step();
+        }
+        if (UIMenu.item("Reset particle state", "compact-reset-particles")) {
+            actions.simulation().resetParticles();
+        }
+        UIMenu.separator();
+        if (UIMenu.item("Load preset...", "compact-load-preset")) {
+            actions.application().loadPreset();
+        }
+        if (UIMenu.item("Save preset...", "compact-save-preset")) {
+            actions.application().savePreset();
+        }
+        if (UIMenu.item("Reset settings...", "compact-reset-settings")) {
+            resetSettingsPopup.open();
+        }
+        UIMenu.separator();
+        if (UIMenu.item("Hide UI", "compact-hide-ui")) {
+            actions.application().hideUi();
+        }
+        if (UIMenu.item(showDebug.get() ? "Hide debug panel" : "Show debug panel", "compact-toggle-debug",
+                showDebug.get(), true)) {
+            showDebug.set(!showDebug.get());
+        }
+        UIMenu.separator();
+        if (UIMenu.item("Hotkeys", "compact-hotkeys")) {
+            hotkeyPopup.open();
+        }
+        if (UIMenu.item("About", "compact-about")) {
+            aboutPopup.open();
+        }
+        UIMenu.separator();
+        if (UIMenu.item("Exit", "compact-exit")) {
+            actions.application().exit();
         }
         ImGui.endPopup();
     }

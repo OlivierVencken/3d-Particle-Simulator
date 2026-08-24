@@ -57,7 +57,7 @@ public final class UITheme {
         style.setPopupBorderSize(tokens.borderWidth());
         style.setSeparatorTextBorderSize(tokens.borderWidth());
         style.setSeparatorTextPadding(tokens.spaceXl(), tokens.spaceXs());
-        style.setScrollbarSize(tokens.minimumHitTarget());
+        style.setScrollbarSize(tokens.scrollbarWidth());
         style.setGrabMinSize(tokens.minimumHitTarget());
         style.setWindowTitleAlign(0.0f, 0.5f);
 

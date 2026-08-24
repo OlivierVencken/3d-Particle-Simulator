@@ -53,6 +53,7 @@ public final class UIDesignTokens {
     public float compactBreakpoint() { return dp(720.0f); }
     public float mediumBreakpoint() { return dp(1100.0f); }
     public float wideBreakpoint() { return dp(1440.0f); }
+    public float compactCommandMenuBreakpoint() { return dp(420.0f); }
 
     public float minimumHitTarget() { return dp(32.0f); }
     public float compactControlHeight() { return minimumHitTarget(); }
@@ -69,6 +70,7 @@ public final class UIDesignTokens {
 
     public float borderWidth() { return dp(1.0f); }
     public float emphasizedBorderWidth() { return dp(2.0f); }
+    public float scrollbarWidth() { return dp(10.0f); }
     public float checkmarkWidth() { return dp(2.25f); }
     public float radiusSm() { return dp(3.0f); }
     public float radiusMd() { return spaceXs(); }
@@ -95,11 +97,12 @@ public final class UIDesignTokens {
     public float pairedControlMinimumWidth() { return dp(80.0f); }
     public float inputMinimumWidth() { return dp(100.0f); }
     public float debugInputWidth() { return dp(120.0f); }
-    public float tooltipWrapWidth() { return dp(320.0f); }
     public float emptyStateMinimumHeight() { return dp(72.0f); }
 
     public float matrixGap() { return spaceXs(); }
     public float matrixCellInset() { return borderWidth(); }
+    public float matrixCellMaximumSize() { return dp(44.0f); }
+    public float matrixViewportMaximumHeight() { return dp(420.0f); }
 
     public static float sanitizeScale(float scale) {
         if (!Float.isFinite(scale) || scale <= 0.0f) {

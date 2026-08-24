@@ -20,6 +20,7 @@ final class VisualsSection {
                 actions::setFixedParticleScreenSize);
         controls.settingCombo("Color mode", "visuals-color", visuals.colorMode().ordinal(), COLOR_MODES,
                 value -> actions.setColorMode(ColorMode.values()[value]));
+        UIText.helper("Particle size: 1.0–8.0 pixels at the reference distance");
 
         UIText.divider();
 
@@ -34,6 +35,8 @@ final class VisualsSection {
             controls.settingSlider("Falloff", "glow-falloff", visuals.glowFalloff(), 0.05f, 3.0f, 2,
                     actions::setGlowFalloff);
             UIText.helper("Bloom resolution: 1/%d per axis".formatted(visuals.effectiveBloomDivisor()));
+        } else {
+            UIText.helper("Enable glow to adjust bloom passes, strength, radius, and falloff.");
         }
 
         UIText.divider();
@@ -45,10 +48,15 @@ final class VisualsSection {
                     actions::setTrailLength);
             controls.settingSlider("Thickness", "trail-thickness", visuals.trailThickness(),
                     SimulationDefaults.MIN_TRAIL_THICKNESS, visuals.pointSize(), 1, actions::setTrailThickness);
-            String quality = qualityMessage(visuals);
-            if (!quality.isEmpty()) {
-                UIText.helper(quality);
-            }
+        } else {
+            UIText.helper("Enable trails to adjust history length and line thickness.");
+        }
+
+        String quality = qualityMessage(visuals);
+        if (!quality.isEmpty()) {
+            UIText.divider();
+            UIControls.sectionHeading("Adaptive quality");
+            UIText.helper(quality);
         }
     }
 
@@ -67,7 +75,7 @@ final class VisualsSection {
         if (visuals.effectiveTrailLength() > 0 && visuals.effectiveTrailLength() < visuals.trailLength()) {
             return "Adaptive quality: trail length reduced to %d".formatted(visuals.effectiveTrailLength());
         }
-        if (visuals.effectiveBloomDivisor() > 1) {
+        if (visuals.effectEnabled(EffectMode.GLOW) && visuals.effectiveBloomDivisor() > 1) {
             return "Adaptive quality: bloom rendered at 1/%d resolution"
                     .formatted(visuals.effectiveBloomDivisor());
         }

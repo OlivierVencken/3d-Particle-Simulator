@@ -13,8 +13,9 @@ import imgui.ImVec2;
 import imgui.ImVec4;
 import imgui.flag.ImGuiButtonFlags;
 import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiWindowFlags;
 
-/** Focusable, tooltip-enabled attraction matrix and its shared action controls. */
+/** Focusable attraction matrix and its shared action controls. */
 public final class UIAttractionMatrix {
     private static final int LEFT_MOUSE_BUTTON = 0;
     private static final int RIGHT_MOUSE_BUTTON = 1;
@@ -80,12 +81,34 @@ public final class UIAttractionMatrix {
 
         float availableWidth = Math.max(0.0f, ImGui.getContentRegionAvailX());
         float gap = tokens.matrixGap();
-        float cellSize = fittedCellSize(availableWidth, groupCount, gap);
+        float fittedSize = fittedCellSize(availableWidth, groupCount, gap);
+        boolean needsScroll = fittedSize < tokens.minimumHitTarget();
+        float cellSize = resolvedCellSize(availableWidth, groupCount, gap,
+                tokens.minimumHitTarget(), tokens.matrixCellMaximumSize());
         if (cellSize <= tokens.matrixCellInset()) {
             UIText.emptyState("Increase the panel width to display the matrix.");
             return;
         }
         float totalSize = (groupCount + 1) * cellSize + groupCount * gap;
+        if (needsScroll) {
+            float viewportHeight = Math.min(totalSize + tokens.spaceMd(), tokens.matrixViewportMaximumHeight());
+            int flags = ImGuiWindowFlags.HorizontalScrollbar;
+            boolean visible = ImGui.beginChild("###attraction-matrix-scroll", 0.0f, viewportHeight, false, flags);
+            try {
+                if (visible) {
+                    drawGrid(particles, actions, groupCount, gap, cellSize, totalSize, tokens);
+                }
+            } finally {
+                ImGui.endChild();
+            }
+            return;
+        }
+        ImGui.setCursorPosX(ImGui.getCursorPosX() + Math.max(0.0f, (availableWidth - totalSize) * 0.5f));
+        drawGrid(particles, actions, groupCount, gap, cellSize, totalSize, tokens);
+    }
+
+    private static void drawGrid(SimulationUiModel.Particles particles, SimulationUiActions.Particles actions,
+            int groupCount, float gap, float cellSize, float totalSize, UIDesignTokens tokens) {
         ImVec2 origin = ImGui.getCursorScreenPos();
         ImDrawList drawList = ImGui.getWindowDrawList();
 
@@ -133,7 +156,6 @@ public final class UIAttractionMatrix {
                         ImGui.getColorU32(focused ? ImGuiCol.NavHighlight : ImGuiCol.SeparatorHovered),
                         tokens.radiusSm(), 0,
                         focused ? tokens.emphasizedBorderWidth() : tokens.borderWidth());
-                UITooltip.forLastItem("Group %d".formatted(group + 1));
             }
         } finally {
             ImGui.popID();
@@ -172,10 +194,6 @@ public final class UIAttractionMatrix {
             } else if (rightClick) {
                 actions.adjustAttraction(row, column, -particles.matrixEditStep());
             }
-            if (hovered || focused) {
-                UITooltip.forLastItem("Group %d to group %d: %.2f"
-                        .formatted(row + 1, column + 1, value));
-            }
         } finally {
             ImGui.popID();
         }
@@ -207,6 +225,16 @@ public final class UIAttractionMatrix {
             return 0.0f;
         }
         return Math.max(0.0f, (availableWidth - groupCount * Math.max(0.0f, gap)) / (groupCount + 1));
+    }
+
+    static float resolvedCellSize(float availableWidth, int groupCount, float gap,
+            float minimumCellSize, float maximumCellSize) {
+        if (availableWidth <= 0.0f || groupCount <= 0 || maximumCellSize <= 0.0f) {
+            return 0.0f;
+        }
+        float minimum = Math.max(0.0f, Math.min(minimumCellSize, maximumCellSize));
+        return Math.max(minimum, Math.min(maximumCellSize,
+                fittedCellSize(availableWidth, groupCount, gap)));
     }
 
     static UIColor attractionColor(float value) {

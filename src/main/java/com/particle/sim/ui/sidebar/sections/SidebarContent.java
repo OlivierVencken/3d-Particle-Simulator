@@ -13,12 +13,21 @@ public final class SidebarContent {
 
     public void render(SidebarSection section, SimulationUiModel model, SimulationUiActions actions) {
         switch (section) {
-            case SIMULATION -> simulationSection.render(model.simulation(), actions.simulation());
+            case SIMULATION -> simulationSection.render(
+                    model.simulation(), model.application(), actions.simulation());
             case PARTICLES -> particlesSection.render(model.particles(), actions.particles());
             case VISUALS -> visualsSection.render(model.visuals(), actions.visuals());
             case CAMERA -> cameraSection.render(model.camera(), actions.camera());
             case MATRIX -> matrixEditor.renderSettings(model.particles(), actions.particles());
         }
+    }
+
+    public void renderPopups(SimulationUiActions actions) {
+        particlesSection.renderPopups(actions.particles());
+    }
+
+    public boolean hasOpenModal() {
+        return particlesSection.hasOpenModal();
     }
 
     public int customSpawnAmount() {

@@ -6,9 +6,11 @@ import com.particle.sim.ui.SimulationUiActions;
 import com.particle.sim.ui.SimulationUiModel;
 import com.particle.sim.ui.sidebar.sections.SidebarContent;
 import com.particle.sim.ui.components.UINavigation;
+import com.particle.sim.ui.components.UIButton;
 import com.particle.sim.ui.components.UIScrollRegion;
 import com.particle.sim.ui.theme.UIDesignTokens;
 import com.particle.sim.ui.theme.UITheme;
+import com.particle.sim.ui.theme.UIComponentVariant;
 import imgui.ImGui;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
@@ -27,11 +29,30 @@ public final class Sidebar {
         ImGui.setNextWindowPos(panel.x(), panel.y());
         ImGui.setNextWindowSize(panel.width(), panel.height());
         if (ImGui.begin("##sidebar", WINDOW_FLAGS)) {
+            renderOverlayHeader(state);
             renderSectionButtons(state);
             UIScrollRegion.render("sidebar-content",
                     () -> renderSectionContent(state.activeSection(), model, actions));
         }
         ImGui.end();
+        content.renderPopups(actions);
+    }
+
+    private void renderOverlayHeader(UIState state) {
+        if (state.layoutMode() != UILayout.Mode.COMPACT && state.layoutMode() != UILayout.Mode.FOCUS) {
+            return;
+        }
+        UIDesignTokens tokens = UITheme.tokens();
+        ImGui.alignTextToFramePadding();
+        ImGui.textDisabled("SETTINGS");
+        float closeWidth = ImGui.calcTextSize("Close").x + tokens.frameInsetHorizontal() * 2.0f;
+        ImGui.sameLine(Math.max(ImGui.getCursorPosX() + tokens.spaceMd(),
+                ImGui.getWindowContentRegionMaxX() - closeWidth));
+        if (UIButton.text("Close", "close-overlay-sidebar", UIComponentVariant.GHOST,
+                closeWidth, tokens.compactControlHeight())) {
+            state.setSidebarVisible(false);
+        }
+        ImGui.spacing();
     }
 
     private void renderSectionButtons(UIState state) {
@@ -95,5 +116,9 @@ public final class Sidebar {
 
     public void setMatrixEditStep(float step) {
         content.setMatrixEditStep(step);
+    }
+
+    public boolean hasOpenModal() {
+        return content.hasOpenModal();
     }
 }

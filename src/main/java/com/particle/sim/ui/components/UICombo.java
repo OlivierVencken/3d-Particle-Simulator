@@ -40,10 +40,6 @@ public final class UICombo {
         boolean hovered = ImGui.isMouseHoveringRect(origin.x, origin.y, origin.x + width, origin.y + height);
         boolean focused = ImGui.isItemFocused();
         drawPreview(drawList, origin, width, height, preview, hovered, focused, open, enabled);
-        if (ImGui.calcTextSize(preview).x > previewTextWidth(width, UITheme.tokens())) {
-            UITooltip.forLastItem(preview);
-        }
-
         boolean changed = false;
         if (open) {
             for (int index = 0; index < values.length; index++) {

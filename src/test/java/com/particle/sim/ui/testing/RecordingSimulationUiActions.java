@@ -29,6 +29,8 @@ public final class RecordingSimulationUiActions implements SimulationUiActions {
     }
 
     public final class SimulationActions implements SimulationUiActions.Simulation {
+        @Override public void step() { record("simulation.step"); }
+        @Override public void resetParticles() { record("simulation.resetParticles"); }
         @Override public void setToroidalWrap(boolean value) { record("simulation.toroidalWrap"); }
         @Override public void setBounds(float value) { record("simulation.bounds"); }
         @Override public void setBoundaryBounce(float value) { record("simulation.boundaryBounce"); }

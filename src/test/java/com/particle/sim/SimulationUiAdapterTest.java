@@ -74,6 +74,12 @@ class SimulationUiAdapterTest {
     }
 
     @Test
+    void playbackStepIsTransient() {
+        actions.simulation().step();
+        assertEquals(0, settings.saveRequests);
+    }
+
+    @Test
     void diagnosticsArePreparedOnceAndSharedForTheWholeFrame() {
         SimulationUiDiagnostics unavailable = adapter.model().performance().diagnostics();
 

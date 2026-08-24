@@ -30,4 +30,14 @@ class UIAttractionMatrixTest {
         assertEquals(true, UIAttractionMatrix.fitsOnLine(100.0f, 60.0f, 8.0f, 168.0f));
         assertEquals(false, UIAttractionMatrix.fitsOnLine(100.0f, 61.0f, 8.0f, 168.0f));
     }
+
+    @Test
+    void cellsRemainUsableWhenTheMatrixNeedsScrolling() {
+        assertEquals(32.0f,
+                UIAttractionMatrix.resolvedCellSize(360.0f, 16, 4.0f, 32.0f, 44.0f), EPSILON);
+        assertEquals(44.0f,
+                UIAttractionMatrix.resolvedCellSize(800.0f, 6, 4.0f, 32.0f, 44.0f), EPSILON);
+        assertEquals(0.0f,
+                UIAttractionMatrix.resolvedCellSize(0.0f, 6, 4.0f, 32.0f, 44.0f), EPSILON);
+    }
 }

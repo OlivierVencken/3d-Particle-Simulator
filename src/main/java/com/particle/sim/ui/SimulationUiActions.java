@@ -18,6 +18,10 @@ public interface SimulationUiActions {
     Application application();
 
     interface Simulation {
+        void step();
+
+        void resetParticles();
+
         void setToroidalWrap(boolean value);
 
         void setBounds(float value);

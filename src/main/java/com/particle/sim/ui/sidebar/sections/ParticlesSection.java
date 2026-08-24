@@ -21,58 +21,90 @@ final class ParticlesSection {
     private final ImInt customSpawnAmount = new ImInt(SimulationDefaults.CUSTOM_SPAWN_AMOUNT);
     private final ImInt groupCount = new ImInt(SimulationDefaults.GROUP_COUNT);
     private final UIControls controls = new UIControls();
+    private final ClearParticlesPopup clearParticlesPopup = new ClearParticlesPopup();
 
     void render(SimulationUiModel.Particles particles, SimulationUiActions.Particles actions) {
         UIDesignTokens tokens = UITheme.tokens();
         float summaryWidth = ImGui.getContentRegionAvailX();
-        float particleCardWidth = Math.max(
-                tokens.primaryMetricMinimumWidth(), (summaryWidth - tokens.spaceMd()) * 0.62f);
-        UIMetric.card("particle-count", "PARTICLES", "%,d".formatted(particles.particleCount()), particleCardWidth);
-        ImGui.sameLine();
-        UIMetric.card("group-count", "GROUPS", Integer.toString(particles.groupCount()),
-                Math.max(tokens.secondaryMetricMinimumWidth(), summaryWidth - particleCardWidth - tokens.spaceMd()));
+        if (metricsFitSideBySide(summaryWidth, tokens)) {
+            float particleCardWidth = Math.max(
+                    tokens.primaryMetricMinimumWidth(), (summaryWidth - tokens.spaceMd()) * 0.62f);
+            UIMetric.card("particle-count", "PARTICLES", "%,d".formatted(particles.particleCount()),
+                    particleCardWidth);
+            ImGui.sameLine();
+            UIMetric.card("group-count", "GROUPS", Integer.toString(particles.groupCount()),
+                    Math.max(tokens.secondaryMetricMinimumWidth(),
+                            summaryWidth - particleCardWidth - tokens.spaceMd()));
+        } else {
+            UIMetric.card("particle-count", "PARTICLES", "%,d".formatted(particles.particleCount()), summaryWidth);
+            UIMetric.card("group-count", "GROUPS", Integer.toString(particles.groupCount()), summaryWidth);
+        }
+        UIMetric.row("Capacity", "%,d / %,d".formatted(
+                particles.particleCount(), particles.maximumParticleCount()));
 
         UIText.divider();
+
+        if (particles.particleCount() == 0) {
+            UIText.emptyState("No particles are active. Choose a spawn mode and add a population below.");
+        }
 
         UIControls.sectionHeading("Population");
         groupCount.set(particles.groupCount());
         if (UIIntegerInput.render("Groups", "particle-groups", groupCount, 1, 2,
-                1, SimulationDefaults.MAX_GROUP_COUNT, -1.0f)) {
+                1, particles.maximumGroupCount(), -1.0f)) {
             actions.setGroupCount(groupCount.get());
         }
+        UIText.helper("Interaction groups: 1–%d".formatted(particles.maximumGroupCount()));
         controls.settingCombo("Spawn mode", "particle-spawn-mode", particles.spawnMode().ordinal(), SPAWN_MODES,
                 value -> actions.setSpawnMode(SpawnMode.values()[value]));
 
         UIControls.sectionHeading("Spawn particles");
         float pairWidth = Math.max(tokens.pairedControlMinimumWidth(),
                 (ImGui.getContentRegionAvailX() - tokens.spaceMd()) * 0.5f);
-        spawnButton("Add 1k", 1_000, pairWidth, actions, tokens);
+        spawnButton("Add 1k", 1_000, pairWidth, particles, actions, tokens);
         ImGui.sameLine();
-        spawnButton("Remove 1k", -1_000, pairWidth, actions, tokens);
-        spawnButton("Add 10k", 10_000, pairWidth, actions, tokens);
+        spawnButton("Remove 1k", -1_000, pairWidth, particles, actions, tokens);
+        spawnButton("Add 10k", 10_000, pairWidth, particles, actions, tokens);
         ImGui.sameLine();
-        spawnButton("Remove 10k", -10_000, pairWidth, actions, tokens);
-        spawnButton("Add 100k", 100_000, pairWidth, actions, tokens);
+        spawnButton("Remove 10k", -10_000, pairWidth, particles, actions, tokens);
+        spawnButton("Add 100k", 100_000, pairWidth, particles, actions, tokens);
         ImGui.sameLine();
-        spawnButton("Remove 100k", -100_000, pairWidth, actions, tokens);
+        spawnButton("Remove 100k", -100_000, pairWidth, particles, actions, tokens);
 
         customSpawnAmount.set(particles.customSpawnAmount());
         ImGui.spacing();
-        float inputWidth = Math.max(tokens.inputMinimumWidth(),
-                ImGui.getContentRegionAvailX() - tokens.buttonWidthSm() - tokens.spaceMd());
+        float customRowWidth = ImGui.getContentRegionAvailX();
+        boolean inlineCustomAction = customControlsFitInline(customRowWidth, tokens);
+        float inputWidth = inlineCustomAction
+                ? customRowWidth - tokens.buttonWidthSm() - tokens.spaceMd()
+                : -1.0f;
         if (UIIntegerInput.render("Custom amount", "custom-spawn-amount", customSpawnAmount,
-                100, 1_000, 0, SimulationDefaults.MAX_PARTICLE_COUNT, inputWidth)) {
+                100, 1_000, 0, particles.maximumParticleCount(), inputWidth)) {
             actions.setCustomSpawnAmount(customSpawnAmount.get());
         }
-        ImGui.sameLine();
+        if (inlineCustomAction) {
+            ImGui.sameLine();
+        }
         if (UIButton.text("Add", "custom-spawn", UIComponentVariant.PRIMARY,
-                tokens.buttonWidthSm(), tokens.controlHeight())) {
-            actions.add(customSpawnAmount.get());
+                inlineCustomAction ? tokens.buttonWidthSm() : 0.0f, tokens.controlHeight(),
+                remainingCapacity(particles) > 0
+                        && customSpawnAmount.get() > 0)) {
+            actions.add(clampedAddition(customSpawnAmount.get(), particles));
         }
+        renderCapacityStatus(particles, customSpawnAmount.get());
         ImGui.spacing();
-        if (UIButton.text("Clear particles", "clear-particles", UIComponentVariant.DESTRUCTIVE)) {
-            actions.clear();
+        if (UIButton.text("Clear particles", "clear-particles", UIComponentVariant.DESTRUCTIVE,
+                0.0f, tokens.controlHeight(), particles.particleCount() > 0)) {
+            clearParticlesPopup.open(particles.particleCount());
         }
+    }
+
+    void renderPopups(SimulationUiActions.Particles actions) {
+        clearParticlesPopup.render(actions);
+    }
+
+    boolean hasOpenModal() {
+        return clearParticlesPopup.isOpen();
     }
 
     int customSpawnAmount() {
@@ -83,16 +115,45 @@ final class ParticlesSection {
         customSpawnAmount.set(Math.max(0, amount));
     }
 
-    private void spawnButton(String label, int amount, float width, SimulationUiActions.Particles actions,
-            UIDesignTokens tokens) {
+    private void spawnButton(String label, int amount, float width, SimulationUiModel.Particles particles,
+            SimulationUiActions.Particles actions, UIDesignTokens tokens) {
+        boolean enabled = amount > 0 ? remainingCapacity(particles) > 0 : particles.particleCount() > 0;
         if (UIButton.text(label, "spawn-" + amount,
                 amount > 0 ? UIComponentVariant.SECONDARY : UIComponentVariant.GHOST,
-                width, tokens.controlHeight())) {
+                width, tokens.controlHeight(), enabled)) {
             if (amount > 0) {
-                actions.add(amount);
+                actions.add(clampedAddition(amount, particles));
             } else {
-                actions.remove(-amount);
+                actions.remove(Math.min(-amount, particles.particleCount()));
             }
+        }
+    }
+
+    static int remainingCapacity(SimulationUiModel.Particles particles) {
+        return Math.max(0, particles.maximumParticleCount() - particles.particleCount());
+    }
+
+    static boolean metricsFitSideBySide(float availableWidth, UIDesignTokens tokens) {
+        return availableWidth >= tokens.primaryMetricMinimumWidth()
+                + tokens.secondaryMetricMinimumWidth() + tokens.spaceMd();
+    }
+
+    static boolean customControlsFitInline(float availableWidth, UIDesignTokens tokens) {
+        return availableWidth >= tokens.inputMinimumWidth() + tokens.buttonWidthSm() + tokens.spaceMd();
+    }
+
+    static int clampedAddition(int requested, SimulationUiModel.Particles particles) {
+        return Math.max(0, Math.min(requested, remainingCapacity(particles)));
+    }
+
+    private static void renderCapacityStatus(SimulationUiModel.Particles particles, int requested) {
+        int remaining = remainingCapacity(particles);
+        if (remaining <= 0) {
+            UIText.warning("Particle capacity reached. Remove particles before adding more.");
+        } else if (requested > remaining) {
+            UIText.helper("Only %,d spaces remain; the next add will be clamped.".formatted(remaining));
+        } else {
+            UIText.helper("%,d particle spaces available".formatted(remaining));
         }
     }
 

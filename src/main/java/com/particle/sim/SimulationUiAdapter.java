@@ -152,6 +152,16 @@ final class SimulationUiAdapter {
 
     private final class SimulationDomain implements SimulationUiModel.Simulation, SimulationUiActions.Simulation {
         @Override
+        public void step() {
+            particles.step();
+        }
+
+        @Override
+        public void resetParticles() {
+            particles.reset();
+        }
+
+        @Override
         public boolean toroidalWrap() {
             return particles.toroidalWrap();
         }

@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 class UIButtonTest {
     @Test
     void visibleTextAndStableIdentityAreSeparated() {
-        assertEquals("Pause###button-simulation-pause",
-                UIButton.itemLabel("Pause", "button-simulation-pause"));
-        assertEquals("Resume###button-simulation-pause",
-                UIButton.itemLabel("Resume", "button-simulation-pause"));
+        assertEquals("Save###button-save-preset",
+                UIButton.itemLabel("Save", "button-save-preset"));
+        assertEquals("Save as###button-save-preset",
+                UIButton.itemLabel("Save as", "button-save-preset"));
     }
 }
