@@ -11,6 +11,7 @@ import com.particle.sim.ui.SimulationUI;
 import com.particle.sim.window.WindowManager;
 
 import java.util.concurrent.locks.LockSupport;
+import java.util.Objects;
 
 import static imgui.ImGui.getIO;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
@@ -32,15 +33,17 @@ public final class ApplicationRuntime {
     private final CameraController camera;
     private final GpuParticleSystem particles;
     private final SimulationUI ui;
+    private final SimulationUiAdapter uiAdapter;
     private final SettingsController settingsController;
     private final FixedSimulationClock simulationClock = new FixedSimulationClock(
             SimulationDefaults.SIMULATION_STEP_SECONDS);
 
     private double lastFrameTime;
 
-    public ApplicationRuntime(WindowManager window, ImGuiLayer imgui, HotkeyManager hotkeys,
+    ApplicationRuntime(WindowManager window, ImGuiLayer imgui, HotkeyManager hotkeys,
             CameraController camera,
-            GpuParticleSystem particles, SimulationUI ui, SettingsController settingsController) {
+            GpuParticleSystem particles, SimulationUI ui, SimulationUiAdapter uiAdapter,
+            SettingsController settingsController) {
         this.window = window;
         this.imgui = imgui;
         this.hotkeys = hotkeys;
@@ -48,6 +51,7 @@ public final class ApplicationRuntime {
         this.particles = particles;
         this.ui = ui;
         this.settingsController = settingsController;
+        this.uiAdapter = Objects.requireNonNull(uiAdapter, "uiAdapter");
     }
 
     public void run() {
@@ -79,7 +83,8 @@ public final class ApplicationRuntime {
             }
 
             renderScene();
-            ui.render(deltaTime, particles, camera);
+            uiAdapter.prepareFrame();
+            ui.render(deltaTime);
             imgui.render();
             settingsController.tick(now);
 

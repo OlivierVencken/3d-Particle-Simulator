@@ -1,7 +1,7 @@
 package com.particle.sim.ui.sidebar.sections;
 
-import com.particle.sim.camera.CameraController;
-import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.ui.SimulationUiActions;
+import com.particle.sim.ui.SimulationUiModel;
 import com.particle.sim.ui.sidebar.SidebarSection;
 
 public final class SidebarContent {
@@ -11,14 +11,13 @@ public final class SidebarContent {
     private final CameraSection cameraSection = new CameraSection();
     private final AttractionMatrixEditor matrixEditor = new AttractionMatrixEditor();
 
-    public void render(SidebarSection section, GpuParticleSystem particles, CameraController camera,
-            Runnable settingsChanged) {
+    public void render(SidebarSection section, SimulationUiModel model, SimulationUiActions actions) {
         switch (section) {
-            case SIMULATION -> simulationSection.render(particles, settingsChanged);
-            case PARTICLES -> particlesSection.render(particles, settingsChanged);
-            case VISUALS -> visualsSection.render(particles, settingsChanged);
-            case CAMERA -> cameraSection.render(camera, settingsChanged);
-            case MATRIX -> matrixEditor.renderSettings(particles, settingsChanged);
+            case SIMULATION -> simulationSection.render(model.simulation(), actions.simulation());
+            case PARTICLES -> particlesSection.render(model.particles(), actions.particles());
+            case VISUALS -> visualsSection.render(model.visuals(), actions.visuals());
+            case CAMERA -> cameraSection.render(model.camera(), actions.camera());
+            case MATRIX -> matrixEditor.renderSettings(model.particles(), actions.particles());
         }
     }
 

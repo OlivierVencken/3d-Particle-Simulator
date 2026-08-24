@@ -1,9 +1,9 @@
 package com.particle.sim.ui.sidebar;
 
-import com.particle.sim.camera.CameraController;
-import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.ui.UILayout;
 import com.particle.sim.ui.UIState;
+import com.particle.sim.ui.SimulationUiActions;
+import com.particle.sim.ui.SimulationUiModel;
 import com.particle.sim.ui.sidebar.sections.SidebarContent;
 import com.particle.sim.ui.theme.UIColors;
 import imgui.ImGui;
@@ -21,8 +21,7 @@ public final class Sidebar {
 
     private final SidebarContent content = new SidebarContent();
 
-    public void render(UILayout.Panel panel, UIState state, GpuParticleSystem particles,
-            CameraController camera, Runnable settingsChanged) {
+    public void render(UILayout.Panel panel, UIState state, SimulationUiModel model, SimulationUiActions actions) {
         if (!panel.visible()) {
             return;
         }
@@ -31,7 +30,7 @@ public final class Sidebar {
         ImGui.setNextWindowSize(panel.width(), panel.height());
         if (ImGui.begin("##sidebar", WINDOW_FLAGS)) {
             renderSectionButtons(state);
-            renderSectionContent(state.activeSection(), particles, camera, settingsChanged);
+            renderSectionContent(state.activeSection(), model, actions);
         }
         ImGui.end();
     }
@@ -90,9 +89,8 @@ public final class Sidebar {
         return clicked;
     }
 
-    private void renderSectionContent(SidebarSection section, GpuParticleSystem particles, CameraController camera,
-            Runnable settingsChanged) {
-        content.render(section, particles, camera, settingsChanged);
+    private void renderSectionContent(SidebarSection section, SimulationUiModel model, SimulationUiActions actions) {
+        content.render(section, model, actions);
     }
 
     public int customSpawnAmount() {

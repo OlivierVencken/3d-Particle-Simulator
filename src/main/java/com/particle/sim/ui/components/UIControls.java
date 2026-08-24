@@ -10,40 +10,29 @@ public final class UIControls {
     private UIControls() {
     }
 
-    public static void settingSlider(String label, float value, float min, float max, int decimals, FloatSetter setter,
-            Runnable settingsChanged) {
-        if (slider(label, label, value, min, max, decimals, setter)) {
-            settingsChanged.run();
-        }
+    public static void settingSlider(String label, float value, float min, float max, int decimals,
+            FloatSetter setter) {
+        slider(label, label, value, min, max, decimals, setter);
     }
 
     public static void settingSlider(String label, String id, float value, float min, float max, int decimals,
-            FloatSetter setter, Runnable settingsChanged) {
-        if (slider(label, id, value, min, max, decimals, setter)) {
-            settingsChanged.run();
-        }
+            FloatSetter setter) {
+        slider(label, id, value, min, max, decimals, setter);
     }
 
-    public static void settingIntSlider(String label, int value, int min, int max, int decimals, IntSetter setter,
-            Runnable settingsChanged) {
-        if (slider(label, label, value, min, max, setter)) {
-            settingsChanged.run();
-        }
+    public static void settingIntSlider(String label, int value, int min, int max, int decimals, IntSetter setter) {
+        slider(label, label, value, min, max, setter);
     }
 
     public static void settingIntSlider(String label, String id, int value, int min, int max, int decimals,
-            IntSetter setter, Runnable settingsChanged) {
-        if (slider(label, id, value, min, max, setter)) {
-            settingsChanged.run();
-        }
+            IntSetter setter) {
+        slider(label, id, value, min, max, setter);
     }
 
-    public static void settingCheckbox(String label, String id, boolean value, BooleanSetter setter,
-            Runnable settingsChanged) {
+    public static void settingCheckbox(String label, String id, boolean value, BooleanSetter setter) {
         ImBoolean valueRef = new ImBoolean(value);
         if (checkbox(label, id, valueRef)) {
             setter.set(valueRef.get());
-            settingsChanged.run();
         }
     }
 
@@ -51,12 +40,10 @@ public final class UIControls {
         return UICheckbox.render(label, id, valueRef);
     }
 
-    public static void settingCombo(String label, String id, int value, String[] values, IntSetter setter,
-            Runnable settingsChanged) {
+    public static void settingCombo(String label, String id, int value, String[] values, IntSetter setter) {
         ImInt valueRef = new ImInt(value);
         if (UICombo.render(label, id, valueRef, values)) {
             setter.set(valueRef.get());
-            settingsChanged.run();
         }
     }
 

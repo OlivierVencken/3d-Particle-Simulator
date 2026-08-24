@@ -29,6 +29,7 @@ public final class ParticleSimulatorApp {
     private final SimulationUI ui = new SimulationUI();
     private final HotkeyManager hotkeys = new HotkeyManager();
     private final SettingsController settingsController = new SettingsController(particles, camera, ui);
+    private final SimulationUiAdapter uiAdapter = new SimulationUiAdapter(particles, camera, ui, settingsController);
     private boolean windowInitialized;
     private boolean presetDialogInitialized;
     private boolean imguiInitialized;
@@ -57,8 +58,8 @@ public final class ParticleSimulatorApp {
             imguiInitialized = true;
             particles.init();
             particlesInitialized = true;
-            initSettings();
             AppHotkeys.register(hotkeys, this);
+            initSettings();
 
             new ApplicationRuntime(
                     window,
@@ -67,6 +68,7 @@ public final class ParticleSimulatorApp {
                     camera,
                     particles,
                     ui,
+                    uiAdapter,
                     settingsController).run();
         } finally {
             dispose();
@@ -81,13 +83,12 @@ public final class ParticleSimulatorApp {
     }
 
     private void initSettings() {
-        ui.onSettingsChanged(settingsController::onSettingsChanged);
-        ui.onResetSettings(settingsController::onResetRequested);
-        ui.onSavePreset(() -> PresetFileDialog.showSaveDialog()
+        ui.connect(uiAdapter.model(), uiAdapter.actions());
+        uiAdapter.onSavePreset(() -> PresetFileDialog.showSaveDialog()
                 .ifPresent(settingsController::savePresetTo));
-        ui.onLoadPreset(() -> PresetFileDialog.showOpenDialog()
+        uiAdapter.onLoadPreset(() -> PresetFileDialog.showOpenDialog()
                 .ifPresent(settingsController::loadPresetFrom));
-        ui.onExitApplication(() -> {
+        uiAdapter.onExitApplication(() -> {
             settingsController.flush();
             window.requestClose();
         });

@@ -1,17 +1,16 @@
 package com.particle.sim.ui.components;
 
 import com.particle.sim.AppInfo;
-import com.particle.sim.particles.GpuParticleSystem;
-import com.particle.sim.particles.PerformanceSnapshot;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.system.SystemLoadMonitor;
 import com.particle.sim.system.SystemLoadSnapshot;
+import com.particle.sim.ui.SimulationUiActions;
+import com.particle.sim.ui.SimulationUiDiagnostics;
+import com.particle.sim.ui.SimulationUiModel;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
 import org.lwjgl.Version;
-
-import java.util.function.IntConsumer;
 
 import static org.lwjgl.opengl.GL43C.GL_RENDERER;
 import static org.lwjgl.opengl.GL43C.GL_SHADING_LANGUAGE_VERSION;
@@ -27,22 +26,21 @@ public final class DebugPanel {
     private String glVersion;
     private String glslVersion;
 
-    public void render(float deltaTime, float currentFps, int fpsCap, IntConsumer fpsCapChanged,
-            Runnable settingsChanged,
-            GpuParticleSystem particles, ImBoolean open) {
+    public void render(float deltaTime, float currentFps, SimulationUiModel model,
+            SimulationUiActions actions, ImBoolean open) {
         cacheOpenGlInfo();
 
         if (ImGui.begin("Debug", open)) {
-            renderPerformance(deltaTime, currentFps, fpsCap, fpsCapChanged, settingsChanged);
-            renderSimulationInternals(particles);
+            renderPerformance(deltaTime, currentFps, model.application().fpsCap(), actions.application());
+            renderSimulationInternals(model.performance().diagnostics());
             renderRuntime();
             renderGraphics();
         }
         ImGui.end();
     }
 
-    private void renderPerformance(float deltaTime, float currentFps, int fpsCap, IntConsumer fpsCapChanged,
-            Runnable settingsChanged) {
+    private void renderPerformance(float deltaTime, float currentFps, int fpsCap,
+            SimulationUiActions.Application actions) {
         ImGui.separatorText("Performance");
         ImGui.text("FPS: %.0f".formatted(currentFps));
         ImGui.text("Frame time: %.2f ms".formatted(deltaTime * 1000.0f));
@@ -50,16 +48,14 @@ public final class DebugPanel {
 
         ImBoolean unlimitedFps = new ImBoolean(fpsCap <= 0);
         if (UIControls.checkbox("Unlimited FPS", "debug-unlimited-fps", unlimitedFps)) {
-            fpsCapChanged.accept(unlimitedFps.get() ? 0 : SimulationDefaults.FPS_CAP);
-            settingsChanged.run();
+            actions.setFpsCap(unlimitedFps.get() ? 0 : SimulationDefaults.FPS_CAP);
         }
 
         if (!unlimitedFps.get()) {
             ImInt fpsCapRef = new ImInt(fpsCap);
             ImGui.setNextItemWidth(120.0f);
             if (ImGui.inputInt("FPS cap", fpsCapRef, 5, 15)) {
-                fpsCapChanged.accept(fpsCapRef.get());
-                settingsChanged.run();
+                actions.setFpsCap(fpsCapRef.get());
             }
         }
     }
@@ -72,26 +68,25 @@ public final class DebugPanel {
         ImGui.textUnformatted("RAM usage: %s".formatted(formatMemoryUsage(load.usedMemoryBytes(), load.totalMemoryBytes())));
     }
 
-    private void renderSimulationInternals(GpuParticleSystem particles) {
-        int gridSize = particles.gridSize();
-        PerformanceSnapshot performance = particles.performanceSnapshot();
-
+    private void renderSimulationInternals(SimulationUiDiagnostics diagnostics) {
         ImGui.separatorText("Simulation Internals");
-        ImGui.text("Particles: %,d / %,d".formatted(particles.particleCount(), particles.maxParticleCount()));
-        ImGui.text("Grid: %d x %d x %d".formatted(gridSize, gridSize, gridSize));
-        ImGui.text("Grid cells: %,d".formatted(particles.gridCellCount()));
+        ImGui.text("Particles: %,d / %,d".formatted(
+                diagnostics.particleCount(), diagnostics.maximumParticleCount()));
+        ImGui.text("Grid: %d x %d x %d".formatted(
+                diagnostics.gridSize(), diagnostics.gridSize(), diagnostics.gridSize()));
+        ImGui.text("Grid cells: %,d".formatted(diagnostics.gridCellCount()));
         ImGui.textUnformatted("Cell storage: exact compact ranges");
-        ImGui.text("GPU simulation: %s".formatted(formatMilliseconds(performance.simulationMilliseconds())));
+        ImGui.text("GPU simulation: %s".formatted(formatMilliseconds(diagnostics.simulationMilliseconds())));
         ImGui.text("  Count / scan / scatter: %s / %s / %s".formatted(
-                formatMilliseconds(performance.gridCountMilliseconds()),
-                formatMilliseconds(performance.gridScanMilliseconds()),
-                formatMilliseconds(performance.gridScatterMilliseconds())));
-        ImGui.text("  Force integration: %s".formatted(formatMilliseconds(performance.integrationMilliseconds())));
+                formatMilliseconds(diagnostics.gridCountMilliseconds()),
+                formatMilliseconds(diagnostics.gridScanMilliseconds()),
+                formatMilliseconds(diagnostics.gridScatterMilliseconds())));
+        ImGui.text("  Force integration: %s".formatted(formatMilliseconds(diagnostics.integrationMilliseconds())));
         ImGui.text("GPU particles / trails / bloom: %s / %s / %s".formatted(
-                formatMilliseconds(performance.particleRenderMilliseconds()),
-                formatMilliseconds(performance.trailRenderMilliseconds()),
-                formatMilliseconds(performance.bloomMilliseconds())));
-        ImGui.text("Estimated GPU buffers: %s".formatted(formatBytes(performance.allocatedGpuBytes())));
+                formatMilliseconds(diagnostics.particleRenderMilliseconds()),
+                formatMilliseconds(diagnostics.trailRenderMilliseconds()),
+                formatMilliseconds(diagnostics.bloomMilliseconds())));
+        ImGui.text("Estimated GPU buffers: %s".formatted(formatBytes(diagnostics.allocatedGpuBytes())));
         ImGui.text("Simulation step: %.2f ms (%.0f Hz)".formatted(
                 SimulationDefaults.SIMULATION_STEP_SECONDS * 1000.0,
                 1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS));

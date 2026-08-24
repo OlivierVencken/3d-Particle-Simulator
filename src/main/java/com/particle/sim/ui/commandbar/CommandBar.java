@@ -1,6 +1,7 @@
 package com.particle.sim.ui.commandbar;
 
-import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.ui.SimulationUiActions;
+import com.particle.sim.ui.SimulationUiModel;
 import com.particle.sim.ui.UILayout;
 import com.particle.sim.ui.UIState;
 import com.particle.sim.ui.components.SvgIconTexture;
@@ -34,9 +35,8 @@ public final class CommandBar {
     private float infoMenuX;
     private float infoMenuY;
 
-    public void render(UILayout layout, UIState state, GpuParticleSystem particles, float fps,
-            Runnable savePreset, Runnable loadPreset, Runnable resetSettings, ImBoolean showDebug,
-            Runnable hideUi, Runnable exitApplication) {
+    public void render(UILayout layout, UIState state, SimulationUiModel model, SimulationUiActions actions,
+            float fps, ImBoolean showDebug) {
         UILayout.Panel panel = layout.commandBar();
         ImGui.setNextWindowPos(panel.x(), panel.y());
         ImGui.setNextWindowSize(panel.width(), panel.height());
@@ -44,16 +44,16 @@ public final class CommandBar {
         if (ImGui.begin("##command-bar", WINDOW_FLAGS)) {
             ImGui.pushFont(UIFonts.commandBar());
             renderMenuButtons(state);
-            renderStatistics(panel.width(), panel.height(), particles, fps);
+            renderStatistics(panel.width(), panel.height(), model.particles(), fps);
             ImGui.popFont();
-            renderSimulationMenu(loadPreset, savePreset, exitApplication);
-            renderViewMenu(showDebug, hideUi);
+            renderSimulationMenu(actions.application());
+            renderViewMenu(showDebug, actions.application());
             renderInfoMenu();
         }
         ImGui.end();
         ImGui.popStyleVar();
 
-        resetSettingsPopup.render(resetSettings);
+        resetSettingsPopup.render(actions.application());
         hotkeyPopup.render();
         aboutPopup.render();
     }
@@ -129,7 +129,7 @@ public final class CommandBar {
         ImGui.popStyleColor();
     }
 
-    private void renderStatistics(float width, float height, GpuParticleSystem particles, float fps) {
+    private void renderStatistics(float width, float height, SimulationUiModel.Particles particles, float fps) {
         if (width < 720.0f) {
             return;
         }
@@ -145,17 +145,16 @@ public final class CommandBar {
                 statistics);
     }
 
-    private void renderSimulationMenu(Runnable loadPreset, Runnable savePreset,
-            Runnable exitApplication) {
+    private void renderSimulationMenu(SimulationUiActions.Application actions) {
         if (!beginAnchoredPopup(SIMULATION_MENU, simulationMenuX, simulationMenuY)) {
             return;
         }
 
         if (ImGui.menuItem("Load...")) {
-            loadPreset.run();
+            actions.loadPreset();
         }
         if (ImGui.menuItem("Save...")) {
-            savePreset.run();
+            actions.savePreset();
         }
         ImGui.separator();
         if (ImGui.menuItem("Reset settings...")) {
@@ -163,18 +162,18 @@ public final class CommandBar {
         }
         ImGui.separator();
         if (ImGui.menuItem("Exit")) {
-            exitApplication.run();
+            actions.exit();
         }
         ImGui.endPopup();
     }
 
-    private void renderViewMenu(ImBoolean showDebug, Runnable hideUi) {
+    private void renderViewMenu(ImBoolean showDebug, SimulationUiActions.Application actions) {
         if (!beginAnchoredPopup(VIEW_MENU, viewMenuX, viewMenuY)) {
             return;
         }
 
         if (ImGui.menuItem("Hide UI")) {
-            hideUi.run();
+            actions.hideUi();
         }
         if (ImGui.menuItem(showDebug.get() ? "Hide debug menu" : "Show debug menu")) {
             showDebug.set(!showDebug.get());

@@ -1,13 +1,13 @@
 package com.particle.sim.ui;
 
-import com.particle.sim.camera.CameraController;
-import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.commandbar.CommandBar;
 import com.particle.sim.ui.components.DebugPanel;
 import com.particle.sim.ui.sidebar.Sidebar;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
+
+import java.util.Objects;
 
 public final class SimulationUI {
     private final UIState state = new UIState();
@@ -22,56 +22,30 @@ public final class SimulationUI {
     private int fpsCap = SimulationDefaults.FPS_CAP;
     private boolean paused;
     private boolean hidden;
-    private Runnable settingsChanged = () -> {
-    };
-    private Runnable resetSettings = () -> {
-    };
-    private Runnable savePreset = () -> {
-    };
-    private Runnable loadPreset = () -> {
-    };
-    private Runnable exitApplication = () -> {
-    };
+    private SimulationUiModel model;
+    private SimulationUiActions actions;
 
-    public void onSettingsChanged(Runnable settingsChanged) {
-        this.settingsChanged = settingsChanged == null ? () -> {
-        } : settingsChanged;
+    public void connect(SimulationUiModel model, SimulationUiActions actions) {
+        this.model = Objects.requireNonNull(model, "model");
+        this.actions = Objects.requireNonNull(actions, "actions");
     }
 
-    public void onResetSettings(Runnable resetSettings) {
-        this.resetSettings = resetSettings == null ? () -> {
-        } : resetSettings;
-    }
-
-    public void onSavePreset(Runnable savePreset) {
-        this.savePreset = savePreset == null ? () -> {
-        } : savePreset;
-    }
-
-    public void onLoadPreset(Runnable loadPreset) {
-        this.loadPreset = loadPreset == null ? () -> {
-        } : loadPreset;
-    }
-
-    public void onExitApplication(Runnable exitApplication) {
-        this.exitApplication = exitApplication == null ? () -> {
-        } : exitApplication;
-    }
-
-    public void render(float deltaTime, GpuParticleSystem particles, CameraController camera) {
+    public void render(float deltaTime) {
         updateFps(deltaTime);
         if (hidden) {
             return;
+        }
+        if (model == null || actions == null) {
+            throw new IllegalStateException("Simulation UI must be connected before rendering");
         }
 
         UILayout layout = UILayoutCalculator.calculate(
                 ImGui.getIO().getDisplaySizeX(), ImGui.getIO().getDisplaySizeY(), state.sidebarVisible());
         state.setLayoutMode(layout.mode());
-        commandBar.render(layout, state, particles, currentFps, savePreset, loadPreset, resetSettings, showDebug,
-                this::hide, exitApplication);
-        sidebar.render(layout.sidebar(), state, particles, camera, settingsChanged);
+        commandBar.render(layout, state, model, actions, currentFps, showDebug);
+        sidebar.render(layout.sidebar(), state, model, actions);
         if (showDebug.get()) {
-            debugPanel.render(deltaTime, currentFps, fpsCap, this::setFpsCap, settingsChanged, particles, showDebug);
+            debugPanel.render(deltaTime, currentFps, model, actions, showDebug);
         }
     }
 

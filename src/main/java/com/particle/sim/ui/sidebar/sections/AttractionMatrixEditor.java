@@ -3,9 +3,9 @@ package com.particle.sim.ui.sidebar.sections;
 import com.particle.sim.ui.theme.UIColor;
 import com.particle.sim.ui.theme.UIColors;
 import com.particle.sim.ui.components.UIControls;
-
-import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SimulationDefaults;
+import com.particle.sim.ui.SimulationUiActions;
+import com.particle.sim.ui.SimulationUiModel;
 
 import imgui.ImDrawList;
 import imgui.ImGui;
@@ -21,45 +21,40 @@ final class AttractionMatrixEditor {
     private static final float HEADER_CIRCLE_RADIUS_SCALE = 0.34f;
 
     private float matrixEditStep = SimulationDefaults.MATRIX_EDIT_STEP;
-    void renderSettings(GpuParticleSystem particles, Runnable settingsChanged) {
+    void renderSettings(SimulationUiModel.Particles particles, SimulationUiActions.Particles actions) {
         UIControls.settingSlider(
                 "Edit step",
-                matrixEditStep, 0.01f,
+                particles.matrixEditStep(), 0.01f,
                 0.5f,
                 2,
-                value -> matrixEditStep = value,
-                settingsChanged);
+                actions::setMatrixEditStep);
 
-        renderMatrixActions(particles, settingsChanged);
+        renderMatrixActions(actions);
         ImGui.pushStyleColor(ImGuiCol.ChildBg, UIColors.TRANSPARENT.vec4());
-        renderMatrix(particles, settingsChanged);
+        renderMatrix(particles, actions);
         ImGui.popStyleColor();
         renderLegend();
     }
 
-    private void renderMatrixActions(GpuParticleSystem particles, Runnable settingsChanged) {
+    private void renderMatrixActions(SimulationUiActions.Particles actions) {
         if (ImGui.button("Randomize")) {
-            particles.randomizeAttractionMatrix();
-            settingsChanged.run();
+            actions.randomizeAttractionMatrix();
         }
         ImGui.sameLine();
         if (ImGui.button("Zero")) {
-            particles.zeroAttractionMatrix();
-            settingsChanged.run();
+            actions.zeroAttractionMatrix();
         }
         ImGui.sameLine();
         if (ImGui.button("Symmetrize")) {
-            particles.symmetrizeAttractionMatrix();
-            settingsChanged.run();
+            actions.symmetrizeAttractionMatrix();
         }
         ImGui.sameLine();
         if (ImGui.button("Invert")) {
-            particles.invertAttractionMatrix();
-            settingsChanged.run();
+            actions.invertAttractionMatrix();
         }
     }
 
-    private void renderMatrix(GpuParticleSystem particles, Runnable settingsChanged) {
+    private void renderMatrix(SimulationUiModel.Particles particles, SimulationUiActions.Particles actions) {
         ImGui.spacing();
 
         int groupCount = particles.groupCount();
@@ -97,7 +92,7 @@ final class AttractionMatrixEditor {
 
             for (int column = 0; column < groupCount; column++) {
                 float x = origin.x + (column + 1) * (cellSize + MATRIX_GAP);
-                drawMatrixTile(particles, row, column, x, y, cellSize, settingsChanged, drawList);
+                drawMatrixTile(particles, actions, row, column, x, y, cellSize, drawList);
             }
         }
         ImGui.setCursorScreenPos(origin.x, origin.y);
@@ -117,7 +112,7 @@ final class AttractionMatrixEditor {
         drawList.addRect(x, y, x + cellSize, y + cellSize, border, 3.0f);
     }
 
-    private void drawGroupHeaderCircle(GpuParticleSystem particles,
+    private void drawGroupHeaderCircle(SimulationUiModel.Particles particles,
             int group,
             float x, float y,
             float cellSize,
@@ -146,10 +141,10 @@ final class AttractionMatrixEditor {
         ImGui.popID();
     }
 
-    private void drawMatrixTile(GpuParticleSystem particles,
+    private void drawMatrixTile(SimulationUiModel.Particles particles,
+            SimulationUiActions.Particles actions,
             int row, int column,
             float x, float y, float size,
-            Runnable settingsChanged,
             ImDrawList drawList) {
         float value = particles.attraction(row, column);
         ImVec4 color = attractionColor(value);
@@ -175,12 +170,10 @@ final class AttractionMatrixEditor {
                 hovered ? 2.0f : 1.0f);
 
         if (leftClick) {
-            particles.adjustAttraction(row, column, matrixEditStep);
-            settingsChanged.run();
+            actions.adjustAttraction(row, column, particles.matrixEditStep());
         }
         if (rightClick) {
-            particles.adjustAttraction(row, column, -matrixEditStep);
-            settingsChanged.run();
+            actions.adjustAttraction(row, column, -particles.matrixEditStep());
         }
         if (hovered) {
             ImGui.setTooltip("Group %d to group %d: %.2f".formatted(row + 1, column + 1, value));
@@ -216,9 +209,8 @@ final class AttractionMatrixEditor {
         textColored(UIColors.INTERACTION_REPULSION, repulsion);
     }
 
-    private ImVec4 groupColor(GpuParticleSystem particles, int group) {
-        ImVec4[] groupColors = particles.groupColors();
-        return groupColors[Math.floorMod(group, groupColors.length)];
+    private ImVec4 groupColor(SimulationUiModel.Particles particles, int group) {
+        return particles.groupColor(group);
     }
 
     private ImVec4 attractionColor(float value) {

@@ -1,5 +1,6 @@
 package com.particle.sim.ui.commandbar;
 
+import com.particle.sim.ui.SimulationUiActions;
 import com.particle.sim.ui.components.ModalPopup;
 import com.particle.sim.ui.theme.UIFonts;
 
@@ -7,16 +8,14 @@ import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 
 final class ResetSettingsPopup extends ModalPopup {
-    private Runnable resetAction = () -> {
-    };
+    private SimulationUiActions.Application actions;
 
     ResetSettingsPopup() {
         super("Reset simulation settings?", "reset-settings-popup");
     }
 
-    void render(Runnable resetSettings) {
-        resetAction = resetSettings == null ? () -> {
-        } : resetSettings;
+    void render(SimulationUiActions.Application actions) {
+        this.actions = actions;
         super.render();
     }
 
@@ -32,7 +31,7 @@ final class ResetSettingsPopup extends ModalPopup {
         ImGui.textDisabled("This also regenerates the default particle population.");
         ImGui.spacing();
         if (ImGui.button("Reset settings", 128.0f, 32.0f)) {
-            resetAction.run();
+            actions.resetSettings();
             close();
         }
         ImGui.sameLine();
