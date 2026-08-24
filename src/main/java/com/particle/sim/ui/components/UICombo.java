@@ -22,41 +22,54 @@ public final class UICombo {
 
     public static boolean render(String label, String id, ImInt valueRef, String[] values, boolean enabled) {
         ImGui.pushFont(UIFonts.medium());
-        ImGui.textUnformatted(label);
+        try {
+            ImGui.textUnformatted(label);
 
-        String preview = isValidIndex(valueRef.get(), values) ? values[valueRef.get()] : "Select...";
-        float width = ImGui.getContentRegionAvailX();
-        float height = ImGui.getFrameHeight();
-        ImVec2 origin = ImGui.getCursorScreenPos();
-        ImDrawList drawList = ImGui.getWindowDrawList();
+            String preview = isValidIndex(valueRef.get(), values) ? values[valueRef.get()] : "Select...";
+            float width = ImGui.getContentRegionAvailX();
+            float height = ImGui.getFrameHeight();
+            ImVec2 origin = ImGui.getCursorScreenPos();
+            ImDrawList drawList = ImGui.getWindowDrawList();
 
-        ImGui.setNextItemWidth(width);
-        hideNativeCombo();
-        ImGui.beginDisabled(!enabled);
-        boolean open = ImGui.beginCombo("###combo-" + id, "", ImGuiComboFlags.NoArrowButton);
-        ImGui.endDisabled();
-        restoreNativeCombo();
-
-        boolean hovered = ImGui.isMouseHoveringRect(origin.x, origin.y, origin.x + width, origin.y + height);
-        boolean focused = ImGui.isItemFocused();
-        drawPreview(drawList, origin, width, height, preview, hovered, focused, open, enabled);
-        boolean changed = false;
-        if (open) {
-            for (int index = 0; index < values.length; index++) {
-                boolean selected = index == valueRef.get();
-                if (ImGui.selectable(UIButton.itemLabel(values[index], "combo-option-" + id + "-" + index), selected)) {
-                    valueRef.set(index);
-                    changed = true;
+            ImGui.setNextItemWidth(width);
+            hideNativeCombo();
+            ImGui.beginDisabled(!enabled);
+            try {
+                boolean open;
+                try {
+                    open = ImGui.beginCombo("###combo-" + id, "", ImGuiComboFlags.NoArrowButton);
+                } finally {
+                    restoreNativeCombo();
                 }
-                if (selected) {
-                    ImGui.setItemDefaultFocus();
+
+                boolean hovered = ImGui.isMouseHoveringRect(origin.x, origin.y, origin.x + width, origin.y + height);
+                boolean focused = ImGui.isItemFocused();
+                drawPreview(drawList, origin, width, height, preview, hovered, focused, open, enabled);
+                boolean changed = false;
+                if (open) {
+                    try {
+                        for (int index = 0; index < values.length; index++) {
+                            boolean selected = index == valueRef.get();
+                            if (ImGui.selectable(UIButton.itemLabel(values[index],
+                                    "combo-option-" + id + "-" + index), selected)) {
+                                valueRef.set(index);
+                                changed = true;
+                            }
+                            if (selected) {
+                                ImGui.setItemDefaultFocus();
+                            }
+                        }
+                    } finally {
+                        ImGui.endCombo();
+                    }
                 }
+                return enabled && changed;
+            } finally {
+                ImGui.endDisabled();
             }
-            ImGui.endCombo();
+        } finally {
+            ImGui.popFont();
         }
-
-        ImGui.popFont();
-        return enabled && changed;
     }
 
     private static void hideNativeCombo() {
