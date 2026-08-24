@@ -1,12 +1,15 @@
 package com.particle.sim.ui.components;
 
 import imgui.ImGui;
+import imgui.flag.ImGuiFocusedFlags;
+import imgui.flag.ImGuiKey;
 
 /**
  * Base for modal popups that require a decision before the user can continue.
  */
 public abstract class ModalPopup extends PopupBase {
     private boolean openRequested;
+    private boolean open;
 
     protected ModalPopup(String title, String id) {
         super(title, id, 0.0f, 0.0f);
@@ -18,6 +21,11 @@ public abstract class ModalPopup extends PopupBase {
 
     public final void open() {
         openRequested = true;
+        open = true;
+    }
+
+    public final boolean isOpen() {
+        return openRequested || open;
     }
 
     public final void render() {
@@ -27,6 +35,7 @@ public abstract class ModalPopup extends PopupBase {
         }
 
         if (!ImGui.isPopupOpen(label())) {
+            open = false;
             return;
         }
 
@@ -34,12 +43,17 @@ public abstract class ModalPopup extends PopupBase {
         pushPopupStyle();
         if (ImGui.beginPopupModal(label(), resolvedWindowFlags())) {
             renderContent();
+            if (ImGui.isWindowFocused(ImGuiFocusedFlags.RootAndChildWindows)
+                    && ImGui.isKeyPressed(ImGuiKey.Escape)) {
+                close();
+            }
             ImGui.endPopup();
         }
         popPopupStyle();
     }
 
     protected final void close() {
+        open = false;
         ImGui.closeCurrentPopup();
     }
 }

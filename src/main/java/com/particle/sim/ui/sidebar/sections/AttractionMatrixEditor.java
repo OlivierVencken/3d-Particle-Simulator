@@ -142,10 +142,17 @@ final class AttractionMatrixEditor {
         ImGui.setCursorScreenPos(new ImVec2(x, y));
         ImGui.invisibleButton("##group-header", new ImVec2(cellSize, cellSize));
 
+        boolean focused = ImGui.isItemFocused();
+
         drawList.addCircleFilled(cx, cy, radius, fill, 24);
         drawList.addCircle(cx, cy, radius, border, 24, tokens.emphasizedBorderWidth());
 
-        if (ImGui.isItemHovered()) {
+        if (focused) {
+            drawList.addRect(x, y, x + cellSize, y + cellSize,
+                    ImGui.getColorU32(ImGuiCol.NavHighlight), tokens.radiusSm(), 0,
+                    tokens.emphasizedBorderWidth());
+        }
+        if (ImGui.isItemHovered() || focused) {
             ImGui.setTooltip("Group %d".formatted(group + 1));
         }
 
@@ -171,24 +178,26 @@ final class AttractionMatrixEditor {
         ImGui.invisibleButton("##tile", new ImVec2(size - inset, size - inset));
 
         boolean hovered = ImGui.isItemHovered();
+        boolean focused = ImGui.isItemFocused();
         boolean leftClick = ImGui.isItemClicked(LEFT_MOUSE_BUTTON);
         boolean rightClick = ImGui.isItemClicked(RIGHT_MOUSE_BUTTON);
+        boolean keyboardActivation = ImGui.isItemActivated() && !leftClick && !rightClick;
 
         drawList.addRectFilled(x, y, x + size - inset, y + size - inset, fill, tokens.radiusSm());
         drawList.addRect(
                 x, y, x + size - inset, y + size - inset,
-                hovered ? hoverBorder : border,
+                focused ? ImGui.getColorU32(ImGuiCol.NavHighlight) : hovered ? hoverBorder : border,
                 tokens.radiusSm(),
                 0,
-                hovered ? tokens.emphasizedBorderWidth() : tokens.borderWidth());
+                hovered || focused ? tokens.emphasizedBorderWidth() : tokens.borderWidth());
 
-        if (leftClick) {
+        if (leftClick || keyboardActivation) {
             actions.adjustAttraction(row, column, particles.matrixEditStep());
         }
         if (rightClick) {
             actions.adjustAttraction(row, column, -particles.matrixEditStep());
         }
-        if (hovered) {
+        if (hovered || focused) {
             ImGui.setTooltip("Group %d to group %d: %.2f".formatted(row + 1, column + 1, value));
         }
 

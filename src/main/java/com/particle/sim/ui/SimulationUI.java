@@ -7,6 +7,8 @@ import com.particle.sim.ui.sidebar.Sidebar;
 import com.particle.sim.ui.theme.UIDesignTokens;
 import com.particle.sim.ui.theme.UITheme;
 import imgui.ImGui;
+import imgui.ImGuiIO;
+import imgui.flag.ImGuiPopupFlags;
 import imgui.type.ImBoolean;
 
 import java.util.Objects;
@@ -57,16 +59,26 @@ public final class SimulationUI {
 
     public PreparedUiFrame prepareFrame(int framebufferWidth, int framebufferHeight) {
         UIDesignTokens tokens = UITheme.tokens();
+        ImGuiIO io = ImGui.getIO();
         UiDisplayMetrics displayMetrics = UiDisplayMetrics.from(
-                ImGui.getIO(), tokens.scale(), framebufferWidth, framebufferHeight);
+                io, tokens.scale(), framebufferWidth, framebufferHeight);
         UILayout layout = UILayoutCalculator.calculate(
                 displayMetrics.logicalWidth(), displayMetrics.logicalHeight(),
                 state.sidebarVisible(), !hidden, tokens);
+        boolean modalOpen = !hidden && commandBar.hasOpenModal();
+        boolean popupOpen = !hidden && (commandBar.hasOpenWindow()
+                || ImGui.isPopupOpen("", ImGuiPopupFlags.AnyPopup));
+        UiInputOwnership inputOwnership = UiInputOwnership.resolve(
+                layout, !hidden,
+                io.getMousePosX(), io.getMousePosY(),
+                io.getWantCaptureMouse(), io.getWantCaptureKeyboard(),
+                popupOpen, modalOpen);
         preparedFrame = new PreparedUiFrame(
                 displayMetrics,
                 layout,
                 displayMetrics.toFramebuffer(layout.simulation()),
-                !hidden);
+                !hidden,
+                inputOwnership);
         state.setLayoutMode(layout.mode());
         return preparedFrame;
     }

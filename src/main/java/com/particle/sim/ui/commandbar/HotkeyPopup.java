@@ -2,6 +2,7 @@ package com.particle.sim.ui.commandbar;
 
 import com.particle.sim.input.AppHotkeys;
 import com.particle.sim.input.HotkeyDefinition;
+import com.particle.sim.input.HotkeyContext;
 import com.particle.sim.ui.components.PopupWindow;
 import com.particle.sim.ui.theme.UIFonts;
 import com.particle.sim.ui.theme.UIDesignTokens;
@@ -28,6 +29,7 @@ final class HotkeyPopup extends PopupWindow {
     protected void renderContent() {
         ImGui.pushFont(UIFonts.medium());
         ImGui.textUnformatted("Keyboard shortcuts");
+        ImGui.textDisabled("F11, Esc, and F3 remain active while editing or using a popup.");
         ImGui.separator();
         renderHotkeys();
         ImGui.popFont();
@@ -35,12 +37,13 @@ final class HotkeyPopup extends PopupWindow {
 
     private void renderHotkeys() {
         int flags = ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchProp;
-        if (!ImGui.beginTable("hotkey-list", 2, flags)) {
+        if (!ImGui.beginTable("hotkey-list", 3, flags)) {
             return;
         }
 
         ImGui.tableSetupColumn("Key");
         ImGui.tableSetupColumn("Action");
+        ImGui.tableSetupColumn("Scope");
         ImGui.tableHeadersRow();
 
         for (HotkeyDefinition hotkey : AppHotkeys.defaultHotkeys()) {
@@ -49,6 +52,9 @@ final class HotkeyPopup extends PopupWindow {
             ImGui.textUnformatted(keyName(hotkey.key()));
             ImGui.tableNextColumn();
             ImGui.textUnformatted(hotkey.action().displayName());
+            ImGui.tableNextColumn();
+            ImGui.textUnformatted(hotkey.context() == HotkeyContext.GLOBAL
+                    ? "Global" : "Simulation");
         }
 
         ImGui.endTable();

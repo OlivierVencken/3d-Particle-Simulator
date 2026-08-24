@@ -29,5 +29,11 @@ public record UILayout(
         public float bottom() {
             return y + height;
         }
+
+        public boolean contains(float pointX, float pointY) {
+            return visible()
+                    && pointX >= x && pointX < right()
+                    && pointY >= y && pointY < bottom();
+        }
     }
 }

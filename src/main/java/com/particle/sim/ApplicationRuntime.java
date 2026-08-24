@@ -1,8 +1,8 @@
 package com.particle.sim;
 
 import com.particle.sim.camera.CameraController;
-import com.particle.sim.input.HotkeyContext;
 import com.particle.sim.input.HotkeyManager;
+import com.particle.sim.input.HotkeyRoutingContext;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SettingsController;
 import com.particle.sim.settings.SimulationDefaults;
@@ -14,7 +14,6 @@ import com.particle.sim.window.WindowManager;
 import java.util.concurrent.locks.LockSupport;
 import java.util.Objects;
 
-import static imgui.ImGui.getIO;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL43C.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL43C.GL_BLEND;
@@ -76,8 +75,12 @@ public final class ApplicationRuntime {
             window.updateFramebufferSize();
             imgui.beginFrame();
             PreparedUiFrame uiFrame = ui.prepareFrame(window.width(), window.height());
-            hotkeys.update(window.handle(), currentHotkeyContext());
-            camera.update(window.handle(), deltaTime);
+            var inputOwnership = uiFrame.inputOwnership();
+            hotkeys.update(window.handle(), new HotkeyRoutingContext(
+                    inputOwnership.allowsSimulationKeyboard(),
+                    inputOwnership.keyboardOwnedByUi(),
+                    inputOwnership.modalOpen()));
+            camera.update(window.handle(), deltaTime, inputOwnership);
 
             if (!ui.isPaused()) {
                 simulationClock.addFrameTime(frameDelta);
@@ -100,10 +103,6 @@ public final class ApplicationRuntime {
             window.swapBuffers();
             limitFrameRate(now);
         }
-    }
-
-    private HotkeyContext currentHotkeyContext() {
-        return getIO().getWantCaptureKeyboard() ? HotkeyContext.GLOBAL : HotkeyContext.SIMULATION;
     }
 
     private void limitFrameRate(double frameStartTime) {

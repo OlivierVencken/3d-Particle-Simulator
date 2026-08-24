@@ -123,6 +123,14 @@ public final class CommandBar {
         sidebarToggleIcon.dispose();
     }
 
+    public boolean hasOpenModal() {
+        return resetSettingsPopup.isOpen();
+    }
+
+    public boolean hasOpenWindow() {
+        return hasOpenModal() || hotkeyPopup.isOpen() || aboutPopup.isOpen();
+    }
+
     private void pushTopBarButtonStyle() {
         UIComponentPalette palette = UITheme.palette(UIComponentVariant.GHOST);
         ImGui.pushStyleColor(ImGuiCol.Button, palette.background().vec4());

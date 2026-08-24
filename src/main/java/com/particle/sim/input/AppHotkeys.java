@@ -14,13 +14,14 @@ import java.util.List;
 
 public final class AppHotkeys {
     private static final List<HotkeyDefinition> DEFAULT_HOTKEYS = List.of(
-            new HotkeyDefinition(GLFW_KEY_F11, HotkeyAction.TOGGLE_FULLSCREEN, HotkeyContext.GLOBAL),
-            new HotkeyDefinition(GLFW_KEY_ESCAPE, HotkeyAction.SHOW_UI, HotkeyContext.GLOBAL),
-            new HotkeyDefinition(GLFW_KEY_F, HotkeyAction.TOGGLE_UI, HotkeyContext.GLOBAL),
-            new HotkeyDefinition(GLFW_KEY_F3, HotkeyAction.TOGGLE_DEBUG, HotkeyContext.GLOBAL),
-            new HotkeyDefinition(GLFW_KEY_SPACE, HotkeyAction.TOGGLE_PAUSE, HotkeyContext.SIMULATION),
-            new HotkeyDefinition(GLFW_KEY_R, HotkeyAction.RESET_PARTICLES, HotkeyContext.SIMULATION),
-            new HotkeyDefinition(GLFW_KEY_RIGHT, HotkeyAction.SIMULATION_STEP_FORWARD, HotkeyContext.SIMULATION));
+            new HotkeyDefinition(GLFW_KEY_F11, HotkeyAction.TOGGLE_FULLSCREEN, HotkeyContext.GLOBAL, true),
+            new HotkeyDefinition(GLFW_KEY_ESCAPE, HotkeyAction.SHOW_UI, HotkeyContext.GLOBAL, true),
+            new HotkeyDefinition(GLFW_KEY_F, HotkeyAction.TOGGLE_UI, HotkeyContext.GLOBAL, false),
+            new HotkeyDefinition(GLFW_KEY_F3, HotkeyAction.TOGGLE_DEBUG, HotkeyContext.GLOBAL, true),
+            new HotkeyDefinition(GLFW_KEY_SPACE, HotkeyAction.TOGGLE_PAUSE, HotkeyContext.SIMULATION, false),
+            new HotkeyDefinition(GLFW_KEY_R, HotkeyAction.RESET_PARTICLES, HotkeyContext.SIMULATION, false),
+            new HotkeyDefinition(GLFW_KEY_RIGHT, HotkeyAction.SIMULATION_STEP_FORWARD,
+                    HotkeyContext.SIMULATION, false));
 
     private AppHotkeys() {
     }
@@ -31,7 +32,7 @@ public final class AppHotkeys {
 
     public static void register(HotkeyManager hotkeyManager, ParticleSimulatorApp app) {
         for (HotkeyDefinition hotkey : DEFAULT_HOTKEYS) {
-            hotkeyManager.bind(hotkey.key(), hotkey.action(), hotkey.context());
+            hotkeyManager.bind(hotkey);
         }
 
         hotkeyManager.on(

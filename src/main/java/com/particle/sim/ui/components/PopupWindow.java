@@ -1,6 +1,8 @@
 package com.particle.sim.ui.components;
 
 import imgui.ImGui;
+import imgui.flag.ImGuiFocusedFlags;
+import imgui.flag.ImGuiKey;
 import imgui.type.ImBoolean;
 
 /**
@@ -17,6 +19,10 @@ public abstract class PopupWindow extends PopupBase {
         open.set(true);
     }
 
+    public final boolean isOpen() {
+        return open.get();
+    }
+
     public final void render() {
         if (!open.get()) {
             return;
@@ -26,6 +32,10 @@ public abstract class PopupWindow extends PopupBase {
         pushPopupStyle();
         if (ImGui.begin(label(), open, resolvedWindowFlags())) {
             renderContent();
+            if (ImGui.isWindowFocused(ImGuiFocusedFlags.RootAndChildWindows)
+                    && ImGui.isKeyPressed(ImGuiKey.Escape)) {
+                close();
+            }
         }
         ImGui.end();
         popPopupStyle();
