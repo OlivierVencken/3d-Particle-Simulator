@@ -10,10 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class UIDesignTokensTest {
     @ParameterizedTest
     @CsvSource({
-            "1.0, 420, 40, 16",
-            "1.25, 525, 50, 20",
-            "1.5, 630, 60, 24",
-            "2.0, 840, 80, 32"
+            "1.0, 336, 32, 12.8",
+            "1.25, 420, 40, 16",
+            "1.5, 504, 48, 19.2",
+            "2.0, 672, 64, 25.6"
     })
     void scalesSemanticMeasurementsFromTheCleanBase(
             float scale, float sidebarWidth, float commandBarHeight, float bodyFontSize) {

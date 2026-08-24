@@ -35,9 +35,9 @@ class ParticlesSectionTest {
     void metricCardsStackWhenTheSidebarIsTooNarrow() {
         UIDesignTokens tokens = UIDesignTokens.unscaled();
 
-        assertEquals(false, ParticlesSection.metricsFitSideBySide(235.0f, tokens));
-        assertEquals(true, ParticlesSection.metricsFitSideBySide(236.0f, tokens));
-        assertEquals(false, ParticlesSection.customControlsFitInline(171.0f, tokens));
-        assertEquals(true, ParticlesSection.customControlsFitInline(172.0f, tokens));
+        assertEquals(false, ParticlesSection.metricsFitSideBySide(188.0f, tokens));
+        assertEquals(true, ParticlesSection.metricsFitSideBySide(188.8f, tokens));
+        assertEquals(false, ParticlesSection.customControlsFitInline(137.0f, tokens));
+        assertEquals(true, ParticlesSection.customControlsFitInline(137.6f, tokens));
     }
 }

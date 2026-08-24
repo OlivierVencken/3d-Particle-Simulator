@@ -14,22 +14,22 @@ class UILayoutCalculatorTest {
     void scalesChromeAndResponsiveBreakpointsWithDisplayScale() {
         UIDesignTokens tokens = UIDesignTokens.atScale(2.0f);
 
-        UILayout layout = UILayoutCalculator.calculate(1920.0f, 1080.0f, true, tokens);
+        UILayout layout = UILayoutCalculator.calculate(1600.0f, 1080.0f, true, tokens);
 
         assertEquals(UILayout.Mode.COMPACT, layout.mode());
-        assertEquals(80.0f, layout.commandBar().height());
-        assertEquals(840.0f, layout.sidebar().width());
+        assertEquals(64.0f, layout.commandBar().height());
+        assertEquals(672.0f, layout.sidebar().width());
         assertEquals(0.0f, layout.simulation().x());
-        assertEquals(1920.0f, layout.simulation().width());
+        assertEquals(1600.0f, layout.simulation().width());
     }
 
     @ParameterizedTest
     @CsvSource({
-            "2560, 1440, WIDE, 420, 420, 2140",
-            "1920, 1080, WIDE, 420, 420, 1500",
-            "1366, 768, MEDIUM, 360, 360, 1006",
-            "1024, 768, COMPACT, 420, 0, 1024",
-            "640, 640, FOCUS, 640, 0, 640",
+            "2560, 1440, WIDE, 336, 336, 2224",
+            "1920, 1080, WIDE, 336, 336, 1584",
+            "1366, 768, WIDE, 336, 336, 1030",
+            "1024, 768, MEDIUM, 288, 288, 736",
+            "640, 640, COMPACT, 336, 0, 640",
             "320, 480, FOCUS, 320, 0, 320"
     })
     void appliesResponsivePersistentAndOverlaySidebarPolicies(float width, float height, UILayout.Mode mode,
@@ -60,12 +60,12 @@ class UILayoutCalculatorTest {
 
     @ParameterizedTest
     @CsvSource({
-            "719, FOCUS",
-            "720, COMPACT",
-            "1099, COMPACT",
-            "1100, MEDIUM",
-            "1439, MEDIUM",
-            "1440, WIDE"
+            "575, FOCUS",
+            "576, COMPACT",
+            "879, COMPACT",
+            "880, MEDIUM",
+            "1151, MEDIUM",
+            "1152, WIDE"
     })
     void changesModeAtDocumentedBoundaries(float width, UILayout.Mode expectedMode) {
         assertEquals(expectedMode, UILayoutCalculator.calculate(width, 800.0f, true).mode());
