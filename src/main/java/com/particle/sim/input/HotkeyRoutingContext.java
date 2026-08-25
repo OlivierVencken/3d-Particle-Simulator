@@ -4,12 +4,14 @@ package com.particle.sim.input;
 public record HotkeyRoutingContext(
         boolean simulationInputAllowed,
         boolean uiOwnsKeyboard,
-        boolean modalOpen) {
+        boolean modalOpen,
+        boolean simulationCaptureActive) {
 
     boolean permits(HotkeyBinding binding) {
         if (binding.context() == HotkeyContext.SIMULATION) {
-            return simulationInputAllowed && !modalOpen;
+            return (simulationInputAllowed || simulationCaptureActive) && !modalOpen;
         }
-        return (!uiOwnsKeyboard && !modalOpen) || binding.activeWhileUiOwnsKeyboard();
+        return ((!uiOwnsKeyboard || simulationCaptureActive) && !modalOpen)
+                || binding.activeWhileUiOwnsKeyboard();
     }
 }

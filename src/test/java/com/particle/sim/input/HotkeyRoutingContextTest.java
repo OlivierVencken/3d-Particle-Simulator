@@ -12,7 +12,7 @@ class HotkeyRoutingContextTest {
 
     @Test
     void normalSimulationContextPermitsBothScopes() {
-        HotkeyRoutingContext context = new HotkeyRoutingContext(true, false, false);
+        HotkeyRoutingContext context = new HotkeyRoutingContext(true, false, false, false);
 
         assertTrue(context.permits(SIMULATION));
         assertTrue(context.permits(GLOBAL_TEXT_KEY));
@@ -20,7 +20,7 @@ class HotkeyRoutingContextTest {
 
     @Test
     void keyboardOwnedByUiBlocksSimulationAndTextGlobalKeys() {
-        HotkeyRoutingContext context = new HotkeyRoutingContext(false, true, false);
+        HotkeyRoutingContext context = new HotkeyRoutingContext(false, true, false, false);
 
         assertFalse(context.permits(SIMULATION));
         assertFalse(context.permits(GLOBAL_TEXT_KEY));
@@ -29,7 +29,24 @@ class HotkeyRoutingContextTest {
 
     @Test
     void modalBlocksSimulationButRetainsExplicitGlobalEscapeHatch() {
-        HotkeyRoutingContext context = new HotkeyRoutingContext(false, true, true);
+        HotkeyRoutingContext context = new HotkeyRoutingContext(false, true, true, false);
+
+        assertFalse(context.permits(SIMULATION));
+        assertFalse(context.permits(GLOBAL_TEXT_KEY));
+        assertTrue(context.permits(GLOBAL_FUNCTION_KEY));
+    }
+
+    @Test
+    void activeSimulationCaptureOverridesStaleUiKeyboardOwnership() {
+        HotkeyRoutingContext context = new HotkeyRoutingContext(false, true, false, true);
+
+        assertTrue(context.permits(SIMULATION));
+        assertTrue(context.permits(GLOBAL_TEXT_KEY));
+    }
+
+    @Test
+    void modalStillBlocksCapturedSimulationTextKeys() {
+        HotkeyRoutingContext context = new HotkeyRoutingContext(false, true, true, true);
 
         assertFalse(context.permits(SIMULATION));
         assertFalse(context.permits(GLOBAL_TEXT_KEY));

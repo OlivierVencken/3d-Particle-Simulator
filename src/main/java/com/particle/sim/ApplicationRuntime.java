@@ -79,7 +79,8 @@ public final class ApplicationRuntime {
             hotkeys.update(window.handle(), new HotkeyRoutingContext(
                     inputOwnership.allowsSimulationKeyboard(),
                     inputOwnership.keyboardOwnedByUi(),
-                    inputOwnership.modalOpen()));
+                    inputOwnership.modalOpen(),
+                    camera.isMouseCaptured()));
             camera.update(window.handle(), deltaTime, inputOwnership);
 
             if (!ui.isPaused()) {
