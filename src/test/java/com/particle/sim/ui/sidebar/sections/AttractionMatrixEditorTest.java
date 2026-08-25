@@ -13,7 +13,7 @@ class AttractionMatrixEditorTest {
 
         for (int groupCount = 1; groupCount <= 16; groupCount++) {
             float cellSize = AttractionMatrixEditor.fittedCellSize(availableWidth, groupCount);
-            float matrixWidth = (groupCount + 1) * cellSize + groupCount * 3.2f;
+            float matrixWidth = (groupCount + 1) * cellSize + groupCount * 3.6f;
 
             assertEquals(availableWidth, matrixWidth, EPSILON,
                     "Matrix width for " + groupCount + " groups");

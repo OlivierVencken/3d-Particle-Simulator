@@ -19,7 +19,7 @@ class UIComboTest {
 
     @Test
     void previewWidthReservesInsetsAndChevron() {
-        assertEquals(69.6f, UICombo.previewTextWidth(100.0f, UIDesignTokens.unscaled()), 0.0001f);
+        assertEquals(65.8f, UICombo.previewTextWidth(100.0f, UIDesignTokens.unscaled()), 0.0001f);
         assertEquals(0.0f, UICombo.previewTextWidth(20.0f, UIDesignTokens.unscaled()), 0.0001f);
     }
 }

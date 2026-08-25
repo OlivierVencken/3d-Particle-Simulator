@@ -10,18 +10,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class UIDesignTokensTest {
     @ParameterizedTest
     @CsvSource({
-            "1.0, 336, 32, 12.8",
-            "1.25, 420, 40, 16",
-            "1.5, 504, 48, 19.2",
-            "2.0, 672, 64, 25.6"
+            "1.0, 378, 36, 14.4",
+            "1.25, 472.5, 45, 18",
+            "1.5, 567, 54, 21.6",
+            "2.0, 756, 72, 28.8"
     })
     void scalesSemanticMeasurementsFromTheCleanBase(
             float scale, float sidebarWidth, float commandBarHeight, float bodyFontSize) {
         UIDesignTokens tokens = UIDesignTokens.atScale(scale);
 
-        assertEquals(sidebarWidth, tokens.sidebarWidth());
-        assertEquals(commandBarHeight, tokens.commandBarHeight());
-        assertEquals(bodyFontSize, tokens.bodyFontSize());
+        assertEquals(sidebarWidth, tokens.sidebarWidth(), 0.0001f);
+        assertEquals(commandBarHeight, tokens.commandBarHeight(), 0.0001f);
+        assertEquals(bodyFontSize, tokens.bodyFontSize(), 0.0001f);
         assertTrue(tokens.controlHeight() >= tokens.minimumHitTarget());
     }
 

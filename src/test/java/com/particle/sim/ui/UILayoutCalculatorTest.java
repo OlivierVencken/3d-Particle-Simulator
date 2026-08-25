@@ -17,19 +17,19 @@ class UILayoutCalculatorTest {
         UILayout layout = UILayoutCalculator.calculate(1600.0f, 1080.0f, true, tokens);
 
         assertEquals(UILayout.Mode.COMPACT, layout.mode());
-        assertEquals(64.0f, layout.commandBar().height());
-        assertEquals(672.0f, layout.sidebar().width());
+        assertEquals(72.0f, layout.commandBar().height());
+        assertEquals(756.0f, layout.sidebar().width());
         assertEquals(0.0f, layout.simulation().x());
         assertEquals(1600.0f, layout.simulation().width());
     }
 
     @ParameterizedTest
     @CsvSource({
-            "2560, 1440, WIDE, 336, 336, 2224",
-            "1920, 1080, WIDE, 336, 336, 1584",
-            "1366, 768, WIDE, 336, 336, 1030",
-            "1024, 768, MEDIUM, 288, 288, 736",
-            "640, 640, COMPACT, 336, 0, 640",
+            "2560, 1440, WIDE, 378, 378, 2182",
+            "1920, 1080, WIDE, 378, 378, 1542",
+            "1366, 768, WIDE, 378, 378, 988",
+            "1024, 768, MEDIUM, 324, 324, 700",
+            "640, 640, FOCUS, 640, 0, 640",
             "320, 480, FOCUS, 320, 0, 320"
     })
     void appliesResponsivePersistentAndOverlaySidebarPolicies(float width, float height, UILayout.Mode mode,
@@ -60,12 +60,12 @@ class UILayoutCalculatorTest {
 
     @ParameterizedTest
     @CsvSource({
-            "575, FOCUS",
-            "576, COMPACT",
-            "879, COMPACT",
-            "880, MEDIUM",
-            "1151, MEDIUM",
-            "1152, WIDE"
+            "647, FOCUS",
+            "648, COMPACT",
+            "989, COMPACT",
+            "990, MEDIUM",
+            "1295, MEDIUM",
+            "1296, WIDE"
     })
     void changesModeAtDocumentedBoundaries(float width, UILayout.Mode expectedMode) {
         assertEquals(expectedMode, UILayoutCalculator.calculate(width, 800.0f, true).mode());

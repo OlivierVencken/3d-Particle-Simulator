@@ -13,14 +13,14 @@ class UIThemeTest {
         ImGui.createContext();
         try {
             UITheme.applyDarkTheme(2.0f);
-            assertEquals(25.6f, ImGui.getStyle().getWindowPaddingX());
+            assertEquals(28.8f, ImGui.getStyle().getWindowPaddingX());
 
             UITheme.applyDarkTheme(1.25f);
 
-            assertEquals(16.0f, ImGui.getStyle().getWindowPaddingX());
-            assertEquals(8.0f, ImGui.getStyle().getFramePaddingX());
-            assertEquals(1.0f, ImGui.getStyle().getFrameBorderSize());
-            assertEquals(12.0f, ImGui.getStyle().getScrollbarSize());
+            assertEquals(18.0f, ImGui.getStyle().getWindowPaddingX());
+            assertEquals(9.0f, ImGui.getStyle().getFramePaddingX());
+            assertEquals(1.125f, ImGui.getStyle().getFrameBorderSize());
+            assertEquals(13.5f, ImGui.getStyle().getScrollbarSize());
         } finally {
             UITheme.applyDarkTheme(1.0f);
             ImGui.destroyContext();

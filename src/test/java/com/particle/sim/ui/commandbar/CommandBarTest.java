@@ -12,16 +12,16 @@ class CommandBarTest {
     void veryNarrowFocusLayoutsUseOneCompleteMenu() {
         UIDesignTokens tokens = UIDesignTokens.unscaled();
 
-        assertTrue(CommandBar.usesUnifiedMenu(UILayout.Mode.FOCUS, 335.0f, tokens));
-        assertFalse(CommandBar.usesUnifiedMenu(UILayout.Mode.FOCUS, 336.0f, tokens));
-        assertFalse(CommandBar.usesUnifiedMenu(UILayout.Mode.COMPACT, 335.0f, tokens));
+        assertTrue(CommandBar.usesUnifiedMenu(UILayout.Mode.FOCUS, 377.0f, tokens));
+        assertFalse(CommandBar.usesUnifiedMenu(UILayout.Mode.FOCUS, 378.0f, tokens));
+        assertFalse(CommandBar.usesUnifiedMenu(UILayout.Mode.COMPACT, 377.0f, tokens));
     }
 
     @Test
     void compactThresholdScalesWithTheUi() {
         UIDesignTokens tokens = UIDesignTokens.atScale(1.5f);
 
-        assertTrue(CommandBar.usesUnifiedMenu(UILayout.Mode.FOCUS, 503.0f, tokens));
-        assertFalse(CommandBar.usesUnifiedMenu(UILayout.Mode.FOCUS, 504.0f, tokens));
+        assertTrue(CommandBar.usesUnifiedMenu(UILayout.Mode.FOCUS, 566.0f, tokens));
+        assertFalse(CommandBar.usesUnifiedMenu(UILayout.Mode.FOCUS, 567.0f, tokens));
     }
 }
