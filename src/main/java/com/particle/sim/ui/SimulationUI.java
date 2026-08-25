@@ -58,13 +58,18 @@ public final class SimulationUI {
     }
 
     public PreparedUiFrame prepareFrame(int framebufferWidth, int framebufferHeight) {
+        return prepareFrame(framebufferWidth, framebufferHeight, 0.0f);
+    }
+
+    public PreparedUiFrame prepareFrame(int framebufferWidth, int framebufferHeight, float deltaTime) {
+        state.advanceAnimations(deltaTime);
         UIDesignTokens tokens = UITheme.tokens();
         ImGuiIO io = ImGui.getIO();
         UiDisplayMetrics displayMetrics = UiDisplayMetrics.from(
                 io, tokens.scale(), framebufferWidth, framebufferHeight);
         UILayout layout = UILayoutCalculator.calculate(
                 displayMetrics.logicalWidth(), displayMetrics.logicalHeight(),
-                state.sidebarVisible(), !hidden, tokens);
+                state.sidebarReveal(), !hidden, tokens);
         boolean modalOpen = !hidden && (commandBar.hasOpenModal() || sidebar.hasOpenModal());
         boolean popupOpen = !hidden && (commandBar.hasOpenWindow()
                 || ImGui.isPopupOpen("", ImGuiPopupFlags.AnyPopup));
@@ -153,6 +158,10 @@ public final class SimulationUI {
 
     public void toggleDebug() {
         showDebug.set(!showDebug.get());
+    }
+
+    public void setAnimationsEnabled(boolean enabled) {
+        state.setAnimationsEnabled(enabled);
     }
 
     public boolean isHidden() {

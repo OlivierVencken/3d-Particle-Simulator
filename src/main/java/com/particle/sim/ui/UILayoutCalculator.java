@@ -17,6 +17,11 @@ final class UILayoutCalculator {
 
     static UILayout calculate(float displayWidth, float displayHeight, boolean sidebarVisible,
             boolean uiVisible, UIDesignTokens tokens) {
+        return calculate(displayWidth, displayHeight, sidebarVisible ? 1.0f : 0.0f, uiVisible, tokens);
+    }
+
+    static UILayout calculate(float displayWidth, float displayHeight, float sidebarReveal,
+            boolean uiVisible, UIDesignTokens tokens) {
         float width = Math.max(0.0f, displayWidth);
         float height = Math.max(0.0f, displayHeight);
         UILayout.Mode mode = modeFor(width, tokens);
@@ -31,19 +36,29 @@ final class UILayoutCalculator {
         float contentY = Math.min(tokens.commandBarHeight(), height);
         float contentHeight = Math.max(0.0f, height - contentY);
 
-        float sidebarWidth = sidebarVisible ? sidebarWidth(mode, width, tokens) : 0.0f;
+        float reveal = clamp01(sidebarReveal);
+        float fullSidebarWidth = sidebarWidth(mode, width, tokens);
+        float revealedSidebarWidth = fullSidebarWidth * reveal;
         boolean sidebarOverlaysSimulation = mode == UILayout.Mode.COMPACT || mode == UILayout.Mode.FOCUS;
 
         UILayout.Panel commandBar = new UILayout.Panel(0.0f, 0.0f, width, contentY);
-        UILayout.Panel sidebar = sidebarWidth > 0.0f && contentHeight > 0.0f
-                ? new UILayout.Panel(0.0f, contentY, sidebarWidth, contentHeight)
+        UILayout.Panel sidebar = revealedSidebarWidth > 0.0f && contentHeight > 0.0f
+                ? new UILayout.Panel(revealedSidebarWidth - fullSidebarWidth, contentY,
+                        fullSidebarWidth, contentHeight)
                 : UILayout.Panel.hidden();
-        float simulationX = sidebarOverlaysSimulation ? 0.0f : sidebarWidth;
+        float simulationX = sidebarOverlaysSimulation ? 0.0f : revealedSidebarWidth;
         float simulationWidth = Math.max(0.0f, width - simulationX);
         UILayout.Panel simulation = new UILayout.Panel(
                 simulationX, contentY, simulationWidth, contentHeight);
 
         return new UILayout(mode, commandBar, sidebar, simulation);
+    }
+
+    private static float clamp01(float value) {
+        if (!Float.isFinite(value)) {
+            return 0.0f;
+        }
+        return Math.max(0.0f, Math.min(1.0f, value));
     }
 
     private static float sidebarWidth(UILayout.Mode mode, float displayWidth, UIDesignTokens tokens) {

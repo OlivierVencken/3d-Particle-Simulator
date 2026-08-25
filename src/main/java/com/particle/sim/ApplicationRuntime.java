@@ -74,7 +74,7 @@ public final class ApplicationRuntime {
 
             window.updateFramebufferSize();
             imgui.beginFrame();
-            PreparedUiFrame uiFrame = ui.prepareFrame(window.width(), window.height());
+            PreparedUiFrame uiFrame = ui.prepareFrame(window.width(), window.height(), deltaTime);
             var inputOwnership = uiFrame.inputOwnership();
             hotkeys.update(window.handle(), new HotkeyRoutingContext(
                     inputOwnership.allowsSimulationKeyboard(),

@@ -45,4 +45,12 @@ class SimulationUITest {
         ui.toggleUi();
         assertFalse(ui.isHidden());
     }
+
+    @Test
+    void animationPreferenceCanBeChangedWithoutRenderingAFrame() {
+        SimulationUI ui = new SimulationUI();
+
+        ui.setAnimationsEnabled(false);
+        ui.setAnimationsEnabled(true);
+    }
 }

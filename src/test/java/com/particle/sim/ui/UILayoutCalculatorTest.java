@@ -89,6 +89,30 @@ class UILayoutCalculatorTest {
         assertPanelsStayInBounds(layout, width, height);
     }
 
+    @Test
+    void animatedPersistentSidebarKeepsItsVisibleEdgeAlignedWithTheSimulation() {
+        UILayout layout = UILayoutCalculator.calculate(
+                1366.0f, 768.0f, 0.5f, true, UIDesignTokens.unscaled());
+
+        assertEquals(-189.0f, layout.sidebar().x());
+        assertEquals(378.0f, layout.sidebar().width());
+        assertEquals(189.0f, layout.sidebar().right());
+        assertEquals(189.0f, layout.simulation().x());
+        assertEquals(1177.0f, layout.simulation().width());
+    }
+
+    @Test
+    void animatedOverlaySidebarDoesNotResizeTheSimulation() {
+        UILayout layout = UILayoutCalculator.calculate(
+                900.0f, 768.0f, 0.5f, true, UIDesignTokens.unscaled());
+
+        assertEquals(UILayout.Mode.COMPACT, layout.mode());
+        assertEquals(-189.0f, layout.sidebar().x());
+        assertEquals(189.0f, layout.sidebar().right());
+        assertEquals(0.0f, layout.simulation().x());
+        assertEquals(900.0f, layout.simulation().width());
+    }
+
     private void assertPanelsStayInBounds(UILayout layout, float width, float height) {
         for (UILayout.Panel panel : new UILayout.Panel[] {
                 layout.commandBar(), layout.sidebar(), layout.simulation() }) {

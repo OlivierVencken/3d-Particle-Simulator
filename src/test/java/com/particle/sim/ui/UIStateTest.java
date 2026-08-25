@@ -71,4 +71,32 @@ class UIStateTest {
 
         assertEquals(UILayout.Mode.COMPACT, state.layoutMode());
     }
+
+    @Test
+    void sidebarTransitionMovesTowardItsVisibilityTarget() {
+        UIState state = new UIState();
+
+        state.setSidebarVisible(false);
+        state.advanceAnimations(0.08f);
+
+        assertTrue(state.sidebarReveal() > 0.0f);
+        assertTrue(state.sidebarReveal() < 1.0f);
+
+        state.advanceAnimations(1.0f);
+        state.advanceAnimations(1.0f);
+        state.advanceAnimations(1.0f);
+        assertEquals(0.0f, state.sidebarReveal());
+    }
+
+    @Test
+    void reducedMotionSnapsTransitionsToTheirTargets() {
+        UIState state = new UIState();
+        state.setAnimationsEnabled(false);
+
+        state.setSidebarVisible(false);
+        state.select(SidebarSection.CAMERA);
+
+        assertEquals(1.0f, state.sidebarReveal());
+        assertEquals(1.0f, state.sectionReveal());
+    }
 }

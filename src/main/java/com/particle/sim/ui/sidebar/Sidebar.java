@@ -28,8 +28,7 @@ public final class Sidebar {
             if (ImGui.begin("##sidebar", WINDOW_FLAGS)) {
                 renderOverlayHeader(state);
                 renderSectionButtons(state);
-                UIScrollRegion.render("sidebar-content",
-                        () -> renderSectionContent(state.activeSection(), model, actions));
+                renderAnimatedSectionContent(state, model, actions);
             }
             ImGui.end();
         }
@@ -98,6 +97,22 @@ public final class Sidebar {
 
     private void renderSectionContent(SidebarSection section, SimulationUiModel model, SimulationUiActions actions) {
         content.render(section, model, actions);
+    }
+
+    private void renderAnimatedSectionContent(UIState state, SimulationUiModel model,
+            SimulationUiActions actions) {
+        float reveal = state.sectionReveal();
+        float alpha = 0.4f + reveal * 0.6f;
+        float offset = UITheme.tokens().spaceSm() * (1.0f - reveal);
+        UIScrollRegion.render("sidebar-content", () -> {
+            ImGui.pushStyleVar(ImGuiStyleVar.Alpha, alpha);
+            ImGui.setCursorPosY(ImGui.getCursorPosY() + offset);
+            try {
+                renderSectionContent(state.activeSection(), model, actions);
+            } finally {
+                ImGui.popStyleVar();
+            }
+        });
     }
 
     public int customSpawnAmount() {
