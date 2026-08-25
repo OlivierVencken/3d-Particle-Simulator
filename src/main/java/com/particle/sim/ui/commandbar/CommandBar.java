@@ -49,8 +49,7 @@ public final class CommandBar {
         ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, tokens.spaceXs(), tokens.spaceXs());
         if (ImGui.begin("##command-bar", WINDOW_FLAGS)) {
             ImGui.pushFont(UIFonts.commandBar());
-            renderMenuButtons(layout.mode(), panel.width(), state,
-                    model.application(), actions.simulation(), tokens);
+            renderMenuButtons(layout.mode(), panel.width(), state, tokens);
             renderStatistics(panel.width(), panel.height(), model.particles(), fps, tokens);
             ImGui.popFont();
             renderSimulationMenu(model.application(), actions.simulation(), actions.application());
@@ -68,7 +67,6 @@ public final class CommandBar {
     }
 
     private void renderMenuButtons(UILayout.Mode mode, float width, UIState state,
-            SimulationUiModel.Application application, SimulationUiActions.Simulation actions,
             UIDesignTokens tokens) {
         if (sidebarToggleButton(state)) {
             state.toggleSidebar();
@@ -108,13 +106,6 @@ public final class CommandBar {
             ImGui.openPopup(INFO_MENU);
         }
 
-        ImGui.sameLine(0.0f, tokens.spaceXs());
-        boolean paused = application.paused();
-        if (UIButton.text(paused ? "Resume" : "Pause", "command-pause",
-                paused ? UIComponentVariant.SELECTED : UIComponentVariant.GHOST,
-                0.0f, tokens.compactControlHeight())) {
-            actions.togglePause();
-        }
     }
 
     private boolean sidebarToggleButton(UIState state) {
