@@ -7,7 +7,7 @@ import java.nio.file.Path;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
-import com.particle.sim.ui.SimulationUi;
+import com.particle.sim.ui.SimulationUI;
 
 public class SettingsController {
     private static final double SETTINGS_SAVE_DEBOUNCE_SECONDS = 0.5;
@@ -16,9 +16,9 @@ public class SettingsController {
     private final DebouncedSettingsSaver settingsSaver;
     private final GpuParticleSystem particles;
     private final CameraController camera;
-    private final SimulationUi ui;
+    private final SimulationUI ui;
 
-    public SettingsController(GpuParticleSystem particles, CameraController camera, SimulationUi ui) {
+    public SettingsController(GpuParticleSystem particles, CameraController camera, SimulationUI ui) {
         this.particles = particles;
         this.camera = camera;
         this.ui = ui;

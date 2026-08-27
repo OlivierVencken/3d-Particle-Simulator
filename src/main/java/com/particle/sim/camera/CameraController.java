@@ -2,6 +2,7 @@ package com.particle.sim.camera;
 
 import com.particle.sim.math.Math3d;
 import com.particle.sim.settings.SimulationDefaults;
+import com.particle.sim.ui.UiInputOwnership;
 import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
 
@@ -21,7 +22,11 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
 import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_DISABLED;
 import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
+import static org.lwjgl.glfw.GLFW.GLFW_FOCUSED;
+import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
 import static org.lwjgl.glfw.GLFW.glfwGetKey;
+import static org.lwjgl.glfw.GLFW.glfwGetMouseButton;
+import static org.lwjgl.glfw.GLFW.glfwGetWindowAttrib;
 import static org.lwjgl.glfw.GLFW.glfwSetInputMode;
 
 public final class CameraController {
@@ -34,13 +39,13 @@ public final class CameraController {
 
     private float sensitivity = SimulationDefaults.CAMERA_SENSITIVITY;
     private float flySpeed = SimulationDefaults.CAMERA_FLY_SPEED;
-    private boolean mouseCaptured = false;
+    private final CameraCaptureState captureState = new CameraCaptureState();
 
     public CameraController() {
         reset();
     }
 
-    public void update(long window, float deltaTime) {
+    public void update(long window, float deltaTime, UiInputOwnership ownership) {
         var io = ImGui.getIO();
 
         float cosPitch = (float) Math.cos(pitch);
@@ -52,11 +57,21 @@ public final class CameraController {
 
         float[] right = Math3d.normalize(Math3d.cross(forward[0], forward[1], forward[2], 0.0f, 1.0f, 0.0f));
 
-        if (!io.getWantCaptureMouse()) {
-            updateMouse(window, io.getMouseDeltaX(), io.getMouseDeltaY(), io.getMouseWheel());
+        boolean windowFocused = glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE;
+        CameraCaptureState.Transition captureTransition = captureState.update(
+                glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS,
+                glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS,
+                isPressed(window, GLFW_KEY_ESCAPE),
+                windowFocused,
+                ownership);
+        applyCaptureTransition(window, captureTransition);
+
+        if (captureState.captured()) {
+            yaw -= io.getMouseDeltaX() * sensitivity;
+            pitch = Math3d.clamp(pitch - io.getMouseDeltaY() * sensitivity, -1.5f, 1.5f);
         }
 
-        if (!io.getWantCaptureKeyboard()) {
+        if (windowFocused && (captureState.captured() || ownership.allowsSimulationKeyboard())) {
             updateKeyboard(window, deltaTime, forward, right);
         }
     }
@@ -78,24 +93,13 @@ public final class CameraController {
         pitch = 0.0f;
     }
 
-    private void updateMouse(long window, float dx, float dy, float wheel) {
-        boolean leftClick = ImGui.getIO().getMouseClicked(GLFW_MOUSE_BUTTON_LEFT);
-        boolean rightClick = ImGui.getIO().getMouseClicked(GLFW_MOUSE_BUTTON_RIGHT);
-        boolean escPressed = isPressed(window, GLFW_KEY_ESCAPE);
-
-        if (leftClick && !mouseCaptured) {
-            mouseCaptured = true;
+    private void applyCaptureTransition(long window, CameraCaptureState.Transition transition) {
+        if (transition == CameraCaptureState.Transition.CAPTURED) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             ImGui.getIO().addConfigFlags(ImGuiConfigFlags.NoMouse);
-        } else if ((rightClick || escPressed) && mouseCaptured) {
-            mouseCaptured = false;
+        } else if (transition == CameraCaptureState.Transition.RELEASED) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             ImGui.getIO().removeConfigFlags(ImGuiConfigFlags.NoMouse);
-        }
-
-        if (mouseCaptured) {
-            yaw -= dx * sensitivity;
-            pitch = Math3d.clamp(pitch - dy * sensitivity, -1.5f, 1.5f);
         }
     }
 
@@ -116,7 +120,7 @@ public final class CameraController {
     }
 
     public boolean isMouseCaptured() {
-        return mouseCaptured;
+        return captureState.captured();
     }
 
     private void updateKeyboard(long window, float deltaTime, float[] forward, float[] right) {

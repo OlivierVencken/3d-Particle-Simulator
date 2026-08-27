@@ -12,6 +12,7 @@ import java.util.Optional;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.util.nfd.NativeFileDialog.NFD_CANCEL;
 import static org.lwjgl.util.nfd.NativeFileDialog.NFD_FreePath;
+import static org.lwjgl.util.nfd.NativeFileDialog.NFD_GetError;
 import static org.lwjgl.util.nfd.NativeFileDialog.NFD_Init;
 import static org.lwjgl.util.nfd.NativeFileDialog.NFD_OKAY;
 import static org.lwjgl.util.nfd.NativeFileDialog.NFD_OpenDialog;
@@ -88,7 +89,10 @@ public final class PresetFileDialog {
                 return Optional.empty();
             }
             if (result != NFD_OKAY) {
-                return Optional.empty();
+                String details = NFD_GetError();
+                throw new IllegalStateException(details == null || details.isBlank()
+                        ? "The native file dialog could not be opened."
+                        : details);
             }
 
             long nativePath = outPath.get(0);

@@ -6,9 +6,9 @@ import com.particle.sim.input.HotkeyManager;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SettingsController;
 import com.particle.sim.system.StartupFailureException;
-import com.particle.sim.ui.ImguiLayer;
+import com.particle.sim.ui.ImGuiLayer;
 import com.particle.sim.ui.PresetFileDialog;
-import com.particle.sim.ui.SimulationUi;
+import com.particle.sim.ui.SimulationUI;
 import com.particle.sim.window.WindowManager;
 
 import static org.lwjgl.opengl.GL43C.GL_BLEND;
@@ -23,12 +23,13 @@ public final class ParticleSimulatorApp {
     private static final String WINDOW_TITLE = "3D Particle Simulator";
 
     private final WindowManager window = new WindowManager(WINDOW_TITLE);
-    private final ImguiLayer imgui = new ImguiLayer();
+    private final ImGuiLayer imgui = new ImGuiLayer();
     private final CameraController camera = new CameraController();
     private final GpuParticleSystem particles = new GpuParticleSystem();
-    private final SimulationUi ui = new SimulationUi();
+    private final SimulationUI ui = new SimulationUI();
     private final HotkeyManager hotkeys = new HotkeyManager();
     private final SettingsController settingsController = new SettingsController(particles, camera, ui);
+    private final SimulationUiAdapter uiAdapter = new SimulationUiAdapter(particles, camera, ui, settingsController);
     private boolean windowInitialized;
     private boolean presetDialogInitialized;
     private boolean imguiInitialized;
@@ -57,8 +58,8 @@ public final class ParticleSimulatorApp {
             imguiInitialized = true;
             particles.init();
             particlesInitialized = true;
-            initSettings();
             AppHotkeys.register(hotkeys, this);
+            initSettings();
 
             new ApplicationRuntime(
                     window,
@@ -67,6 +68,7 @@ public final class ParticleSimulatorApp {
                     camera,
                     particles,
                     ui,
+                    uiAdapter,
                     settingsController).run();
         } finally {
             dispose();
@@ -81,18 +83,27 @@ public final class ParticleSimulatorApp {
     }
 
     private void initSettings() {
-        ui.onSettingsChanged(settingsController::onSettingsChanged);
-        ui.onResetSettings(settingsController::onResetRequested);
-        ui.onSavePreset(() -> PresetFileDialog.showSaveDialog()
-                .ifPresent(settingsController::savePresetTo));
-        ui.onLoadPreset(() -> PresetFileDialog.showOpenDialog()
-                .ifPresent(settingsController::loadPresetFrom));
-        ui.onExitApplication(() -> {
+        ui.connect(uiAdapter.model(), uiAdapter.actions());
+        uiAdapter.onSavePreset(() -> runPresetAction(
+                "Could not save the preset.",
+                () -> PresetFileDialog.showSaveDialog().ifPresent(settingsController::savePresetTo)));
+        uiAdapter.onLoadPreset(() -> runPresetAction(
+                "Could not load the preset.",
+                () -> PresetFileDialog.showOpenDialog().ifPresent(settingsController::loadPresetFrom)));
+        uiAdapter.onExitApplication(() -> {
             settingsController.flush();
             window.requestClose();
         });
 
         settingsController.load();
+    }
+
+    private void runPresetAction(String summary, Runnable action) {
+        try {
+            action.run();
+        } catch (RuntimeException exception) {
+            ui.showError(summary, exception.getMessage());
+        }
     }
 
     public WindowManager getWindow() {
@@ -103,7 +114,7 @@ public final class ParticleSimulatorApp {
         return particles;
     }
 
-    public SimulationUi getUi() {
+    public SimulationUI getUi() {
         return ui;
     }
 
@@ -112,26 +123,32 @@ public final class ParticleSimulatorApp {
             settingsController.flush();
         } finally {
             try {
-                if (particlesInitialized) {
-                    particles.dispose();
-                    particlesInitialized = false;
+                if (imguiInitialized) {
+                    ui.dispose();
                 }
             } finally {
                 try {
-                    if (imguiInitialized) {
-                        imgui.dispose();
-                        imguiInitialized = false;
+                    if (particlesInitialized) {
+                        particles.dispose();
+                        particlesInitialized = false;
                     }
                 } finally {
                     try {
-                        if (presetDialogInitialized) {
-                            PresetFileDialog.shutdown();
-                            presetDialogInitialized = false;
+                        if (imguiInitialized) {
+                            imgui.dispose();
+                            imguiInitialized = false;
                         }
                     } finally {
-                        if (windowInitialized) {
-                            window.dispose();
-                            windowInitialized = false;
+                        try {
+                            if (presetDialogInitialized) {
+                                PresetFileDialog.shutdown();
+                                presetDialogInitialized = false;
+                            }
+                        } finally {
+                            if (windowInitialized) {
+                                window.dispose();
+                                windowInitialized = false;
+                            }
                         }
                     }
                 }

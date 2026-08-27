@@ -1,24 +1,32 @@
 package com.particle.sim;
 
 import com.particle.sim.camera.CameraController;
-import com.particle.sim.input.HotkeyContext;
 import com.particle.sim.input.HotkeyManager;
+import com.particle.sim.input.HotkeyRoutingContext;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.settings.SettingsController;
 import com.particle.sim.settings.SimulationDefaults;
-import com.particle.sim.ui.ImguiLayer;
-import com.particle.sim.ui.SimulationUi;
+import com.particle.sim.ui.ImGuiLayer;
+import com.particle.sim.ui.PreparedUiFrame;
+import com.particle.sim.ui.SimulationUI;
 import com.particle.sim.window.WindowManager;
 
 import java.util.concurrent.locks.LockSupport;
+import java.util.Objects;
 
-import static imgui.ImGui.getIO;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL43C.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL43C.GL_BLEND;
 import static org.lwjgl.opengl.GL43C.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL43C.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL43C.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL43C.GL_SCISSOR_TEST;
+import static org.lwjgl.opengl.GL43C.glBindFramebuffer;
 import static org.lwjgl.opengl.GL43C.glClear;
 import static org.lwjgl.opengl.GL43C.glClearColor;
+import static org.lwjgl.opengl.GL43C.glDisable;
 import static org.lwjgl.opengl.GL43C.glDepthMask;
+import static org.lwjgl.opengl.GL43C.glEnable;
 import static org.lwjgl.opengl.GL43C.glViewport;
 
 public final class ApplicationRuntime {
@@ -27,20 +35,22 @@ public final class ApplicationRuntime {
     private static final int MAX_SIMULATION_STEPS_PER_FRAME = 4;
 
     private final WindowManager window;
-    private final ImguiLayer imgui;
+    private final ImGuiLayer imgui;
     private final HotkeyManager hotkeys;
     private final CameraController camera;
     private final GpuParticleSystem particles;
-    private final SimulationUi ui;
+    private final SimulationUI ui;
+    private final SimulationUiAdapter uiAdapter;
     private final SettingsController settingsController;
     private final FixedSimulationClock simulationClock = new FixedSimulationClock(
             SimulationDefaults.SIMULATION_STEP_SECONDS);
 
     private double lastFrameTime;
 
-    public ApplicationRuntime(WindowManager window, ImguiLayer imgui, HotkeyManager hotkeys,
+    ApplicationRuntime(WindowManager window, ImGuiLayer imgui, HotkeyManager hotkeys,
             CameraController camera,
-            GpuParticleSystem particles, SimulationUi ui, SettingsController settingsController) {
+            GpuParticleSystem particles, SimulationUI ui, SimulationUiAdapter uiAdapter,
+            SettingsController settingsController) {
         this.window = window;
         this.imgui = imgui;
         this.hotkeys = hotkeys;
@@ -48,6 +58,7 @@ public final class ApplicationRuntime {
         this.particles = particles;
         this.ui = ui;
         this.settingsController = settingsController;
+        this.uiAdapter = Objects.requireNonNull(uiAdapter, "uiAdapter");
     }
 
     public void run() {
@@ -55,7 +66,6 @@ public final class ApplicationRuntime {
 
         while (!window.shouldClose()) {
             window.pollEvents();
-            hotkeys.update(window.handle(), currentHotkeyContext());
 
             double now = glfwGetTime();
             double frameDelta = Math.min(Math.max(now - lastFrameTime, 0.0), MAX_FRAME_DELTA_SECONDS);
@@ -64,7 +74,14 @@ public final class ApplicationRuntime {
 
             window.updateFramebufferSize();
             imgui.beginFrame();
-            camera.update(window.handle(), deltaTime);
+            PreparedUiFrame uiFrame = ui.prepareFrame(window.width(), window.height(), deltaTime);
+            var inputOwnership = uiFrame.inputOwnership();
+            hotkeys.update(window.handle(), new HotkeyRoutingContext(
+                    inputOwnership.allowsSimulationKeyboard(),
+                    inputOwnership.keyboardOwnedByUi(),
+                    inputOwnership.modalOpen(),
+                    camera.isMouseCaptured()));
+            camera.update(window.handle(), deltaTime, inputOwnership);
 
             if (!ui.isPaused()) {
                 simulationClock.addFrameTime(frameDelta);
@@ -78,18 +95,15 @@ public final class ApplicationRuntime {
                 }
             }
 
-            renderScene();
-            ui.render(deltaTime, particles, camera);
+            renderScene(uiFrame);
+            uiAdapter.prepareFrame();
+            ui.render(deltaTime);
             imgui.render();
             settingsController.tick(now);
 
             window.swapBuffers();
             limitFrameRate(now);
         }
-    }
-
-    private HotkeyContext currentHotkeyContext() {
-        return getIO().getWantCaptureKeyboard() ? HotkeyContext.GLOBAL : HotkeyContext.SIMULATION;
     }
 
     private void limitFrameRate(double frameStartTime) {
@@ -114,15 +128,36 @@ public final class ApplicationRuntime {
         }
     }
 
-    private void renderScene() {
+    private void renderScene(PreparedUiFrame uiFrame) {
+        if (window.width() <= 0 || window.height() <= 0) {
+            return;
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDisable(GL_SCISSOR_TEST);
         glViewport(0, 0, window.width(), window.height());
-        glClearColor(0.015f, 0.018f, 0.024f, 1.0f);
+        glClearColor(0.031f, 0.031f, 0.031f, 1.0f);
+        glDepthMask(true);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if (!uiFrame.simulationViewport().visible()) {
+            restoreUiRenderState();
+            return;
+        }
+
         glDepthMask(false);
         try {
-            particles.render(window.width(), window.height(), camera.viewMatrix());
+            particles.render(uiFrame.simulationViewport(), camera.viewMatrix());
         } finally {
-            glDepthMask(true);
+            restoreUiRenderState();
         }
+    }
+
+    private void restoreUiRenderState() {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, window.width(), window.height());
+        glDisable(GL_SCISSOR_TEST);
+        glEnable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(true);
     }
 }

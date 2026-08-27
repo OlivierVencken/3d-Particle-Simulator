@@ -4,6 +4,7 @@ import com.particle.sim.graphics.ShaderProgram;
 import com.particle.sim.graphics.GpuTimerQuery;
 import com.particle.sim.math.Math3d;
 import com.particle.sim.settings.SimulationDefaults;
+import com.particle.sim.ui.FramebufferViewport;
 
 import java.nio.ByteBuffer;
 
@@ -19,6 +20,7 @@ import static org.lwjgl.opengl.GL43C.GL_POINTS;
 import static org.lwjgl.opengl.GL43C.GL_RGBA;
 import static org.lwjgl.opengl.GL43C.GL_RGBA16F;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
+import static org.lwjgl.opengl.GL43C.GL_SCISSOR_TEST;
 import static org.lwjgl.opengl.GL43C.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL43C.GL_TEXTURE1;
 import static org.lwjgl.opengl.GL43C.GL_TEXTURE_2D;
@@ -49,6 +51,7 @@ import static org.lwjgl.opengl.GL43C.glGenTextures;
 import static org.lwjgl.opengl.GL43C.glGenVertexArrays;
 import static org.lwjgl.opengl.GL43C.glGetUniformLocation;
 import static org.lwjgl.opengl.GL43C.glIsEnabled;
+import static org.lwjgl.opengl.GL43C.glScissor;
 import static org.lwjgl.opengl.GL43C.glTexImage2D;
 import static org.lwjgl.opengl.GL43C.glTexParameteri;
 import static org.lwjgl.opengl.GL43C.glUniform1f;
@@ -182,43 +185,53 @@ public final class ParticleRenderer {
         uExtractSceneLoc = glGetUniformLocation(bloomExtractProgram, "uScene");
     }
 
-    public void render(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
+    public void render(FramebufferViewport viewport, float[] viewMatrix, ParticleBuffers particleBuffers,
             SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, boolean fixedParticleScreenSize,
             boolean glowEnabled, boolean trailsEnabled, int colorMode, int groupCount, float maxVelocity, float bounds,
             float interactionRange, GlowSettings glowSettings, TrailSettings trailSettings,
             TrailHistoryBuffers trailHistoryBuffers) {
-        if (particleCount == 0) {
+        if (!viewport.visible() || particleCount == 0) {
             return;
         }
+        int width = viewport.width();
+        int height = viewport.height();
         frameViewProjection = viewProjection(width, height, viewMatrix);
+        try {
+            if (glowEnabled) {
+                renderGlow(viewport, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
+                        fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange,
+                        glowSettings, trailsEnabled, trailSettings, trailHistoryBuffers);
+                return;
+            }
 
-        if (glowEnabled) {
-            renderGlow(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
-                    fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange,
-                    glowSettings, trailsEnabled, trailSettings, trailHistoryBuffers);
-            return;
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            setViewportAndScissor(viewport.x(), viewport.y(), width, height);
+            if (trailsEnabled) {
+                renderTrails(width, height, viewMatrix, particleBuffers, spatialGridBuffers, trailHistoryBuffers,
+                        particleCount, pointSize, fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds,
+                        interactionRange, trailSettings);
+            }
+
+            renderParticles(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
+                    fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange);
+        } finally {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glDisable(GL_SCISSOR_TEST);
         }
-
-        if (trailsEnabled) {
-            renderTrails(width, height, viewMatrix, particleBuffers, spatialGridBuffers, trailHistoryBuffers,
-                    particleCount, pointSize, fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds,
-                    interactionRange, trailSettings);
-        }
-
-        renderParticles(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount, pointSize,
-                fixedParticleScreenSize, colorMode, groupCount, maxVelocity, bounds, interactionRange);
     }
 
-    private void renderGlow(int width, int height, float[] viewMatrix, ParticleBuffers particleBuffers,
+    private void renderGlow(FramebufferViewport viewport, float[] viewMatrix, ParticleBuffers particleBuffers,
             SpatialGridBuffers spatialGridBuffers, int particleCount, float pointSize, boolean fixedParticleScreenSize,
             int colorMode, int groupCount, float maxVelocity, float bounds, float interactionRange,
             GlowSettings glowSettings, boolean trailsEnabled, TrailSettings trailSettings,
             TrailHistoryBuffers trailHistoryBuffers) {
+        int width = viewport.width();
+        int height = viewport.height();
         ensureGlowTargets(width, height, particleCount);
 
         glBindFramebuffer(GL_FRAMEBUFFER, sceneFbo);
-        glViewport(0, 0, width, height);
-        glClearColor(0.015f, 0.018f, 0.024f, 1.0f);
+        setViewportAndScissor(0, 0, width, height);
+        glClearColor(0.031f, 0.031f, 0.031f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         if (trailsEnabled) {
             renderTrails(width, height, viewMatrix, particleBuffers, spatialGridBuffers, trailHistoryBuffers,
@@ -245,7 +258,7 @@ public final class ParticleRenderer {
             }
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glViewport(0, 0, width, height);
+            setViewportAndScissor(viewport.x(), viewport.y(), width, height);
             glUseProgram(glowCompositeProgram);
             glBindVertexArray(fullscreenVao);
             glActiveTexture(GL_TEXTURE0);
@@ -364,7 +377,7 @@ public final class ParticleRenderer {
     private void blurTo(int targetFbo, int sourceTexture, float directionX, float directionY,
             GlowSettings glowSettings) {
         glBindFramebuffer(GL_FRAMEBUFFER, targetFbo);
-        glViewport(0, 0, bloomWidth, bloomHeight);
+        setViewportAndScissor(0, 0, bloomWidth, bloomHeight);
         glUseProgram(blurProgram);
         glBindVertexArray(fullscreenVao);
         glActiveTexture(GL_TEXTURE0);
@@ -378,13 +391,19 @@ public final class ParticleRenderer {
 
     private void extractBloom() {
         glBindFramebuffer(GL_FRAMEBUFFER, pingPongFbos[0]);
-        glViewport(0, 0, bloomWidth, bloomHeight);
+        setViewportAndScissor(0, 0, bloomWidth, bloomHeight);
         glUseProgram(bloomExtractProgram);
         glBindVertexArray(fullscreenVao);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sceneTexture);
         glUniform1i(uExtractSceneLoc, 0);
         glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
+
+    private void setViewportAndScissor(int x, int y, int width, int height) {
+        glViewport(x, y, width, height);
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(x, y, width, height);
     }
 
     private float[] viewProjection(int width, int height, float[] viewMatrix) {

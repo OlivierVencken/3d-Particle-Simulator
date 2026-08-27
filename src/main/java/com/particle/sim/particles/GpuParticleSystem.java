@@ -1,6 +1,7 @@
 package com.particle.sim.particles;
 
 import com.particle.sim.settings.SimulationDefaults;
+import com.particle.sim.ui.FramebufferViewport;
 
 import imgui.ImVec4;
 
@@ -70,8 +71,8 @@ public final class GpuParticleSystem {
         }
     }
 
-    public void render(int width, int height, float[] viewMatrix) {
-        renderer.render(width, height, viewMatrix, particleBuffers, spatialGridBuffers, particleCount(), pointSize(),
+    public void render(FramebufferViewport viewport, float[] viewMatrix) {
+        renderer.render(viewport, viewMatrix, particleBuffers, spatialGridBuffers, particleCount(), pointSize(),
                 fixedParticleScreenSize(), effectEnabled(EffectMode.GLOW), effectEnabled(EffectMode.TRAILS),
                 colorMode().ordinal(), groupCount(), maxVelocity(), bounds(), interactionRange(),
                 glowSettings(), trailSettings(), trailHistoryBuffers);
