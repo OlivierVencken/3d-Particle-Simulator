@@ -11,11 +11,11 @@ class FixedSimulationClockTest {
     private static final double EPSILON = 0.000001;
 
     @Test
-    void producesSameStepCountAcrossCommonRenderRates() {
-        assertEquals(60, countStepsForOneSecondAtFps(30));
-        assertEquals(60, countStepsForOneSecondAtFps(60));
-        assertEquals(60, countStepsForOneSecondAtFps(120));
-        assertEquals(60, countStepsForOneSecondAtFps(240));
+    void capsSimulationAtOneFixedStepPerRenderFrame() {
+        assertEquals(30, countFrameLimitedStepsForOneSecondAtFps(30));
+        assertEquals(60, countFrameLimitedStepsForOneSecondAtFps(60));
+        assertEquals(60, countFrameLimitedStepsForOneSecondAtFps(120));
+        assertEquals(60, countFrameLimitedStepsForOneSecondAtFps(240));
     }
 
     @Test
@@ -51,14 +51,15 @@ class FixedSimulationClockTest {
         assertTrue(clock.hasStep());
     }
 
-    private int countStepsForOneSecondAtFps(int fps) {
+    private int countFrameLimitedStepsForOneSecondAtFps(int fps) {
         FixedSimulationClock clock = new FixedSimulationClock(SimulationDefaults.SIMULATION_STEP_SECONDS);
         int steps = 0;
 
         for (int frame = 0; frame < fps; frame++) {
             clock.addFrameTime(1.0 / fps);
-            while (clock.hasStep()) {
+            if (clock.hasStep()) {
                 clock.consumeStep();
+                clock.discardExcessSteps();
                 steps++;
             }
         }
