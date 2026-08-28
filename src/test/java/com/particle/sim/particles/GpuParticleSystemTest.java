@@ -118,17 +118,17 @@ class GpuParticleSystemTest {
     }
 
     @Test
-    void gridSizeRoundsUpWorldDiameterByInteractionRange() {
+    void gridSizeRoundsDownSoUniformCellsAreAtLeastTheInteractionRange() {
         GpuParticleSystem system = new GpuParticleSystem();
 
         system.bounds(4.0f);
         system.interactionRange(0.95f);
 
-        assertEquals(9, system.gridSize());
+        assertEquals(8, system.gridSize());
 
         system.interactionRange(3.0f);
 
-        assertEquals(3, system.gridSize());
+        assertEquals(2, system.gridSize());
     }
 
     @Test
@@ -150,7 +150,7 @@ class GpuParticleSystemTest {
         system.bounds(4.0f);
         system.interactionRange(0.95f);
 
-        assertEquals(729, system.gridCellCount());
+        assertEquals(512, system.gridCellCount());
     }
 
     @Test

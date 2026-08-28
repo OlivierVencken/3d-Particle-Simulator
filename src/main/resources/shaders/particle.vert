@@ -27,7 +27,8 @@ uniform int uGridSize;
 out vec3 vColor;
 
 ivec3 getGridCoord(vec3 pos) {
-    vec3 normalized = (pos + vec3(uBounds)) / uInteractionRange;
+    float inverseCellWidth = float(uGridSize) / (uBounds * 2.0);
+    vec3 normalized = (pos + vec3(uBounds)) * inverseCellWidth;
     return clamp(ivec3(floor(normalized)), ivec3(0), ivec3(max(uGridSize - 1, 0)));
 }
 

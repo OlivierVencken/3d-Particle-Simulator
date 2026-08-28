@@ -5,7 +5,7 @@ public final class SpatialGridSizing {
     }
 
     public static int gridSize(float bounds, float interactionRange) {
-        return Math.max(1, (int) Math.ceil((bounds * 2.0f) / interactionRange));
+        return Math.max(1, (int) Math.floor((bounds * 2.0f) / interactionRange));
     }
 
     public static int gridCellCount(float bounds, float interactionRange) {

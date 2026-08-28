@@ -52,6 +52,11 @@ final class ParticleBuffers {
         return readFloatBuffer(velocitySsbo, particleCount);
     }
 
+    void replaceState(float[] positions, float[] velocities) {
+        writeFloatBuffer(positionSsbo, positions);
+        writeFloatBuffer(velocitySsbo, velocities);
+    }
+
     void resize(int oldParticleCount, int requestedParticleCount, boolean preserveExisting,
             ParticleSimulationConfig config, Random random) {
         int copiedParticleCount = preserveExisting ? Math.min(oldParticleCount, requestedParticleCount) : 0;
@@ -164,6 +169,17 @@ final class ParticleBuffers {
             float[] result = new float[floatCount];
             data.get(result);
             return result;
+        } finally {
+            memFree(data);
+        }
+    }
+
+    private static void writeFloatBuffer(int buffer, float[] values) {
+        FloatBuffer data = memAllocFloat(values.length);
+        try {
+            data.put(values).flip();
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, data);
         } finally {
             memFree(data);
         }

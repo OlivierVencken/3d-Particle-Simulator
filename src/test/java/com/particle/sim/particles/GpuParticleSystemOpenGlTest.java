@@ -116,6 +116,26 @@ class GpuParticleSystemOpenGlTest {
                     assertStateClose(expected.velocities(), system.readVelocities(), 0.002f);
                 }
             }
+
+            system.dispose();
+            system = seamInteractionSystem();
+            float[] seamPositions = {
+                    3.59f, 0.0f, 0.0f, 0.0f,
+                    -3.99f, 0.0f, 0.0f, 0.0f
+            };
+            float[] seamVelocities = new float[seamPositions.length];
+            system.replaceState(seamPositions, seamVelocities);
+            ReferenceState seamExpected = referenceStep(system, seamPositions, seamVelocities);
+
+            system.step();
+            glFinish();
+            float[] actualSeamVelocities = system.readVelocities();
+            assertTrue(actualSeamVelocities[0] > 0.0001f,
+                    "Particle near the positive seam did not interact across the toroidal boundary");
+            assertTrue(actualSeamVelocities[4] < -0.0001f,
+                    "Particle near the negative seam did not interact across the toroidal boundary");
+            assertStateClose(seamExpected.positions(), system.readPositions(), 0.00001f);
+            assertStateClose(seamExpected.velocities(), actualSeamVelocities, 0.00001f);
         } finally {
             if (system != null) {
                 system.dispose();
@@ -161,6 +181,20 @@ class GpuParticleSystemOpenGlTest {
                 system.attraction(row, column, ((row * 3 + column * 5) % 7 - 3) / 3.0f);
             }
         }
+        return system;
+    }
+
+    private static GpuParticleSystem seamInteractionSystem() {
+        GpuParticleSystem system = new GpuParticleSystem();
+        system.setParticleCount(2);
+        system.bounds(4.0f);
+        system.interactionRange(0.95f);
+        system.groupCount(1);
+        system.toroidalWrap(true);
+        system.init();
+        system.zeroAttractionMatrix();
+        system.attraction(0, 0, 1.0f);
+        assertEquals(8, system.gridSize());
         return system;
     }
 

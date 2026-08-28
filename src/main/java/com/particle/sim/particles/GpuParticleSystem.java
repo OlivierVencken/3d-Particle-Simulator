@@ -469,6 +469,18 @@ public final class GpuParticleSystem {
         return particleBuffers.readVelocities(particleCount());
     }
 
+    void replaceState(float[] positions, float[] velocities) {
+        int expectedFloatCount = Math.multiplyExact(particleCount(), 4);
+        if (!initialized) {
+            throw new IllegalStateException("Particle system must be initialized before replacing its state");
+        }
+        if (positions.length != expectedFloatCount || velocities.length != expectedFloatCount) {
+            throw new IllegalArgumentException("Particle state must contain four floats per particle");
+        }
+        particleBuffers.replaceState(positions, velocities);
+        trailHistoryBuffers.clear();
+    }
+
     int[] readGridCounts() {
         return spatialGridBuffers.readCounts(gridCellCount());
     }
