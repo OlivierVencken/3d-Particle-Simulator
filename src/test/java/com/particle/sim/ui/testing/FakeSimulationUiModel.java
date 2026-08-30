@@ -5,6 +5,7 @@ import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.particles.SimulationDimension;
+import com.particle.sim.particles.FourDVisualizationMode;
 import com.particle.sim.ui.SimulationUiDiagnostics;
 import com.particle.sim.ui.SimulationUiModel;
 import imgui.ImVec4;
@@ -135,9 +136,47 @@ public final class FakeSimulationUiModel implements SimulationUiModel {
     public static final class CameraData implements SimulationUiModel.Camera {
         public float sensitivity = 0.002f;
         public float flySpeed = 5.0f;
+        public FourDVisualizationMode fourDVisualizationMode = FourDVisualizationMode.PERSPECTIVE;
+        public float fourDXwAngleDegrees;
+        public float fourDYwAngleDegrees;
+        public float fourDZwAngleDegrees;
+        public float fourDXwAutoSpeedDegrees = 8.0f;
+        public boolean fourDXwAutoEnabled = true;
+        public float fourDYwAutoSpeedDegrees;
+        public boolean fourDYwAutoEnabled;
+        public float fourDZwAutoSpeedDegrees;
+        public boolean fourDZwAutoEnabled;
+        public boolean fourDViewMotionPaused;
+        public float fourDPerspectiveDistance = 12.0f;
+        public float minimumFourDPerspectiveDistance = 8.25f;
+        public float fourDSliceCenterW;
+        public float fourDSliceThickness = 1.0f;
+        public float fourDSliceFeather = 0.2f;
+        public boolean fourDSliceSweepEnabled;
+        public float fourDSliceSweepSpeed = 1.0f;
+        public float fourDColorRange = 4.0f;
 
         @Override public float sensitivity() { return sensitivity; }
         @Override public float flySpeed() { return flySpeed; }
+        @Override public FourDVisualizationMode fourDVisualizationMode() { return fourDVisualizationMode; }
+        @Override public float fourDXwAngleDegrees() { return fourDXwAngleDegrees; }
+        @Override public float fourDYwAngleDegrees() { return fourDYwAngleDegrees; }
+        @Override public float fourDZwAngleDegrees() { return fourDZwAngleDegrees; }
+        @Override public float fourDXwAutoSpeedDegrees() { return fourDXwAutoSpeedDegrees; }
+        @Override public boolean fourDXwAutoEnabled() { return fourDXwAutoEnabled; }
+        @Override public float fourDYwAutoSpeedDegrees() { return fourDYwAutoSpeedDegrees; }
+        @Override public boolean fourDYwAutoEnabled() { return fourDYwAutoEnabled; }
+        @Override public float fourDZwAutoSpeedDegrees() { return fourDZwAutoSpeedDegrees; }
+        @Override public boolean fourDZwAutoEnabled() { return fourDZwAutoEnabled; }
+        @Override public boolean fourDViewMotionPaused() { return fourDViewMotionPaused; }
+        @Override public float fourDPerspectiveDistance() { return fourDPerspectiveDistance; }
+        @Override public float minimumFourDPerspectiveDistance() { return minimumFourDPerspectiveDistance; }
+        @Override public float fourDSliceCenterW() { return fourDSliceCenterW; }
+        @Override public float fourDSliceThickness() { return fourDSliceThickness; }
+        @Override public float fourDSliceFeather() { return fourDSliceFeather; }
+        @Override public boolean fourDSliceSweepEnabled() { return fourDSliceSweepEnabled; }
+        @Override public float fourDSliceSweepSpeed() { return fourDSliceSweepSpeed; }
+        @Override public float fourDColorRange() { return fourDColorRange; }
     }
 
     public static final class PerformanceData implements SimulationUiModel.Performance {

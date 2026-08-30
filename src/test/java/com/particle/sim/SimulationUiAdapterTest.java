@@ -3,6 +3,7 @@ package com.particle.sim;
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.particles.SimulationDimension;
+import com.particle.sim.particles.FourDVisualizationMode;
 import com.particle.sim.settings.SettingsController;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.SimulationUI;
@@ -80,6 +81,33 @@ class SimulationUiAdapterTest {
         actions.camera().reset();
 
         assertEquals(1, settings.saveRequests);
+    }
+
+    @Test
+    void fourDViewActionsRoundTripThroughTheAdapter() {
+        actions.camera().setFourDVisualizationMode(FourDVisualizationMode.SLICE);
+        actions.camera().setFourDXwAngleDegrees(45.0f);
+        actions.camera().setFourDYwAutoSpeedDegrees(-12.0f);
+        actions.camera().setFourDYwAutoEnabled(true);
+        actions.camera().setFourDViewMotionPaused(true);
+        actions.camera().setFourDSliceCenterW(1.5f);
+        actions.camera().setFourDSliceSweepEnabled(true);
+
+        assertEquals(FourDVisualizationMode.SLICE, adapter.model().camera().fourDVisualizationMode());
+        assertEquals(45.0f, adapter.model().camera().fourDXwAngleDegrees(), 0.0001f);
+        assertEquals(-12.0f, adapter.model().camera().fourDYwAutoSpeedDegrees(), 0.0001f);
+        assertTrue(adapter.model().camera().fourDYwAutoEnabled());
+        assertTrue(adapter.model().camera().fourDViewMotionPaused());
+        assertEquals(1.5f, adapter.model().camera().fourDSliceCenterW(), 0.0001f);
+        assertTrue(adapter.model().camera().fourDSliceSweepEnabled());
+    }
+
+    @Test
+    void perspectiveDistanceIsClampedToSafeMinimum() {
+        actions.camera().setFourDPerspectiveDistance(1.0f);
+
+        assertEquals(adapter.model().camera().minimumFourDPerspectiveDistance(),
+                adapter.model().camera().fourDPerspectiveDistance(), 0.0001f);
     }
 
     @Test

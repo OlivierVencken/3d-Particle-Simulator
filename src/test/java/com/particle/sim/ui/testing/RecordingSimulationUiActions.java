@@ -5,6 +5,7 @@ import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.particles.SimulationDimension;
+import com.particle.sim.particles.FourDVisualizationMode;
 import com.particle.sim.ui.SimulationUiActions;
 
 import java.util.ArrayList;
@@ -79,6 +80,25 @@ public final class RecordingSimulationUiActions implements SimulationUiActions {
         @Override public void setSensitivity(float value) { record("camera.sensitivity"); }
         @Override public void setFlySpeed(float value) { record("camera.flySpeed"); }
         @Override public void reset() { record("camera.reset"); }
+        @Override public void setFourDVisualizationMode(FourDVisualizationMode value) { record("camera.4d.mode"); }
+        @Override public void setFourDXwAngleDegrees(float value) { record("camera.4d.xwAngle"); }
+        @Override public void setFourDYwAngleDegrees(float value) { record("camera.4d.ywAngle"); }
+        @Override public void setFourDZwAngleDegrees(float value) { record("camera.4d.zwAngle"); }
+        @Override public void setFourDXwAutoSpeedDegrees(float value) { record("camera.4d.xwSpeed"); }
+        @Override public void setFourDXwAutoEnabled(boolean value) { record("camera.4d.xwAuto"); }
+        @Override public void setFourDYwAutoSpeedDegrees(float value) { record("camera.4d.ywSpeed"); }
+        @Override public void setFourDYwAutoEnabled(boolean value) { record("camera.4d.ywAuto"); }
+        @Override public void setFourDZwAutoSpeedDegrees(float value) { record("camera.4d.zwSpeed"); }
+        @Override public void setFourDZwAutoEnabled(boolean value) { record("camera.4d.zwAuto"); }
+        @Override public void setFourDViewMotionPaused(boolean value) { record("camera.4d.pause"); }
+        @Override public void resetFourDOrientation() { record("camera.4d.reset"); }
+        @Override public void setFourDPerspectiveDistance(float value) { record("camera.4d.perspective"); }
+        @Override public void setFourDSliceCenterW(float value) { record("camera.4d.sliceCenter"); }
+        @Override public void setFourDSliceThickness(float value) { record("camera.4d.sliceThickness"); }
+        @Override public void setFourDSliceFeather(float value) { record("camera.4d.sliceFeather"); }
+        @Override public void setFourDSliceSweepEnabled(boolean value) { record("camera.4d.sliceSweep"); }
+        @Override public void setFourDSliceSweepSpeed(float value) { record("camera.4d.sliceSpeed"); }
+        @Override public void setFourDColorRange(float value) { record("camera.4d.colorRange"); }
     }
 
     public final class ApplicationActions implements SimulationUiActions.Application {

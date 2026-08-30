@@ -5,6 +5,7 @@ import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.particles.SimulationDimension;
+import com.particle.sim.particles.FourDVisualizationMode;
 
 /** Commands available to the presentation layer. Setting commands also schedule persistence. */
 public interface SimulationUiActions {
@@ -104,6 +105,44 @@ public interface SimulationUiActions {
         void setFlySpeed(float value);
 
         void reset();
+
+        void setFourDVisualizationMode(FourDVisualizationMode value);
+
+        void setFourDXwAngleDegrees(float value);
+
+        void setFourDYwAngleDegrees(float value);
+
+        void setFourDZwAngleDegrees(float value);
+
+        void setFourDXwAutoSpeedDegrees(float value);
+
+        void setFourDXwAutoEnabled(boolean value);
+
+        void setFourDYwAutoSpeedDegrees(float value);
+
+        void setFourDYwAutoEnabled(boolean value);
+
+        void setFourDZwAutoSpeedDegrees(float value);
+
+        void setFourDZwAutoEnabled(boolean value);
+
+        void setFourDViewMotionPaused(boolean value);
+
+        void resetFourDOrientation();
+
+        void setFourDPerspectiveDistance(float value);
+
+        void setFourDSliceCenterW(float value);
+
+        void setFourDSliceThickness(float value);
+
+        void setFourDSliceFeather(float value);
+
+        void setFourDSliceSweepEnabled(boolean value);
+
+        void setFourDSliceSweepSpeed(float value);
+
+        void setFourDColorRange(float value);
     }
 
     interface Application {

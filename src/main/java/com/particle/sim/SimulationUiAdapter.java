@@ -5,6 +5,8 @@ import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.particles.FourDViewConfiguration;
+import com.particle.sim.particles.FourDVisualizationMode;
 import com.particle.sim.particles.PerformanceSnapshot;
 import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.particles.SimulationDimension;
@@ -537,6 +539,204 @@ final class SimulationUiAdapter {
         @Override
         public void reset() {
             camera.reset();
+        }
+
+        @Override
+        public FourDVisualizationMode fourDVisualizationMode() {
+            return particles.fourDViewConfiguration().visualizationMode();
+        }
+
+        @Override
+        public void setFourDVisualizationMode(FourDVisualizationMode value) {
+            particles.fourDVisualizationMode(value);
+        }
+
+        @Override
+        public float fourDXwAngleDegrees() {
+            return degrees(particles.fourDXwAngle());
+        }
+
+        @Override
+        public void setFourDXwAngleDegrees(float value) {
+            particles.fourDXwAngle(Math.toRadians(value));
+        }
+
+        @Override
+        public float fourDYwAngleDegrees() {
+            return degrees(particles.fourDYwAngle());
+        }
+
+        @Override
+        public void setFourDYwAngleDegrees(float value) {
+            particles.fourDYwAngle(Math.toRadians(value));
+        }
+
+        @Override
+        public float fourDZwAngleDegrees() {
+            return degrees(particles.fourDZwAngle());
+        }
+
+        @Override
+        public void setFourDZwAngleDegrees(float value) {
+            particles.fourDZwAngle(Math.toRadians(value));
+        }
+
+        @Override
+        public float fourDXwAutoSpeedDegrees() {
+            return degrees(particles.fourDXwAutoSpeed());
+        }
+
+        @Override
+        public void setFourDXwAutoSpeedDegrees(float value) {
+            particles.fourDXwAutoSpeed(Math.toRadians(value));
+        }
+
+        @Override
+        public boolean fourDXwAutoEnabled() {
+            return particles.fourDXwAutoEnabled();
+        }
+
+        @Override
+        public void setFourDXwAutoEnabled(boolean value) {
+            particles.fourDXwAutoEnabled(value);
+        }
+
+        @Override
+        public float fourDYwAutoSpeedDegrees() {
+            return degrees(particles.fourDYwAutoSpeed());
+        }
+
+        @Override
+        public void setFourDYwAutoSpeedDegrees(float value) {
+            particles.fourDYwAutoSpeed(Math.toRadians(value));
+        }
+
+        @Override
+        public boolean fourDYwAutoEnabled() {
+            return particles.fourDYwAutoEnabled();
+        }
+
+        @Override
+        public void setFourDYwAutoEnabled(boolean value) {
+            particles.fourDYwAutoEnabled(value);
+        }
+
+        @Override
+        public float fourDZwAutoSpeedDegrees() {
+            return degrees(particles.fourDZwAutoSpeed());
+        }
+
+        @Override
+        public void setFourDZwAutoSpeedDegrees(float value) {
+            particles.fourDZwAutoSpeed(Math.toRadians(value));
+        }
+
+        @Override
+        public boolean fourDZwAutoEnabled() {
+            return particles.fourDZwAutoEnabled();
+        }
+
+        @Override
+        public void setFourDZwAutoEnabled(boolean value) {
+            particles.fourDZwAutoEnabled(value);
+        }
+
+        @Override
+        public boolean fourDViewMotionPaused() {
+            return particles.fourDViewMotionPaused();
+        }
+
+        @Override
+        public void setFourDViewMotionPaused(boolean value) {
+            particles.fourDViewMotionPaused(value);
+        }
+
+        @Override
+        public void resetFourDOrientation() {
+            particles.resetFourDOrientation();
+        }
+
+        @Override
+        public float fourDPerspectiveDistance() {
+            return (float) view().perspectiveDistance();
+        }
+
+        @Override
+        public float minimumFourDPerspectiveDistance() {
+            return (float) particles.minimumFourDPerspectiveDistance();
+        }
+
+        @Override
+        public void setFourDPerspectiveDistance(float value) {
+            particles.fourDPerspectiveDistance(value);
+        }
+
+        @Override
+        public float fourDSliceCenterW() {
+            return (float) view().sliceCenterW();
+        }
+
+        @Override
+        public void setFourDSliceCenterW(float value) {
+            particles.fourDSlice(value, view().sliceThickness(), view().sliceFeather());
+        }
+
+        @Override
+        public float fourDSliceThickness() {
+            return (float) view().sliceThickness();
+        }
+
+        @Override
+        public void setFourDSliceThickness(float value) {
+            particles.fourDSlice(view().sliceCenterW(), value, Math.min(view().sliceFeather(), value * 0.5));
+        }
+
+        @Override
+        public float fourDSliceFeather() {
+            return (float) view().sliceFeather();
+        }
+
+        @Override
+        public void setFourDSliceFeather(float value) {
+            particles.fourDSlice(view().sliceCenterW(), view().sliceThickness(), value);
+        }
+
+        @Override
+        public boolean fourDSliceSweepEnabled() {
+            return particles.fourDSliceSweepEnabled();
+        }
+
+        @Override
+        public void setFourDSliceSweepEnabled(boolean value) {
+            particles.fourDSliceSweepEnabled(value);
+        }
+
+        @Override
+        public float fourDSliceSweepSpeed() {
+            return (float) particles.fourDSliceSweepSpeed();
+        }
+
+        @Override
+        public void setFourDSliceSweepSpeed(float value) {
+            particles.fourDSliceSweepSpeed(value);
+        }
+
+        @Override
+        public float fourDColorRange() {
+            return (float) view().colorRange();
+        }
+
+        @Override
+        public void setFourDColorRange(float value) {
+            particles.fourDColorRange(value);
+        }
+
+        private FourDViewConfiguration view() {
+            return particles.fourDViewConfiguration();
+        }
+
+        private float degrees(double radians) {
+            return (float) Math.toDegrees(radians);
         }
     }
 

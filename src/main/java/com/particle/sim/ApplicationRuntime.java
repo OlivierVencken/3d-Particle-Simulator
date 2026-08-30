@@ -81,6 +81,7 @@ public final class ApplicationRuntime {
                     inputOwnership.modalOpen(),
                     camera.isMouseCaptured()));
             camera.update(window.handle(), deltaTime, inputOwnership);
+            particles.updateFourDView(frameDelta);
 
             if (!ui.isPaused()) {
                 simulationClock.addFrameTime(frameDelta);

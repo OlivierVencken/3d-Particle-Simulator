@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FourDViewControllerTest {
     private static final double EPSILON = 1.0e-12;
@@ -68,5 +70,87 @@ class FourDViewControllerTest {
                 assertEquals(first == second ? 1.0 : 0.0, dot, 1.0e-10);
             }
         }
+    }
+
+    @Test
+    void automaticRotationIsFrameRateIndependent() {
+        FourDViewController singleFrame = configuredAutomaticController();
+        FourDViewController manyFrames = configuredAutomaticController();
+
+        singleFrame.update(1.0, 4.0);
+        for (int frame = 0; frame < 60; frame++) {
+            manyFrames.update(1.0 / 60.0, 4.0);
+        }
+
+        assertArrayEquals(singleFrame.configuration().rotationMatrix(),
+                manyFrames.configuration().rotationMatrix(), EPSILON);
+        assertEquals(singleFrame.xwAngle(), manyFrames.xwAngle(), EPSILON);
+        assertEquals(singleFrame.ywAngle(), manyFrames.ywAngle(), EPSILON);
+        assertEquals(singleFrame.zwAngle(), manyFrames.zwAngle(), EPSILON);
+    }
+
+    @Test
+    void viewPauseStopsRotationAndSliceSweepWithoutDependingOnSimulationPause() {
+        FourDViewController controller = new FourDViewController();
+        controller.visualizationMode(FourDVisualizationMode.SLICE);
+        controller.sliceSweepEnabled(true);
+        controller.motionPaused(true);
+        FourDViewConfiguration before = controller.configuration();
+
+        controller.update(1.0, 4.0);
+
+        assertEquals(before, controller.configuration());
+        controller.motionPaused(false);
+        controller.update(1.0, 4.0);
+        assertNotEquals(before, controller.configuration());
+    }
+
+    @Test
+    void sliceSweepReflectsAtSimulationBounds() {
+        FourDViewController controller = new FourDViewController();
+        controller.visualizationMode(FourDVisualizationMode.SLICE);
+        controller.slice(3.5, 1.0, 0.2);
+        controller.sliceSweepEnabled(true);
+        controller.sliceSweepSpeed(2.0);
+
+        controller.update(1.0, 4.0);
+
+        assertEquals(2.5, controller.configuration().sliceCenterW(), 1.0e-10);
+    }
+
+    @Test
+    void resetStopsAutomaticRotation() {
+        FourDViewController controller = configuredAutomaticController();
+        controller.update(0.5, 4.0);
+
+        controller.resetOrientation();
+        assertEquals(0.0, controller.xwAutoSpeed(), EPSILON);
+        assertEquals(0.0, controller.ywAutoSpeed(), EPSILON);
+        assertEquals(0.0, controller.zwAutoSpeed(), EPSILON);
+        assertFalse(controller.xwAutoEnabled());
+        assertFalse(controller.ywAutoEnabled());
+        assertFalse(controller.zwAutoEnabled());
+        assertArrayEquals(Math4d.identity(), controller.configuration().rotationMatrix(), EPSILON);
+
+        controller.update(1.0, 4.0);
+        assertArrayEquals(Math4d.identity(), controller.configuration().rotationMatrix(), EPSILON);
+    }
+
+    @Test
+    void perspectiveMinimumCoversAnyRotatedHypercubeCorner() {
+        assertEquals(8.25, FourDViewController.minimumPerspectiveDistance(4.0), EPSILON);
+        assertThrows(IllegalArgumentException.class,
+                () -> FourDViewController.minimumPerspectiveDistance(Double.NaN));
+    }
+
+    private static FourDViewController configuredAutomaticController() {
+        FourDViewController controller = new FourDViewController();
+        controller.xwAutoSpeed(Math.toRadians(13.0));
+        controller.ywAutoSpeed(Math.toRadians(-7.0));
+        controller.zwAutoSpeed(Math.toRadians(3.0));
+        controller.xwAutoEnabled(true);
+        controller.ywAutoEnabled(true);
+        controller.zwAutoEnabled(true);
+        return controller;
     }
 }

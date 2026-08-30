@@ -83,6 +83,85 @@ public final class GpuParticleSystem {
                 fourDViewController.configuration());
     }
 
+    /** Advances projection motion using render-frame time, even while physics is paused. */
+    public void updateFourDView(double deltaSeconds) {
+        if (simulationDimension() == SimulationDimension.FOUR_D) {
+            fourDViewController.update(deltaSeconds, bounds());
+        }
+    }
+
+    public FourDViewConfiguration fourDViewConfiguration() {
+        return fourDViewController.configuration();
+    }
+
+    public double fourDXwAngle() { return fourDViewController.xwAngle(); }
+
+    public void fourDXwAngle(double value) { fourDViewController.xwAngle(value); }
+
+    public double fourDYwAngle() { return fourDViewController.ywAngle(); }
+
+    public void fourDYwAngle(double value) { fourDViewController.ywAngle(value); }
+
+    public double fourDZwAngle() { return fourDViewController.zwAngle(); }
+
+    public void fourDZwAngle(double value) { fourDViewController.zwAngle(value); }
+
+    public double fourDXwAutoSpeed() { return fourDViewController.xwAutoSpeed(); }
+
+    public void fourDXwAutoSpeed(double value) { fourDViewController.xwAutoSpeed(value); }
+
+    public boolean fourDXwAutoEnabled() { return fourDViewController.xwAutoEnabled(); }
+
+    public void fourDXwAutoEnabled(boolean value) { fourDViewController.xwAutoEnabled(value); }
+
+    public double fourDYwAutoSpeed() { return fourDViewController.ywAutoSpeed(); }
+
+    public void fourDYwAutoSpeed(double value) { fourDViewController.ywAutoSpeed(value); }
+
+    public boolean fourDYwAutoEnabled() { return fourDViewController.ywAutoEnabled(); }
+
+    public void fourDYwAutoEnabled(boolean value) { fourDViewController.ywAutoEnabled(value); }
+
+    public double fourDZwAutoSpeed() { return fourDViewController.zwAutoSpeed(); }
+
+    public void fourDZwAutoSpeed(double value) { fourDViewController.zwAutoSpeed(value); }
+
+    public boolean fourDZwAutoEnabled() { return fourDViewController.zwAutoEnabled(); }
+
+    public void fourDZwAutoEnabled(boolean value) { fourDViewController.zwAutoEnabled(value); }
+
+    public boolean fourDViewMotionPaused() { return fourDViewController.motionPaused(); }
+
+    public void fourDViewMotionPaused(boolean value) { fourDViewController.motionPaused(value); }
+
+    public void resetFourDOrientation() { fourDViewController.resetOrientation(); }
+
+    public void fourDVisualizationMode(FourDVisualizationMode value) {
+        fourDViewController.visualizationMode(value);
+    }
+
+    public void fourDPerspectiveDistance(double value) {
+        fourDViewController.perspectiveDistance(Math.max(value, minimumFourDPerspectiveDistance()));
+    }
+
+    public double minimumFourDPerspectiveDistance() {
+        return FourDViewController.minimumPerspectiveDistance(bounds());
+    }
+
+    public void fourDSlice(double centerW, double thickness, double feather) {
+        fourDViewController.slice(centerW, thickness, feather);
+    }
+
+    public boolean fourDSliceSweepEnabled() { return fourDViewController.sliceSweepEnabled(); }
+
+    public void fourDSliceSweepEnabled(boolean value) { fourDViewController.sliceSweepEnabled(value); }
+
+    public double fourDSliceSweepSpeed() { return fourDViewController.sliceSweepSpeed(); }
+
+    public void fourDSliceSweepSpeed(double value) { fourDViewController.sliceSweepSpeed(value); }
+
+    public void fourDColorRange(double value) { fourDViewController.colorRange(value); }
+
     public void dispose() {
         particleBuffers.dispose();
         trailHistoryBuffers.dispose();
@@ -330,6 +409,9 @@ public final class GpuParticleSystem {
 
     public void bounds(float bounds) {
         config.bounds(bounds);
+        if (fourDViewController.configuration().perspectiveDistance() < minimumFourDPerspectiveDistance()) {
+            fourDViewController.perspectiveDistance(minimumFourDPerspectiveDistance());
+        }
     }
 
     public SpawnMode spawnMode() {

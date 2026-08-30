@@ -5,6 +5,7 @@ import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.particles.SimulationDimension;
+import com.particle.sim.particles.FourDVisualizationMode;
 import imgui.ImVec4;
 
 /** Read-only application data exposed to the presentation layer. */
@@ -99,6 +100,44 @@ public interface SimulationUiModel {
         float sensitivity();
 
         float flySpeed();
+
+        FourDVisualizationMode fourDVisualizationMode();
+
+        float fourDXwAngleDegrees();
+
+        float fourDYwAngleDegrees();
+
+        float fourDZwAngleDegrees();
+
+        float fourDXwAutoSpeedDegrees();
+
+        boolean fourDXwAutoEnabled();
+
+        float fourDYwAutoSpeedDegrees();
+
+        boolean fourDYwAutoEnabled();
+
+        float fourDZwAutoSpeedDegrees();
+
+        boolean fourDZwAutoEnabled();
+
+        boolean fourDViewMotionPaused();
+
+        float fourDPerspectiveDistance();
+
+        float minimumFourDPerspectiveDistance();
+
+        float fourDSliceCenterW();
+
+        float fourDSliceThickness();
+
+        float fourDSliceFeather();
+
+        boolean fourDSliceSweepEnabled();
+
+        float fourDSliceSweepSpeed();
+
+        float fourDColorRange();
     }
 
     interface Performance {
