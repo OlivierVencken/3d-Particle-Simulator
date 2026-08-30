@@ -19,8 +19,10 @@ class ShaderResourceTest {
         assertShaderContains("/shaders/grid_scan_add.comp", "block_offsets", "void main()");
         assertShaderContains("/shaders/grid_scatter.comp", "particle_ids[destination]", "void main()");
         assertShaderContains("/shaders/particle.vert", "layout(std430, binding = 9) readonly buffer ParticleGroups",
-                "uniform mat4 uViewProjection;", "void main()");
-        assertShaderContains("/shaders/particle.frag", "out vec4 fragColor;", "void main()");
+                "uniform mat4 uViewProjection;", "uniform mat4 uRotation4D;", "vec3 wPalette",
+                "MAX_PERSPECTIVE_SCALE", "void main()");
+        assertShaderContains("/shaders/particle.frag", "in float vVisibilityAlpha;", "out vec4 fragColor;",
+                "void main()");
         assertShaderContains("/shaders/fullscreen.vert", "out vec2 vUv;", "void main()");
         assertShaderContains("/shaders/bloom_extract.frag", "uniform sampler2D uScene;", "void main()");
         assertShaderContains("/shaders/blur.frag", "uniform float uRadius;", "1.384615", "void main()");

@@ -1,6 +1,7 @@
 #version 430 core
 
 in vec3 vColor;
+in float vVisibilityAlpha;
 out vec4 fragColor;
 
 void main() {
@@ -11,5 +12,5 @@ void main() {
     }
 
     float alpha = smoothstep(1.0, 0.05, dist);
-    fragColor = vec4(vColor, alpha);
+    fragColor = vec4(vColor, alpha * vVisibilityAlpha);
 }

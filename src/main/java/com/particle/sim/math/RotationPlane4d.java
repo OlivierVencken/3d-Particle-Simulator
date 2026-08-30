@@ -16,11 +16,11 @@ public enum RotationPlane4d {
         this.secondAxis = secondAxis;
     }
 
-    int firstAxis() {
+    public int firstAxis() {
         return firstAxis;
     }
 
-    int secondAxis() {
+    public int secondAxis() {
         return secondAxis;
     }
 }

@@ -131,4 +131,29 @@ class Math4dTest {
         assertThrows(IllegalArgumentException.class,
                 () -> Math4d.sliceWeight(0.0, 0.0, -1.0, 0.0));
     }
+
+    @Test
+    void wColorNormalizationClampsNegativeCentralAndPositiveValues() {
+        assertEquals(0.0, Math4d.normalizeW(-8.0, 4.0), EPSILON);
+        assertEquals(0.0, Math4d.normalizeW(-4.0, 4.0), EPSILON);
+        assertEquals(0.5, Math4d.normalizeW(0.0, 4.0), EPSILON);
+        assertEquals(1.0, Math4d.normalizeW(4.0, 4.0), EPSILON);
+        assertEquals(1.0, Math4d.normalizeW(8.0, 4.0), EPSILON);
+    }
+
+    @Test
+    void orthonormalizationRepairsSmallOrientationDrift() {
+        double[] drifted = Math4d.planeRotation(RotationPlane4d.XW, 0.7);
+        drifted[0] *= 1.00001;
+        drifted[5] *= 0.99999;
+
+        double[] repaired = Math4d.orthonormalize(drifted);
+        for (int column = 0; column < 4; column++) {
+            double lengthSquared = 0.0;
+            for (int row = 0; row < 4; row++) {
+                lengthSquared += repaired[column * 4 + row] * repaired[column * 4 + row];
+            }
+            assertEquals(1.0, lengthSquared, EPSILON);
+        }
+    }
 }

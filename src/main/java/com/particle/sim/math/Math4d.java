@@ -125,6 +125,45 @@ public final class Math4d {
         return result;
     }
 
+    public static double normalizeW(double w, double colorRange) {
+        if (!Double.isFinite(w)) {
+            throw new IllegalArgumentException("W must be finite");
+        }
+        if (!Double.isFinite(colorRange) || colorRange <= 0.0) {
+            throw new IllegalArgumentException("W color range must be finite and positive");
+        }
+        return Math.max(0.0, Math.min(1.0, 0.5 + 0.5 * w / colorRange));
+    }
+
+    /** Rebuilds an orthonormal column basis to remove incremental rotation drift. */
+    public static double[] orthonormalize(double[] matrix) {
+        requireMatrix(matrix, "Orientation matrix");
+        double[] result = new double[MATRIX_ELEMENT_COUNT];
+        for (int column = 0; column < VECTOR_COMPONENT_COUNT; column++) {
+            double[] basis = new double[VECTOR_COMPONENT_COUNT];
+            for (int row = 0; row < VECTOR_COMPONENT_COUNT; row++) {
+                basis[row] = matrix[index(row, column)];
+            }
+            for (int previous = 0; previous < column; previous++) {
+                double projection = 0.0;
+                for (int row = 0; row < VECTOR_COMPONENT_COUNT; row++) {
+                    projection += basis[row] * result[index(row, previous)];
+                }
+                for (int row = 0; row < VECTOR_COMPONENT_COUNT; row++) {
+                    basis[row] -= projection * result[index(row, previous)];
+                }
+            }
+            double length = Math.sqrt(lengthSquared(basis));
+            if (!Double.isFinite(length) || length <= 1.0e-12) {
+                throw new IllegalArgumentException("Orientation matrix must contain independent columns");
+            }
+            for (int row = 0; row < VECTOR_COMPONENT_COUNT; row++) {
+                result[index(row, column)] = basis[row] / length;
+            }
+        }
+        return result;
+    }
+
     private static double smoothstep(double value) {
         double clamped = Math.max(0.0, Math.min(1.0, value));
         return clamped * clamped * (3.0 - 2.0 * clamped);

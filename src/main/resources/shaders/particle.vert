@@ -27,8 +27,23 @@ uniform float uMaxVelocity;
 uniform float uBounds;
 uniform float uInteractionRange;
 uniform int uGridSize;
+uniform int uSimulationDimension;
+uniform int uFourDVisualizationMode;
+uniform mat4 uRotation4D;
+uniform float uPerspectiveDistance;
+uniform float uSliceCenterW;
+uniform float uSliceThickness;
+uniform float uSliceFeather;
+uniform float uWColorRange;
 
 out vec3 vColor;
+out float vVisibilityAlpha;
+
+const int DIMENSION_4D = 4;
+const int VISUALIZATION_PERSPECTIVE = 0;
+const int VISUALIZATION_SLICE = 1;
+const int VISUALIZATION_W_COLOR = 2;
+const float MAX_PERSPECTIVE_SCALE = 16.0;
 
 ivec3 getGridCoord(vec3 pos) {
     float inverseCellWidth = float(uGridSize) / (uBounds * 2.0);
@@ -40,23 +55,91 @@ int getGridIndex(ivec3 coord) {
     return coord.x + uGridSize * (coord.y + uGridSize * coord.z);
 }
 
+float sliceWeight(float w) {
+    float halfThickness = uSliceThickness * 0.5;
+    float distanceFromCenter = abs(w - uSliceCenterW);
+    if (distanceFromCenter >= halfThickness) {
+        return 0.0;
+    }
+    float feather = min(uSliceFeather, halfThickness);
+    if (feather <= 0.0) {
+        return 1.0;
+    }
+    return 1.0 - smoothstep(halfThickness - feather, halfThickness, distanceFromCenter);
+}
+
+vec3 wPalette(float normalizedW) {
+    const vec3 negativeW = vec3(0.12, 0.42, 1.0);
+    const vec3 centerW = vec3(0.94, 0.94, 0.88);
+    const vec3 positiveW = vec3(1.0, 0.25, 0.08);
+    return normalizedW < 0.5
+        ? mix(negativeW, centerW, normalizedW * 2.0)
+        : mix(centerW, positiveW, (normalizedW - 0.5) * 2.0);
+}
+
 void main() {
     vec4 particle = positions[gl_VertexID];
     vec3 position = particle.xyz;
     int group = clamp(groups[gl_VertexID], 0, max(uGroupCount - 1, 0));
 
-    vec4 worldPosition = vec4(position, 1.0);
-    vec4 viewPosition = uView * worldPosition;
-    gl_Position = uViewProjection * worldPosition;
+    float projectionScale = 1.0;
+    vVisibilityAlpha = 1.0;
+    bool visible = true;
+    vec4 transformedParticle = particle;
+    if (uSimulationDimension == DIMENSION_4D) {
+        transformedParticle = uRotation4D * particle;
+        visible = !any(isnan(transformedParticle)) && !any(isinf(transformedParticle));
+        position = transformedParticle.xyz;
 
-    if (uFixedParticleScreenSize == 1) {
-        gl_PointSize = uPointSize;
-    } else {
-        float cameraDistance = max(0.1, length(viewPosition.xyz));
-        gl_PointSize = clamp(uPointSize * (uPointSizeReferenceDistance / cameraDistance), 1.0, uPointSize * 8.0);
+        if (visible && uFourDVisualizationMode == VISUALIZATION_PERSPECTIVE) {
+            float denominator = uPerspectiveDistance - transformedParticle.w;
+            float minimumDenominator = max(0.01, abs(uPerspectiveDistance) * 0.02);
+            float fullOpacityDenominator = max(minimumDenominator * 2.0, abs(uPerspectiveDistance) * 0.15);
+            if (denominator <= minimumDenominator || isnan(denominator) || isinf(denominator)) {
+                visible = false;
+            } else {
+                float rawScale = uPerspectiveDistance / denominator;
+                if (rawScale <= 0.0 || isnan(rawScale) || isinf(rawScale)) {
+                    visible = false;
+                } else {
+                    projectionScale = min(rawScale, MAX_PERSPECTIVE_SCALE);
+                    position *= projectionScale;
+                    vVisibilityAlpha = smoothstep(minimumDenominator, fullOpacityDenominator, denominator);
+                }
+            }
+        } else if (visible && uFourDVisualizationMode == VISUALIZATION_SLICE) {
+            vVisibilityAlpha = sliceWeight(transformedParticle.w);
+            visible = vVisibilityAlpha > 0.0;
+        }
     }
 
-    if (uColorMode == 0) {
+    vec4 worldPosition = vec4(position, 1.0);
+    vec4 viewPosition = uView * worldPosition;
+    vec4 clipPosition = uViewProjection * worldPosition;
+    if (uSimulationDimension == DIMENSION_4D) {
+        visible = visible && !any(isnan(clipPosition)) && !any(isinf(clipPosition));
+    }
+    gl_Position = visible ? clipPosition : vec4(4.0, 4.0, 4.0, 1.0);
+
+    if (uFixedParticleScreenSize == 1) {
+        gl_PointSize = uSimulationDimension == DIMENSION_4D
+                ? clamp(uPointSize * projectionScale, 1.0, uPointSize * 8.0)
+                : uPointSize;
+    } else {
+        float cameraDistance = max(0.1, length(viewPosition.xyz));
+        gl_PointSize = clamp(uPointSize * projectionScale * (uPointSizeReferenceDistance / cameraDistance),
+                1.0, uPointSize * 8.0);
+    }
+
+    if (!visible) {
+        vColor = vec3(0.0);
+        return;
+    }
+
+    if (uSimulationDimension == DIMENSION_4D && uFourDVisualizationMode == VISUALIZATION_W_COLOR) {
+        float normalizedW = clamp(0.5 + 0.5 * transformedParticle.w / uWColorRange, 0.0, 1.0);
+        vColor = wPalette(normalizedW);
+    } else if (uColorMode == 0) {
         vec3 palette[16] = vec3[](
             vec3(0.18, 0.65, 1.0),
             vec3(1.0, 0.35, 0.16),
