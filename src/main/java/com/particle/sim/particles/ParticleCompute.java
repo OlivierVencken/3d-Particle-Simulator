@@ -28,7 +28,7 @@ public final class ParticleCompute {
     private int countParticleCountLoc, countBoundsLoc, countInteractionRangeLoc, countGridSizeLoc;
     private int scanElementCountLoc, addElementCountLoc;
     private int scatterParticleCountLoc, scatterBoundsLoc, scatterInteractionRangeLoc, scatterGridSizeLoc;
-    private int uDeltaTimeLoc, uParticleCountLoc, uGroupCountLoc, uForceFactorLoc;
+    private int uDeltaTimeLoc, uParticleCountLoc, uGroupCountLoc, uSimulationDimensionLoc, uForceFactorLoc;
     private int uVelocityDampingLoc, uInteractionRangeLoc, uRepulsionRadiusLoc;
     private int uMaxVelocityLoc, uBoundaryBounceLoc, uBoundsLoc, uGridSizeLoc;
     private int uToroidalWrapLoc, uDensityRegulationEnabledLoc, uDensityLimitLoc;
@@ -63,6 +63,7 @@ public final class ParticleCompute {
         uDeltaTimeLoc = glGetUniformLocation(integrateProgram, "uDeltaTime");
         uParticleCountLoc = glGetUniformLocation(integrateProgram, "uParticleCount");
         uGroupCountLoc = glGetUniformLocation(integrateProgram, "uGroupCount");
+        uSimulationDimensionLoc = glGetUniformLocation(integrateProgram, "uSimulationDimension");
         uForceFactorLoc = glGetUniformLocation(integrateProgram, "uForceFactor");
         uVelocityDampingLoc = glGetUniformLocation(integrateProgram, "uVelocityDamping");
         uInteractionRangeLoc = glGetUniformLocation(integrateProgram, "uInteractionRange");
@@ -136,6 +137,7 @@ public final class ParticleCompute {
         glUniform1f(uDeltaTimeLoc, deltaTime);
         glUniform1i(uParticleCountLoc, system.particleCount());
         glUniform1i(uGroupCountLoc, system.groupCount());
+        glUniform1i(uSimulationDimensionLoc, system.simulationDimension().componentCount());
         glUniform1f(uForceFactorLoc, system.forceFactor());
         glUniform1f(uVelocityDampingLoc, system.velocityDamping());
         glUniform1f(uInteractionRangeLoc, system.interactionRange());

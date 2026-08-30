@@ -7,6 +7,7 @@ import java.nio.IntBuffer;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ParticleSpawnerTest {
@@ -146,6 +147,61 @@ class ParticleSpawnerTest {
         }
     }
 
+    @Test
+    void nativeFourDimensionalModesFillFiniteBoundedState() {
+        for (SpawnMode mode : SpawnMode.values()) {
+            if (!mode.supportedIn(SimulationDimension.FOUR_D)) {
+                continue;
+            }
+            SpawnedParticles particles = spawn4d(mode, 257, 0x4D00L + mode.ordinal());
+            for (int particle = 0; particle < 257; particle++) {
+                assertTrue(particles.groups.get(particle) >= 0 && particles.groups.get(particle) < GROUP_COUNT,
+                        mode + " assigned an invalid 4D group");
+                for (int axis = 0; axis < 4; axis++) {
+                    float position = particles.positions.get(particle * 4 + axis);
+                    float velocity = particles.velocities.get(particle * 4 + axis);
+                    assertTrue(Float.isFinite(position), mode + " produced a non-finite position");
+                    assertTrue(Float.isFinite(velocity), mode + " produced a non-finite velocity");
+                    assertWithin(-BOUNDS, BOUNDS, position);
+                    assertWithin(-0.1f, 0.1f, velocity);
+                }
+            }
+        }
+    }
+
+    @Test
+    void fourDimensionalSphereAndShellUseAllFourAxes() {
+        SpawnedParticles ball = spawn4d(SpawnMode.SPHERICAL, 512, 41);
+        SpawnedParticles shell = spawn4d(SpawnMode.SHELL, 512, 42);
+        boolean ballHasNonZeroW = false;
+        boolean shellHasNonZeroW = false;
+        for (int particle = 0; particle < 512; particle++) {
+            assertTrue(radius4d(ball, particle) <= BOUNDS * 0.6f + EPSILON);
+            assertEquals(BOUNDS * 0.6f, radius4d(shell, particle), EPSILON);
+            ballHasNonZeroW |= Math.abs(ball.positions.get(particle * 4 + 3)) > EPSILON;
+            shellHasNonZeroW |= Math.abs(shell.positions.get(particle * 4 + 3)) > EPSILON;
+        }
+        assertTrue(ballHasNonZeroW);
+        assertTrue(shellHasNonZeroW);
+    }
+
+    @Test
+    void fourDimensionalGridUsesFourthRootLattice() {
+        SpawnedParticles particles = spawn4d(SpawnMode.GRID, 16, 43);
+        for (int particle = 0; particle < 16; particle++) {
+            for (int axis = 0; axis < 4; axis++) {
+                assertEquals(BOUNDS * 0.5f, Math.abs(particles.positions.get(particle * 4 + axis)), EPSILON);
+            }
+        }
+    }
+
+    @Test
+    void discAndSpiralAreExplicitlyUnavailableInFourDimensions() {
+        for (SpawnMode mode : new SpawnMode[] { SpawnMode.DISC, SpawnMode.SPIRAL }) {
+            assertThrows(IllegalArgumentException.class, () -> spawn4d(mode, 1, 44));
+        }
+    }
+
     private static SpawnedParticles spawn(SpawnMode mode, int count, long seed) {
         FloatBuffer positions = FloatBuffer.allocate(count * 4);
         FloatBuffer velocities = FloatBuffer.allocate(count * 4);
@@ -158,11 +214,31 @@ class ParticleSpawnerTest {
         return new SpawnedParticles(positions, velocities, groups);
     }
 
+    private static SpawnedParticles spawn4d(SpawnMode mode, int count, long seed) {
+        FloatBuffer positions = FloatBuffer.allocate(count * 4);
+        FloatBuffer velocities = FloatBuffer.allocate(count * 4);
+        IntBuffer groups = IntBuffer.allocate(count);
+        ParticleSpawner.spawnParticles(positions, velocities, groups, count, BOUNDS, GROUP_COUNT, mode,
+                SimulationDimension.FOUR_D, new Random(seed));
+        positions.flip();
+        velocities.flip();
+        groups.flip();
+        return new SpawnedParticles(positions, velocities, groups);
+    }
+
     private static float radius(SpawnedParticles particles, int index) {
         float x = particles.positions.get(index * 4);
         float y = particles.positions.get(index * 4 + 1);
         float z = particles.positions.get(index * 4 + 2);
         return (float) Math.sqrt(x * x + y * y + z * z);
+    }
+
+    private static float radius4d(SpawnedParticles particles, int index) {
+        float x = particles.positions.get(index * 4);
+        float y = particles.positions.get(index * 4 + 1);
+        float z = particles.positions.get(index * 4 + 2);
+        float w = particles.positions.get(index * 4 + 3);
+        return (float) Math.sqrt(x * x + y * y + z * z + w * w);
     }
 
     private static void assertWithin(float min, float max, float value) {

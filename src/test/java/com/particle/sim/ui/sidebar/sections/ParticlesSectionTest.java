@@ -1,12 +1,24 @@
 package com.particle.sim.ui.sidebar.sections;
 
+import com.particle.sim.particles.SimulationDimension;
+import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.ui.testing.FakeSimulationUiModel;
 import com.particle.sim.ui.theme.UIDesignTokens;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 class ParticlesSectionTest {
+    @Test
+    void fourDimensionalSpawnChoicesExcludeUndefinedPatterns() {
+        assertArrayEquals(new SpawnMode[] {
+                SpawnMode.RANDOM, SpawnMode.SPHERICAL, SpawnMode.GRID, SpawnMode.SHELL,
+                SpawnMode.CLUSTERS, SpawnMode.POINT
+        }, ParticlesSection.supportedSpawnModes(SimulationDimension.FOUR_D));
+        assertArrayEquals(SpawnMode.values(), ParticlesSection.supportedSpawnModes(SimulationDimension.THREE_D));
+    }
+
     @Test
     void capacityRulesNeverRequestMoreThanTheRuntimeCanAccept() {
         FakeSimulationUiModel model = new FakeSimulationUiModel();

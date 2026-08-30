@@ -4,6 +4,7 @@ import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.particles.SimulationDimension;
 import com.particle.sim.ui.SimulationUiDiagnostics;
 import com.particle.sim.ui.SimulationUiModel;
 import imgui.ImVec4;
@@ -50,6 +51,7 @@ public final class FakeSimulationUiModel implements SimulationUiModel {
     }
 
     public static final class SimulationData implements SimulationUiModel.Simulation {
+        public SimulationDimension simulationDimension = SimulationDimension.THREE_D;
         public boolean toroidalWrap;
         public float bounds = 6.0f;
         public float boundaryBounce = 0.8f;
@@ -62,6 +64,7 @@ public final class FakeSimulationUiModel implements SimulationUiModel {
         public float densityLimit = 100.0f;
         public DistanceMetric distanceMetric = DistanceMetric.EUCLIDEAN;
 
+        @Override public SimulationDimension simulationDimension() { return simulationDimension; }
         @Override public boolean toroidalWrap() { return toroidalWrap; }
         @Override public float bounds() { return bounds; }
         @Override public float boundaryBounce() { return boundaryBounce; }

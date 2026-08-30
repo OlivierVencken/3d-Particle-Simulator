@@ -32,6 +32,7 @@ public final class ParticleSimulationConfig {
     private int groupCount = SimulationDefaults.GROUP_COUNT;
     private ColorMode colorMode = SimulationDefaults.COLOR_MODE;
     private SpawnMode spawnMode = SimulationDefaults.SPAWN_MODE;
+    private SimulationDimension simulationDimension = SimulationDimension.DEFAULT;
     private ImVec4[] groupColors = SimulationDefaults.GROUP_COLORS;
 
     public static ParticleSimulationConfig defaults() {
@@ -68,6 +69,7 @@ public final class ParticleSimulationConfig {
         distanceMetric(source.distanceMetric);
         groupCount(source.groupCount);
         colorMode(source.colorMode);
+        simulationDimension(source.simulationDimension);
         spawnMode(source.spawnMode);
         groupColors(source.groupColors);
     }
@@ -298,7 +300,17 @@ public final class ParticleSimulationConfig {
     }
 
     public void spawnMode(SpawnMode spawnMode) {
-        this.spawnMode = spawnMode == null ? SimulationDefaults.SPAWN_MODE : spawnMode;
+        SpawnMode requested = spawnMode == null ? SimulationDefaults.SPAWN_MODE : spawnMode;
+        this.spawnMode = requested.supportedIn(simulationDimension) ? requested : SpawnMode.RANDOM;
+    }
+
+    public SimulationDimension simulationDimension() {
+        return simulationDimension;
+    }
+
+    public void simulationDimension(SimulationDimension simulationDimension) {
+        this.simulationDimension = simulationDimension == null ? SimulationDimension.DEFAULT : simulationDimension;
+        spawnMode(spawnMode);
     }
 
     public ImVec4[] groupColors() {
@@ -332,6 +344,8 @@ public final class ParticleSimulationConfig {
         boundaryBounce = clamp(boundaryBounce, 0.0f, 1.0f);
         densityLimit = clamp(densityLimit, 0.0f, 500.0f);
         groupCount(groupCount);
+        simulationDimension(simulationDimension);
+        spawnMode(spawnMode);
         groupColors(groupColors);
     }
 

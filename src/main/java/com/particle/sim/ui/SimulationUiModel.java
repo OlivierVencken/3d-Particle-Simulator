@@ -4,6 +4,7 @@ import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.particles.SimulationDimension;
 import imgui.ImVec4;
 
 /** Read-only application data exposed to the presentation layer. */
@@ -21,6 +22,8 @@ public interface SimulationUiModel {
     Application application();
 
     interface Simulation {
+        SimulationDimension simulationDimension();
+
         boolean toroidalWrap();
 
         float bounds();

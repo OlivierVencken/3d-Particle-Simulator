@@ -6,6 +6,7 @@ layout(local_size_x = 256) in;
 #define DISTANCE_EUCLIDEAN 0
 #define DISTANCE_MANHATTAN 1
 #define DISTANCE_CHEBYSHEV 2
+#define DIMENSION_4D 4
 
 layout(std430, binding = 0) readonly buffer Positions {
     vec4 positions[];
@@ -46,6 +47,7 @@ layout(std430, binding = 9) readonly buffer ParticleGroups {
 uniform float uDeltaTime;
 uniform int uParticleCount;
 uniform int uGroupCount;
+uniform int uSimulationDimension;
 uniform float uForceFactor;
 uniform float uVelocityDamping;
 uniform float uInteractionRange;
@@ -87,19 +89,22 @@ float calculateForce(float normalizedDistance, float attractionValue, float repu
         * (1.0 - abs(2.0 * normalizedDistance - 1.0 - repulsionRadius) / (1.0 - repulsionRadius));
 }
 
-vec3 toroidalDistance(vec3 from, vec3 to) {
-    vec3 difference = to - from;
+vec4 toroidalDistance(vec4 from, vec4 to) {
+    vec4 difference = to - from;
+    if (uSimulationDimension != DIMENSION_4D) {
+        difference.w = 0.0;
+    }
     float worldSize = uBounds * 2.0;
     return difference - worldSize * round(difference / worldSize);
 }
 
-float metricDistance(vec3 direction, float euclideanDistance) {
-    vec3 absoluteDirection = abs(direction);
+float metricDistance(vec4 direction, float euclideanDistance) {
+    vec4 absoluteDirection = abs(direction);
     if (uDistanceMetric == DISTANCE_MANHATTAN) {
-        return absoluteDirection.x + absoluteDirection.y + absoluteDirection.z;
+        return absoluteDirection.x + absoluteDirection.y + absoluteDirection.z + absoluteDirection.w;
     }
     if (uDistanceMetric == DISTANCE_CHEBYSHEV) {
-        return max(max(absoluteDirection.x, absoluteDirection.y), absoluteDirection.z);
+        return max(max(absoluteDirection.x, absoluteDirection.y), max(absoluteDirection.z, absoluteDirection.w));
     }
     return euclideanDistance;
 }
@@ -112,9 +117,9 @@ ivec3 wrapGridCoord(ivec3 coord) {
     );
 }
 
-vec3 wrapPosition(vec3 position) {
+vec4 wrapPosition(vec4 position) {
     float worldSize = uBounds * 2.0;
-    return mod(position + vec3(uBounds), vec3(worldSize)) - vec3(uBounds);
+    return mod(position + vec4(uBounds), vec4(worldSize)) - vec4(uBounds);
 }
 
 void main() {
@@ -123,12 +128,16 @@ void main() {
         return;
     }
 
-    vec3 position = positions[id].xyz;
-    vec3 velocity = velocities[id].xyz;
+    vec4 position = positions[id];
+    vec4 velocity = velocities[id];
+    if (uSimulationDimension != DIMENSION_4D) {
+        position.w = 0.0;
+        velocity.w = 0.0;
+    }
     int groupI = groups[id];
-    vec3 force = vec3(0.0);
-    vec3 positiveAttractionForce = vec3(0.0);
-    ivec3 currentGrid = getGridCoord(position);
+    vec4 force = vec4(0.0);
+    vec4 positiveAttractionForce = vec4(0.0);
+    ivec3 currentGrid = getGridCoord(position.xyz);
 
     float inverseInteractionRange = 1.0 / uInteractionRange;
     float repulsionRadius = clamp(uRepulsionRadius, 0.01, 0.95);
@@ -161,9 +170,12 @@ void main() {
                     }
 
                     vec4 otherPosition = positions[otherId];
-                    vec3 direction = uToroidalWrap == 1
-                        ? toroidalDistance(position, otherPosition.xyz)
-                        : otherPosition.xyz - position;
+                    vec4 direction = uToroidalWrap == 1
+                        ? toroidalDistance(position, otherPosition)
+                        : otherPosition - position;
+                    if (uSimulationDimension != DIMENSION_4D) {
+                        direction.w = 0.0;
+                    }
                     float squaredEuclideanDistance = dot(direction, direction);
                     if (squaredEuclideanDistance <= 0.00000001) {
                         continue;
@@ -184,7 +196,7 @@ void main() {
                     }
 
                     float forceMagnitude = calculateForce(normalizedDistance, attractionValue, repulsionRadius);
-                    vec3 forceContribution = direction * inverseEuclideanDistance * forceMagnitude * uForceFactor;
+                    vec4 forceContribution = direction * inverseEuclideanDistance * forceMagnitude * uForceFactor;
                     if (densityRegulated && attractionValue > 0.0 && normalizedDistance >= repulsionRadius) {
                         positiveAttractionForce += forceContribution;
                     } else {
@@ -211,7 +223,7 @@ void main() {
     if (uToroidalWrap == 1) {
         position = wrapPosition(position);
     } else {
-        for (int axis = 0; axis < 3; axis++) {
+        for (int axis = 0; axis < uSimulationDimension; axis++) {
             if (position[axis] > uBounds) {
                 position[axis] = uBounds;
                 velocity[axis] *= -uBoundaryBounce;
@@ -222,10 +234,13 @@ void main() {
         }
     }
 
-    vec4 nextPosition = vec4(position, 0.0);
-    next_positions[id] = nextPosition;
-    next_velocities[id] = vec4(velocity, 0.0);
+    if (uSimulationDimension != DIMENSION_4D) {
+        position.w = 0.0;
+        velocity.w = 0.0;
+    }
+    next_positions[id] = position;
+    next_velocities[id] = velocity;
     if (uTrailCaptureEnabled == 1) {
-        trail_history[uTrailWriteOffset + int(id)] = nextPosition;
+        trail_history[uTrailWriteOffset + int(id)] = position;
     }
 }

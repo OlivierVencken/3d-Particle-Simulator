@@ -7,6 +7,7 @@ import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.particles.PerformanceSnapshot;
 import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.particles.SimulationDimension;
 import com.particle.sim.settings.SettingsController;
 import com.particle.sim.ui.SimulationUI;
 import com.particle.sim.ui.SimulationUiActions;
@@ -151,6 +152,16 @@ final class SimulationUiAdapter {
     }
 
     private final class SimulationDomain implements SimulationUiModel.Simulation, SimulationUiActions.Simulation {
+        @Override
+        public SimulationDimension simulationDimension() {
+            return particles.simulationDimension();
+        }
+
+        @Override
+        public void setSimulationDimension(SimulationDimension value) {
+            settingChanged(() -> particles.simulationDimension(value));
+        }
+
         @Override
         public void togglePause() {
             ui.togglePause();

@@ -156,7 +156,7 @@ final class ParticleBuffers {
             velocities = memAllocFloat(Math.multiplyExact(count, 4));
             groups = memAllocInt(count);
             ParticleSpawner.spawnParticles(positions, velocities, groups, count, config.bounds(), config.groupCount(),
-                    config.spawnMode(), random);
+                    config.spawnMode(), config.simulationDimension(), random);
 
             positions.flip();
             velocities.flip();

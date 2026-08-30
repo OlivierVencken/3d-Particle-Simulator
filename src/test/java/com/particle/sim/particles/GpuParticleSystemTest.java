@@ -25,6 +25,7 @@ class GpuParticleSystemTest {
         assertFalse(system.effectEnabled(EffectMode.TRAILS));
         assertEquals(SpawnMode.RANDOM, system.spawnMode());
         assertEquals(DistanceMetric.EUCLIDEAN, system.distanceMetric());
+        assertEquals(SimulationDimension.THREE_D, system.simulationDimension());
         assertEquals(SimulationDefaults.GLOW_BLUR_PASSES, system.glowBlurPasses());
         assertEquals(SimulationDefaults.GLOW_STRENGTH, system.glowStrength(), EPSILON);
         assertEquals(SimulationDefaults.GLOW_RADIUS, system.glowRadius(), EPSILON);
@@ -34,6 +35,20 @@ class GpuParticleSystemTest {
         assertFalse(system.toroidalWrap());
         assertFalse(system.fixedParticleScreenSize());
         assertFalse(system.densityRegulationEnabled());
+    }
+
+    @Test
+    void fourDimensionalModeRejectsUndefinedSpawnPatterns() {
+        GpuParticleSystem system = new GpuParticleSystem();
+        system.spawnMode(SpawnMode.SPIRAL);
+
+        system.simulationDimension(SimulationDimension.FOUR_D);
+
+        assertEquals(SimulationDimension.FOUR_D, system.simulationDimension());
+        assertEquals(SpawnMode.RANDOM, system.spawnMode());
+        assertFalse(system.spawnModeSupported(SpawnMode.DISC));
+        assertFalse(system.spawnModeSupported(SpawnMode.SPIRAL));
+        assertTrue(system.spawnModeSupported(SpawnMode.SHELL));
     }
 
     @Test

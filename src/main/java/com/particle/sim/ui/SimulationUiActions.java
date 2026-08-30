@@ -4,6 +4,7 @@ import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.particles.SimulationDimension;
 
 /** Commands available to the presentation layer. Setting commands also schedule persistence. */
 public interface SimulationUiActions {
@@ -18,6 +19,8 @@ public interface SimulationUiActions {
     Application application();
 
     interface Simulation {
+        void setSimulationDimension(SimulationDimension value);
+
         void togglePause();
 
         void step();

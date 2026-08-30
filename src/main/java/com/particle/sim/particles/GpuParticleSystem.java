@@ -22,6 +22,7 @@ public final class GpuParticleSystem {
     private final SpatialGridBuffers spatialGridBuffers = new SpatialGridBuffers();
     private final ParticleRenderer renderer = new ParticleRenderer();
     private final ParticleCompute compute = new ParticleCompute();
+    private final FourDViewController fourDViewController = new FourDViewController();
 
     private final ParticleSimulationConfig config = ParticleSimulationConfig.defaults();
     private final AttractionMatrix attractionMatrix = new AttractionMatrix(
@@ -61,7 +62,8 @@ public final class GpuParticleSystem {
 
         spatialGridBuffers.ensureCapacity(particleCount(), gridCellCount());
         compute.buildGrid(this, particleBuffers, spatialGridBuffers);
-        boolean captureTrail = effectEnabled(EffectMode.TRAILS)
+        boolean captureTrail = simulationDimension() == SimulationDimension.THREE_D
+                && effectEnabled(EffectMode.TRAILS)
                 && trailHistoryBuffers.prepareCapture(particleCount(), trailLength());
         compute.integrate(this, particleBuffers, spatialGridBuffers, trailHistoryBuffers, captureTrail, deltaTime);
         particleBuffers.swapState();
@@ -72,10 +74,13 @@ public final class GpuParticleSystem {
     }
 
     public void render(FramebufferViewport viewport, float[] viewMatrix) {
+        boolean renderTrails = simulationDimension() == SimulationDimension.THREE_D
+                && effectEnabled(EffectMode.TRAILS);
         renderer.render(viewport, viewMatrix, particleBuffers, spatialGridBuffers, particleCount(), pointSize(),
-                fixedParticleScreenSize(), effectEnabled(EffectMode.GLOW), effectEnabled(EffectMode.TRAILS),
+                fixedParticleScreenSize(), effectEnabled(EffectMode.GLOW), renderTrails,
                 colorMode().ordinal(), groupCount(), maxVelocity(), bounds(), interactionRange(),
-                glowSettings(), trailSettings(), trailHistoryBuffers);
+                glowSettings(), trailSettings(), trailHistoryBuffers, simulationDimension(),
+                fourDViewController.configuration());
     }
 
     public void dispose() {
@@ -333,6 +338,28 @@ public final class GpuParticleSystem {
 
     public void spawnMode(SpawnMode spawnMode) {
         config.spawnMode(spawnMode);
+    }
+
+    public SimulationDimension simulationDimension() {
+        return config.simulationDimension();
+    }
+
+    public void simulationDimension(SimulationDimension simulationDimension) {
+        SimulationDimension requested = simulationDimension == null
+                ? SimulationDimension.DEFAULT
+                : simulationDimension;
+        if (requested == config.simulationDimension()) {
+            return;
+        }
+        config.simulationDimension(requested);
+        trailHistoryBuffers.clear();
+        if (initialized) {
+            reset();
+        }
+    }
+
+    public boolean spawnModeSupported(SpawnMode spawnMode) {
+        return spawnMode != null && spawnMode.supportedIn(simulationDimension());
     }
 
     public boolean toroidalWrap() {

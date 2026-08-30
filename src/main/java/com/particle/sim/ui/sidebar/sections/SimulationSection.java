@@ -1,6 +1,7 @@
 package com.particle.sim.ui.sidebar.sections;
 
 import com.particle.sim.particles.DistanceMetric;
+import com.particle.sim.particles.SimulationDimension;
 import com.particle.sim.ui.SimulationUiActions;
 import com.particle.sim.ui.SimulationUiModel;
 import com.particle.sim.ui.components.UIControls;
@@ -13,14 +14,19 @@ import imgui.ImGui;
 
 final class SimulationSection {
     private static final String[] DISTANCE_METRICS = UIControls.enumLabels(DistanceMetric.values());
+    private static final String[] DIMENSIONS = { "3D", "4D" };
     private final UIControls controls = new UIControls();
+    private final DimensionChangePopup dimensionChangePopup = new DimensionChangePopup();
 
     void render(SimulationUiModel.Simulation simulation, SimulationUiModel.Application application,
-            SimulationUiActions.Simulation actions) {
+            SimulationUiModel.Particles particles, SimulationUiActions.Simulation actions) {
         renderPlayback(application, actions);
         UIText.divider();
 
         UIControls.sectionHeading("World space");
+        controls.settingCombo("Dimensions", "world-dimensions", simulation.simulationDimension().ordinal(),
+                DIMENSIONS, value -> requestDimensionChange(SimulationDimension.values()[value], simulation,
+                        particles, actions));
         controls.settingCheckbox("Wrap boundaries", "world-wrap", simulation.toroidalWrap(),
                 actions::setToroidalWrap);
         controls.settingSlider("Bounds", "world-bounds", simulation.bounds(), 2.0f, 10.0f, 1,
@@ -54,6 +60,26 @@ final class SimulationSection {
         if (simulation.densityRegulationEnabled()) {
             controls.settingSlider("Density limit", "dynamics-density-limit", simulation.densityLimit(), 0.0f,
                     500.0f, 0, actions::setDensityLimit);
+        }
+    }
+
+    void renderPopups(SimulationUiActions.Simulation actions) {
+        dimensionChangePopup.render(actions);
+    }
+
+    boolean hasOpenModal() {
+        return dimensionChangePopup.isOpen();
+    }
+
+    private void requestDimensionChange(SimulationDimension target, SimulationUiModel.Simulation simulation,
+            SimulationUiModel.Particles particles, SimulationUiActions.Simulation actions) {
+        if (target == simulation.simulationDimension()) {
+            return;
+        }
+        if (particles.particleCount() > 0) {
+            dimensionChangePopup.open(target, particles.particleCount());
+        } else {
+            actions.setSimulationDimension(target);
         }
     }
 

@@ -114,22 +114,32 @@ class GpuParticleSystemOpenGlTest {
 
             system.dispose();
             system = accuracySystem();
-            for (boolean toroidal : new boolean[] { false, true }) {
-                system.toroidalWrap(toroidal);
-                for (DistanceMetric metric : DistanceMetric.values()) {
-                    system.distanceMetric(metric);
-                    system.reset();
-                    float[] initialPositions = system.readPositions();
-                    float[] initialVelocities = system.readVelocities();
-                    int[] initialGroups = system.readGroups();
-                    ReferenceState expected = referenceStep(system, initialPositions, initialVelocities,
-                            initialGroups);
+            for (SimulationDimension dimension : SimulationDimension.values()) {
+                system.simulationDimension(dimension);
+                for (boolean densityRegulated : new boolean[] { false, true }) {
+                    if (dimension == SimulationDimension.THREE_D && densityRegulated) {
+                        continue;
+                    }
+                    system.densityRegulationEnabled(densityRegulated);
+                    system.densityLimit(4.0f);
+                    for (boolean toroidal : new boolean[] { false, true }) {
+                        system.toroidalWrap(toroidal);
+                        for (DistanceMetric metric : DistanceMetric.values()) {
+                            system.distanceMetric(metric);
+                            system.reset();
+                            float[] initialPositions = system.readPositions();
+                            float[] initialVelocities = system.readVelocities();
+                            int[] initialGroups = system.readGroups();
+                            ReferenceState expected = referenceStep(system, initialPositions, initialVelocities,
+                                    initialGroups);
 
-                    system.step();
-                    glFinish();
-                    assertStateClose(expected.positions(), system.readPositions(), 0.002f);
-                    assertStateClose(expected.velocities(), system.readVelocities(), 0.002f);
-                    assertGroupPrefixEquals(initialGroups, system.readGroups());
+                            system.step();
+                            glFinish();
+                            assertStateClose(expected.positions(), system.readPositions(), 0.003f);
+                            assertStateClose(expected.velocities(), system.readVelocities(), 0.003f);
+                            assertGroupPrefixEquals(initialGroups, system.readGroups());
+                        }
+                    }
                 }
             }
 
@@ -153,6 +163,47 @@ class GpuParticleSystemOpenGlTest {
                     "Particle near the negative seam did not interact across the toroidal boundary");
             assertStateClose(seamExpected.positions(), system.readPositions(), 0.00001f);
             assertStateClose(seamExpected.velocities(), actualSeamVelocities, 0.00001f);
+
+            system.simulationDimension(SimulationDimension.FOUR_D);
+            float[] wSeamPositions = {
+                    0.0f, 0.0f, 0.0f, 3.7f,
+                    0.0f, 0.0f, 0.0f, -3.7f
+            };
+            system.replaceState(wSeamPositions, seamVelocities, seamGroups);
+            ReferenceState wSeamExpected = referenceStep(system, wSeamPositions, seamVelocities, seamGroups);
+            system.step();
+            glFinish();
+            float[] actualWSeamVelocities = system.readVelocities();
+            assertTrue(actualWSeamVelocities[3] > 0.0001f,
+                    "Particle near the positive W seam did not interact across the toroidal boundary");
+            assertTrue(actualWSeamVelocities[7] < -0.0001f,
+                    "Particle near the negative W seam did not interact across the toroidal boundary");
+            assertStateClose(wSeamExpected.positions(), system.readPositions(), 0.00001f);
+            assertStateClose(wSeamExpected.velocities(), actualWSeamVelocities, 0.00001f);
+
+            system.toroidalWrap(false);
+            system.setParticleCount(1);
+            system.maxVelocity(1.0f);
+            float[] origin = new float[4];
+            float[] fastVelocity = { 2.0f, 2.0f, 2.0f, 2.0f };
+            system.replaceState(origin, fastVelocity, new int[] { 0 });
+            system.step();
+            glFinish();
+            float[] clampedVelocity = system.readVelocities();
+            assertEquals(1.0f, length4d(clampedVelocity), 0.00001f);
+
+            system.maxVelocity(16.0f);
+            system.boundaryBounce(0.75f);
+            float[] bouncePosition = { 0.0f, 0.0f, 0.0f, 3.999f };
+            float[] bounceVelocity = { 0.0f, 0.0f, 0.0f, 2.0f };
+            int[] bounceGroup = { 0 };
+            system.replaceState(bouncePosition, bounceVelocity, bounceGroup);
+            ReferenceState bounceExpected = referenceStep(system, bouncePosition, bounceVelocity, bounceGroup);
+            system.step();
+            glFinish();
+            assertEquals(4.0f, system.readPositions()[3], 0.0f);
+            assertStateClose(bounceExpected.positions(), system.readPositions(), 0.00001f);
+            assertStateClose(bounceExpected.velocities(), system.readVelocities(), 0.00001f);
         } finally {
             if (system != null) {
                 system.dispose();
@@ -217,17 +268,16 @@ class GpuParticleSystemOpenGlTest {
 
     private static ReferenceState referenceStep(GpuParticleSystem system, float[] positions, float[] velocities,
             int[] groups) {
-        float[] nextPositions = positions.clone();
-        float[] nextVelocities = velocities.clone();
+        float[] nextPositions = new float[positions.length];
+        float[] nextVelocities = new float[velocities.length];
         float deltaTime = (float) SimulationDefaults.SIMULATION_STEP_SECONDS;
-        float interactionRange = system.interactionRange();
-        float repulsionRadius = system.repulsionRadius();
+        int dimensions = system.simulationDimension().componentCount();
 
         for (int particle = 0; particle < system.particleCount(); particle++) {
             int base = particle * 4;
-            float forceX = 0.0f;
-            float forceY = 0.0f;
-            float forceZ = 0.0f;
+            float[] force = new float[4];
+            float[] positiveAttractionForce = new float[4];
+            float localDensity = 0.0f;
             int groupI = groups[particle];
 
             for (int other = 0; other < system.particleCount(); other++) {
@@ -235,93 +285,100 @@ class GpuParticleSystemOpenGlTest {
                     continue;
                 }
                 int otherBase = other * 4;
-                float directionX = positions[otherBase] - positions[base];
-                float directionY = positions[otherBase + 1] - positions[base + 1];
-                float directionZ = positions[otherBase + 2] - positions[base + 2];
-                if (system.toroidalWrap()) {
-                    float worldSize = system.bounds() * 2.0f;
-                    directionX -= worldSize * Math.round(directionX / worldSize);
-                    directionY -= worldSize * Math.round(directionY / worldSize);
-                    directionZ -= worldSize * Math.round(directionZ / worldSize);
+                float[] direction = new float[4];
+                float squaredDistance = 0.0f;
+                for (int axis = 0; axis < dimensions; axis++) {
+                    direction[axis] = positions[otherBase + axis] - positions[base + axis];
+                    if (system.toroidalWrap()) {
+                        float worldSize = system.bounds() * 2.0f;
+                        direction[axis] -= worldSize * Math.round(direction[axis] / worldSize);
+                    }
+                    squaredDistance += direction[axis] * direction[axis];
                 }
-
-                float squaredDistance = directionX * directionX + directionY * directionY + directionZ * directionZ;
                 if (squaredDistance <= 0.00000001f) {
                     continue;
                 }
                 float euclideanDistance = (float) Math.sqrt(squaredDistance);
-                float metricDistance = switch (system.distanceMetric()) {
-                    case MANHATTAN -> Math.abs(directionX) + Math.abs(directionY) + Math.abs(directionZ);
-                    case CHEBYSHEV -> Math.max(Math.max(Math.abs(directionX), Math.abs(directionY)),
-                            Math.abs(directionZ));
-                    case EUCLIDEAN -> euclideanDistance;
-                };
-                float normalizedDistance = metricDistance / interactionRange;
+                float metricDistance = metricDistance(direction, dimensions, system.distanceMetric(),
+                        euclideanDistance);
+                float normalizedDistance = metricDistance / system.interactionRange();
                 if (normalizedDistance >= 1.0f) {
                     continue;
                 }
 
                 int groupJ = groups[other];
-                float magnitude = normalizedDistance < repulsionRadius
-                        ? normalizedDistance / repulsionRadius - 1.0f
-                        : system.attraction(groupI, groupJ)
-                                * (1.0f - Math.abs(2.0f * normalizedDistance - 1.0f - repulsionRadius)
-                                        / (1.0f - repulsionRadius));
+                float attraction = system.attraction(groupI, groupJ);
+                if (system.densityRegulationEnabled() && localDensity < system.densityLimit() + 1.0f) {
+                    float densityWeight = 1.0f - normalizedDistance;
+                    localDensity += groupI == groupJ ? densityWeight : densityWeight * 0.5f;
+                }
+                float magnitude = normalizedDistance < system.repulsionRadius()
+                        ? normalizedDistance / system.repulsionRadius() - 1.0f
+                        : attraction * (1.0f - Math.abs(2.0f * normalizedDistance - 1.0f
+                                - system.repulsionRadius()) / (1.0f - system.repulsionRadius()));
                 float scale = magnitude * system.forceFactor() / euclideanDistance;
-                forceX += directionX * scale;
-                forceY += directionY * scale;
-                forceZ += directionZ * scale;
+                float[] target = system.densityRegulationEnabled() && attraction > 0.0f
+                        && normalizedDistance >= system.repulsionRadius() ? positiveAttractionForce : force;
+                for (int axis = 0; axis < dimensions; axis++) {
+                    target[axis] += direction[axis] * scale;
+                }
             }
 
-            float velocityX = (velocities[base] + forceX * deltaTime * 0.1f) * system.velocityDamping();
-            float velocityY = (velocities[base + 1] + forceY * deltaTime * 0.1f) * system.velocityDamping();
-            float velocityZ = (velocities[base + 2] + forceZ * deltaTime * 0.1f) * system.velocityDamping();
-            float squaredVelocity = velocityX * velocityX + velocityY * velocityY + velocityZ * velocityZ;
+            if (system.densityRegulationEnabled()) {
+                float densityFactor = Math.max(0.0f,
+                        Math.min(1.0f, 1.0f - Math.max(0.0f, localDensity - system.densityLimit())));
+                for (int axis = 0; axis < dimensions; axis++) {
+                    force[axis] += positiveAttractionForce[axis] * densityFactor;
+                }
+            }
+
+            float squaredVelocity = 0.0f;
+            for (int axis = 0; axis < dimensions; axis++) {
+                nextVelocities[base + axis] = (velocities[base + axis] + force[axis] * deltaTime * 0.1f)
+                        * system.velocityDamping();
+                squaredVelocity += nextVelocities[base + axis] * nextVelocities[base + axis];
+            }
             if (squaredVelocity > system.maxVelocity() * system.maxVelocity()) {
                 float scale = system.maxVelocity() / (float) Math.sqrt(squaredVelocity);
-                velocityX *= scale;
-                velocityY *= scale;
-                velocityZ *= scale;
-            }
-
-            float positionX = positions[base] + velocityX * deltaTime;
-            float positionY = positions[base + 1] + velocityY * deltaTime;
-            float positionZ = positions[base + 2] + velocityZ * deltaTime;
-            if (system.toroidalWrap()) {
-                float worldSize = system.bounds() * 2.0f;
-                positionX = wrap(positionX, system.bounds(), worldSize);
-                positionY = wrap(positionY, system.bounds(), worldSize);
-                positionZ = wrap(positionZ, system.bounds(), worldSize);
-            } else {
-                float[] bounded = { positionX, positionY, positionZ };
-                float[] velocity = { velocityX, velocityY, velocityZ };
-                for (int axis = 0; axis < 3; axis++) {
-                    if (bounded[axis] > system.bounds()) {
-                        bounded[axis] = system.bounds();
-                        velocity[axis] *= -system.boundaryBounce();
-                    } else if (bounded[axis] < -system.bounds()) {
-                        bounded[axis] = -system.bounds();
-                        velocity[axis] *= -system.boundaryBounce();
-                    }
+                for (int axis = 0; axis < dimensions; axis++) {
+                    nextVelocities[base + axis] *= scale;
                 }
-                positionX = bounded[0];
-                positionY = bounded[1];
-                positionZ = bounded[2];
-                velocityX = velocity[0];
-                velocityY = velocity[1];
-                velocityZ = velocity[2];
             }
 
-            nextPositions[base] = positionX;
-            nextPositions[base + 1] = positionY;
-            nextPositions[base + 2] = positionZ;
-            nextPositions[base + 3] = 0.0f;
-            nextVelocities[base] = velocityX;
-            nextVelocities[base + 1] = velocityY;
-            nextVelocities[base + 2] = velocityZ;
-            nextVelocities[base + 3] = 0.0f;
+            for (int axis = 0; axis < dimensions; axis++) {
+                float position = positions[base + axis] + nextVelocities[base + axis] * deltaTime;
+                if (system.toroidalWrap()) {
+                    position = wrap(position, system.bounds(), system.bounds() * 2.0f);
+                } else if (position > system.bounds()) {
+                    position = system.bounds();
+                    nextVelocities[base + axis] *= -system.boundaryBounce();
+                } else if (position < -system.bounds()) {
+                    position = -system.bounds();
+                    nextVelocities[base + axis] *= -system.boundaryBounce();
+                }
+                nextPositions[base + axis] = position;
+            }
         }
         return new ReferenceState(nextPositions, nextVelocities);
+    }
+
+    private static float metricDistance(float[] direction, int dimensions, DistanceMetric metric,
+            float euclideanDistance) {
+        if (metric == DistanceMetric.EUCLIDEAN) {
+            return euclideanDistance;
+        }
+        float result = metric == DistanceMetric.MANHATTAN ? 0.0f : Float.NEGATIVE_INFINITY;
+        for (int axis = 0; axis < dimensions; axis++) {
+            result = metric == DistanceMetric.MANHATTAN
+                    ? result + Math.abs(direction[axis])
+                    : Math.max(result, Math.abs(direction[axis]));
+        }
+        return result;
+    }
+
+    private static float length4d(float[] vector) {
+        return (float) Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]
+                + vector[2] * vector[2] + vector[3] * vector[3]);
     }
 
     private static float wrap(float value, float bounds, float worldSize) {

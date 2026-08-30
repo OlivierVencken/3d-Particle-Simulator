@@ -4,6 +4,7 @@ import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.particles.SimulationDimension;
 import com.particle.sim.ui.SimulationUiActions;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public final class RecordingSimulationUiActions implements SimulationUiActions {
     }
 
     public final class SimulationActions implements SimulationUiActions.Simulation {
+        @Override public void setSimulationDimension(SimulationDimension value) { record("simulation.dimension"); }
         @Override public void togglePause() { record("simulation.togglePause"); }
         @Override public void step() { record("simulation.step"); }
         @Override public void resetParticles() { record("simulation.resetParticles"); }

@@ -1,6 +1,7 @@
 package com.particle.sim.ui.sidebar.sections;
 
 import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.particles.SimulationDimension;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.SimulationUiActions;
 import com.particle.sim.ui.SimulationUiModel;
@@ -16,14 +17,13 @@ import imgui.ImGui;
 import imgui.type.ImInt;
 
 final class ParticlesSection {
-    private static final String[] SPAWN_MODES = UIControls.enumLabels(SpawnMode.values());
-
     private final ImInt customSpawnAmount = new ImInt(SimulationDefaults.CUSTOM_SPAWN_AMOUNT);
     private final ImInt groupCount = new ImInt(SimulationDefaults.GROUP_COUNT);
     private final UIControls controls = new UIControls();
     private final ClearParticlesPopup clearParticlesPopup = new ClearParticlesPopup();
 
-    void render(SimulationUiModel.Particles particles, SimulationUiActions.Particles actions) {
+    void render(SimulationUiModel.Simulation simulation, SimulationUiModel.Particles particles,
+            SimulationUiActions.Particles actions) {
         UIDesignTokens tokens = UITheme.tokens();
         float summaryWidth = ImGui.getContentRegionAvailX();
         if (metricsFitSideBySide(summaryWidth, tokens)) {
@@ -54,8 +54,12 @@ final class ParticlesSection {
                 1, particles.maximumGroupCount(), -1.0f)) {
             actions.setGroupCount(groupCount.get());
         }
-        controls.settingCombo("Spawn mode", "particle-spawn-mode", particles.spawnMode().ordinal(), SPAWN_MODES,
-                value -> actions.setSpawnMode(SpawnMode.values()[value]));
+        SpawnMode[] spawnModes = supportedSpawnModes(simulation.simulationDimension());
+        controls.settingCombo("Spawn mode", "particle-spawn-mode", indexOf(spawnModes, particles.spawnMode()),
+                UIControls.enumLabels(spawnModes), value -> actions.setSpawnMode(spawnModes[value]));
+        if (simulation.simulationDimension() == SimulationDimension.FOUR_D) {
+            UIText.helper("Disc and Spiral are unavailable in 4D.");
+        }
 
         UIControls.sectionHeading("Spawn particles");
         float pairWidth = Math.max(tokens.pairedControlMinimumWidth(),
@@ -143,6 +147,21 @@ final class ParticlesSection {
 
     static int clampedAddition(int requested, SimulationUiModel.Particles particles) {
         return Math.max(0, Math.min(requested, remainingCapacity(particles)));
+    }
+
+    static SpawnMode[] supportedSpawnModes(SimulationDimension dimension) {
+        return java.util.Arrays.stream(SpawnMode.values())
+                .filter(mode -> mode.supportedIn(dimension))
+                .toArray(SpawnMode[]::new);
+    }
+
+    private static int indexOf(SpawnMode[] modes, SpawnMode selected) {
+        for (int index = 0; index < modes.length; index++) {
+            if (modes[index] == selected) {
+                return index;
+            }
+        }
+        return 0;
     }
 
     private static void renderCapacityStatus(SimulationUiModel.Particles particles, int requested) {

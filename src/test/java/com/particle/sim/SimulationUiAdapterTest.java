@@ -2,6 +2,7 @@ package com.particle.sim;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.particles.SimulationDimension;
 import com.particle.sim.settings.SettingsController;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.SimulationUI;
@@ -41,6 +42,14 @@ class SimulationUiAdapterTest {
         actions.simulation().setToroidalWrap(true);
 
         assertTrue(particles.toroidalWrap());
+        assertEquals(1, settings.saveRequests);
+    }
+
+    @Test
+    void dimensionActionChangesSimulationModeAndSchedulesOneSave() {
+        actions.simulation().setSimulationDimension(SimulationDimension.FOUR_D);
+
+        assertEquals(SimulationDimension.FOUR_D, particles.simulationDimension());
         assertEquals(1, settings.saveRequests);
     }
 

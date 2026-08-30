@@ -8,6 +8,19 @@ public final class ParticleSpawner {
 
     public static void spawnParticles(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
             float bounds, int groupCount, SpawnMode mode, Random random) {
+        spawnParticles(positions, velocities, groups, count, bounds, groupCount, mode,
+                SimulationDimension.THREE_D, random);
+    }
+
+    public static void spawnParticles(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, SpawnMode mode, SimulationDimension dimension, Random random) {
+        if (!mode.supportedIn(dimension)) {
+            throw new IllegalArgumentException(mode + " spawning is not available in 4D");
+        }
+        if (dimension == SimulationDimension.FOUR_D) {
+            spawnFourDimensional(positions, velocities, groups, count, bounds, groupCount, mode, random);
+            return;
+        }
         switch (mode) {
             case POINT:
                 spawnPoint(positions, velocities, groups, count, groupCount, random);
@@ -35,6 +48,133 @@ public final class ParticleSpawner {
                 spawnRandom(positions, velocities, groups, count, bounds, groupCount, random);
                 break;
         }
+    }
+
+    private static void spawnFourDimensional(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups,
+            int count, float bounds, int groupCount, SpawnMode mode, Random random) {
+        switch (mode) {
+            case POINT -> {
+                for (int i = 0; i < count; i++) {
+                    writePosition4d(positions, groups, 0.0f, 0.0f, 0.0f, 0.0f, random.nextInt(groupCount));
+                    writeVelocity4d(velocities, random);
+                }
+            }
+            case RANDOM -> {
+                for (int i = 0; i < count; i++) {
+                    writePosition4d(positions, groups,
+                            randomCoordinate(bounds, random), randomCoordinate(bounds, random),
+                            randomCoordinate(bounds, random), randomCoordinate(bounds, random),
+                            random.nextInt(groupCount));
+                    writeVelocity4d(velocities, random);
+                }
+            }
+            case SPHERICAL -> spawnFourBall(positions, velocities, groups, count, bounds, groupCount, random);
+            case SHELL -> spawnThreeSphere(positions, velocities, groups, count, bounds, groupCount, random);
+            case GRID -> spawnGrid4d(positions, velocities, groups, count, bounds, groupCount, random);
+            case CLUSTERS -> spawnClusters4d(positions, velocities, groups, count, bounds, groupCount, random);
+            case DISC, SPIRAL -> throw new IllegalArgumentException(mode + " spawning is not available in 4D");
+        }
+    }
+
+    private static void spawnFourBall(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, Random random) {
+        float[] direction = new float[4];
+        for (int i = 0; i < count; i++) {
+            randomUnitVector4d(direction, random);
+            float radius = bounds * 0.6f * (float) Math.pow(random.nextDouble(), 0.25);
+            writePosition4d(positions, groups, direction[0] * radius, direction[1] * radius,
+                    direction[2] * radius, direction[3] * radius, random.nextInt(groupCount));
+            writeVelocity4d(velocities, random);
+        }
+    }
+
+    private static void spawnThreeSphere(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, Random random) {
+        float[] direction = new float[4];
+        float radius = bounds * 0.6f;
+        for (int i = 0; i < count; i++) {
+            randomUnitVector4d(direction, random);
+            writePosition4d(positions, groups, direction[0] * radius, direction[1] * radius,
+                    direction[2] * radius, direction[3] * radius, random.nextInt(groupCount));
+            writeVelocity4d(velocities, random);
+        }
+    }
+
+    private static void spawnGrid4d(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, Random random) {
+        int gridSize = Math.max(1, (int) Math.ceil(Math.pow(count, 0.25)));
+        float gridSpacing = bounds * 2.0f / gridSize;
+        long gridSquared = (long) gridSize * gridSize;
+        long gridCubed = gridSquared * gridSize;
+        for (int i = 0; i < count; i++) {
+            int ix = i % gridSize;
+            int iy = (i / gridSize) % gridSize;
+            int iz = (int) ((i / gridSquared) % gridSize);
+            int iw = (int) (i / gridCubed);
+            writePosition4d(positions, groups,
+                    gridCoordinate(ix, gridSpacing, bounds), gridCoordinate(iy, gridSpacing, bounds),
+                    gridCoordinate(iz, gridSpacing, bounds), gridCoordinate(iw, gridSpacing, bounds),
+                    random.nextInt(groupCount));
+            writeVelocity4d(velocities, random);
+        }
+    }
+
+    private static void spawnClusters4d(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, Random random) {
+        float[][] centers = new float[groupCount][4];
+        float[] direction = new float[4];
+        for (int group = 0; group < groupCount; group++) {
+            randomUnitVector4d(direction, random);
+            for (int axis = 0; axis < 4; axis++) {
+                centers[group][axis] = direction[axis] * bounds * 0.5f;
+            }
+        }
+        for (int i = 0; i < count; i++) {
+            int group = random.nextInt(groupCount);
+            writePosition4d(positions, groups,
+                    centers[group][0] + jitter(bounds, random), centers[group][1] + jitter(bounds, random),
+                    centers[group][2] + jitter(bounds, random), centers[group][3] + jitter(bounds, random), group);
+            writeVelocity4d(velocities, random);
+        }
+    }
+
+    private static void randomUnitVector4d(float[] result, Random random) {
+        double squaredLength;
+        do {
+            squaredLength = 0.0;
+            for (int axis = 0; axis < 4; axis++) {
+                float component = (float) random.nextGaussian();
+                result[axis] = component;
+                squaredLength += component * component;
+            }
+        } while (squaredLength <= 1.0e-20);
+        float inverseLength = (float) (1.0 / Math.sqrt(squaredLength));
+        for (int axis = 0; axis < 4; axis++) {
+            result[axis] *= inverseLength;
+        }
+    }
+
+    private static float randomCoordinate(float bounds, Random random) {
+        return (random.nextFloat() - 0.5f) * 2.0f * bounds;
+    }
+
+    private static float jitter(float bounds, Random random) {
+        return (random.nextFloat() - 0.5f) * bounds * 0.2f;
+    }
+
+    private static float gridCoordinate(int index, float spacing, float bounds) {
+        return -bounds + index * spacing + spacing * 0.5f;
+    }
+
+    private static void writePosition4d(FloatBuffer positions, IntBuffer groups, float x, float y, float z, float w,
+            int group) {
+        positions.put(x).put(y).put(z).put(w);
+        groups.put(group);
+    }
+
+    private static void writeVelocity4d(FloatBuffer velocities, Random random) {
+        velocities.put(randomCoordinate(0.1f, random)).put(randomCoordinate(0.1f, random))
+                .put(randomCoordinate(0.1f, random)).put(randomCoordinate(0.1f, random));
     }
 
     private static void writePosition(FloatBuffer positions, IntBuffer groups, float x, float y, float z, int group) {

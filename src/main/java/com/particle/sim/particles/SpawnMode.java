@@ -8,5 +8,9 @@ public enum SpawnMode {
     SPIRAL,
     DISC,
     CLUSTERS,
-    POINT
+    POINT;
+
+    public boolean supportedIn(SimulationDimension dimension) {
+        return dimension != SimulationDimension.FOUR_D || (this != DISC && this != SPIRAL);
+    }
 }
