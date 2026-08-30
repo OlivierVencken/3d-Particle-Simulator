@@ -2,10 +2,11 @@
 
 ## Requirements
 
+- Windows 10 or 11, x64
 - Java 21 or newer
 - A GPU and driver with OpenGL 4.3 support
 
-Windows and Linux are supported. Native macOS is not supported because Apple's OpenGL implementation stops below the required OpenGL 4.3 compute-shader baseline.
+Only Windows 10 or 11 on x64 is supported.
 
 ## How To Run from source
 
@@ -14,8 +15,6 @@ From the project folder, run:
 ```powershell
 .\mvnw.cmd compile exec:java
 ```
-
-On Linux, use `./mvnw` in place of `.\mvnw.cmd`.
 
 The first launch may take a little longer while Maven downloads the required libraries.
 

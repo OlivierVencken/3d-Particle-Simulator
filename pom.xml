@@ -118,22 +118,6 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>linux</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <name>Linux</name>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-linux</lwjgl.natives>
-                <imgui.natives>imgui-java-natives-linux</imgui.natives>
-            </properties>
-        </profile>
-    </profiles>
-
     <build>
         <resources>
             <resource>
