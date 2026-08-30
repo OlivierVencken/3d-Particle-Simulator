@@ -3,7 +3,6 @@
 ## Requirements
 
 - Java 21 or newer
-- Maven
 - A GPU and driver with OpenGL 4.3 support
 
 Windows and Linux are supported. Native macOS is not supported because Apple's OpenGL implementation stops below the required OpenGL 4.3 compute-shader baseline.
@@ -13,8 +12,10 @@ Windows and Linux are supported. Native macOS is not supported because Apple's O
 From the project folder, run:
 
 ```powershell
-mvn compile exec:java
+.\mvnw.cmd compile exec:java
 ```
+
+On Linux, use `./mvnw` in place of `.\mvnw.cmd`.
 
 The first launch may take a little longer while Maven downloads the required libraries.
 
@@ -36,14 +37,14 @@ Trails share the integration dispatch instead of copying the position buffer. Th
 Run a hidden, deterministic capacity search for the largest particle count meeting the 60 Hz median/p95 target:
 
 ```powershell
-mvn -q exec:java "-Dexec.args=--benchmark"
+.\mvnw.cmd -q exec:java "-Dexec.args=--benchmark"
 ```
 
 Run a specific count or write machine-readable JSON/CSV output:
 
 ```powershell
-mvn -q exec:java "-Dexec.args=--benchmark --particles=100000 --warmup=10 --samples=30 --output=target/benchmark.json"
-mvn -q exec:java "-Dexec.args=--benchmark --output=target/benchmark.csv"
+.\mvnw.cmd -q exec:java "-Dexec.args=--benchmark --particles=100000 --warmup=10 --samples=30 --output=target/benchmark.json"
+.\mvnw.cmd -q exec:java "-Dexec.args=--benchmark --output=target/benchmark.csv"
 ```
 
 The reported limit depends heavily on world bounds, interaction range, and resulting local density; the exact grid intentionally evaluates every in-range particle rather than silently dropping dense-cell members.
@@ -53,11 +54,11 @@ The reported limit depends heavily on world bounds, interaction range, and resul
 The normal test suite does not require a display or GPU context:
 
 ```powershell
-mvn test
+.\mvnw.cmd test
 ```
 
 An opt-in hidden OpenGL test compiles every shader, renders glow and trails, verifies compact-grid membership, and compares GPU simulation output with an all-pairs CPU reference for every distance and boundary mode:
 
 ```powershell
-mvn -DgpuTests=true -Dtest=GpuParticleSystemOpenGlTest test
+.\mvnw.cmd -DgpuTests=true -Dtest=GpuParticleSystemOpenGlTest test
 ```

@@ -17,12 +17,16 @@ function Require-Command {
     }
 }
 
-Require-Command "mvn"
 Require-Command "jpackage"
 
 $root = Resolve-Path (Join-Path $PSScriptRoot "..")
+$mavenWrapper = Join-Path $root "mvnw.cmd"
 $pomPath = Join-Path $root "pom.xml"
 [xml]$pom = Get-Content -Raw $pomPath
+
+if (-not (Test-Path -LiteralPath $mavenWrapper)) {
+    throw "Maven wrapper was not found: $mavenWrapper"
+}
 
 $artifactId = [string]$pom.project.artifactId
 $version = [string]$pom.project.version
@@ -60,7 +64,7 @@ foreach ($path in @($inputDir, $imageDestDir, $releaseDir)) {
 Write-Host "Building project..."
 Push-Location $root
 try {
-    & mvn @mvnArgs
+    & $mavenWrapper @mvnArgs
     if ($LASTEXITCODE -ne 0) {
         throw "Maven build failed with exit code $LASTEXITCODE."
     }
