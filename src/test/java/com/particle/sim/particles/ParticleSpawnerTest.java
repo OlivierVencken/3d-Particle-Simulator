@@ -3,6 +3,7 @@ package com.particle.sim.particles;
 import org.junit.jupiter.api.Test;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,11 +19,14 @@ class ParticleSpawnerTest {
         for (SpawnMode mode : SpawnMode.values()) {
             FloatBuffer positions = FloatBuffer.allocate(16);
             FloatBuffer velocities = FloatBuffer.allocate(16);
+            IntBuffer groups = IntBuffer.allocate(4);
 
-            ParticleSpawner.spawnParticles(positions, velocities, 4, BOUNDS, GROUP_COUNT, mode, new Random(12));
+            ParticleSpawner.spawnParticles(positions, velocities, groups, 4, BOUNDS, GROUP_COUNT, mode,
+                    new Random(12));
 
             assertEquals(16, positions.position(), mode + " did not write all positions");
             assertEquals(16, velocities.position(), mode + " did not write all velocities");
+            assertEquals(4, groups.position(), mode + " did not write all groups");
         }
     }
 
@@ -32,10 +36,11 @@ class ParticleSpawnerTest {
             SpawnedParticles particles = spawn(mode, 64, 99);
 
             for (int i = 0; i < 64; i++) {
-                float group = particles.positions.get(i * 4 + 3);
-                assertTrue(group >= 0.0f && group < GROUP_COUNT && group == (int) group,
+                int group = particles.groups.get(i);
+                assertTrue(group >= 0 && group < GROUP_COUNT,
                         mode + " assigned invalid group " + group);
 
+                assertEquals(0.0f, particles.positions.get(i * 4 + 3), EPSILON);
                 assertTrue(Math.abs(particles.velocities.get(i * 4)) <= 0.1f + EPSILON);
                 assertTrue(Math.abs(particles.velocities.get(i * 4 + 1)) <= 0.1f + EPSILON);
                 assertTrue(Math.abs(particles.velocities.get(i * 4 + 2)) <= 0.1f + EPSILON);
@@ -118,7 +123,7 @@ class ParticleSpawnerTest {
         SpawnedParticles particles = spawn(SpawnMode.CLUSTERS, 64, 7);
 
         for (int i = 0; i < 64; i++) {
-            int group = (int) particles.positions.get(i * 4 + 3);
+            int group = particles.groups.get(i);
             float clusterTheta = group * ((float) Math.PI * 2.0f / GROUP_COUNT);
             float centerX = BOUNDS * 0.5f * (float) Math.cos(clusterTheta);
             float centerY = (group % 2 == 0 ? 1.0f : -1.0f) * BOUNDS * 0.3f;
@@ -144,10 +149,13 @@ class ParticleSpawnerTest {
     private static SpawnedParticles spawn(SpawnMode mode, int count, long seed) {
         FloatBuffer positions = FloatBuffer.allocate(count * 4);
         FloatBuffer velocities = FloatBuffer.allocate(count * 4);
-        ParticleSpawner.spawnParticles(positions, velocities, count, BOUNDS, GROUP_COUNT, mode, new Random(seed));
+        IntBuffer groups = IntBuffer.allocate(count);
+        ParticleSpawner.spawnParticles(positions, velocities, groups, count, BOUNDS, GROUP_COUNT, mode,
+                new Random(seed));
         positions.flip();
         velocities.flip();
-        return new SpawnedParticles(positions, velocities);
+        groups.flip();
+        return new SpawnedParticles(positions, velocities, groups);
     }
 
     private static float radius(SpawnedParticles particles, int index) {
@@ -162,6 +170,6 @@ class ParticleSpawnerTest {
                 value + " was not within [" + min + ", " + max + "]");
     }
 
-    private record SpawnedParticles(FloatBuffer positions, FloatBuffer velocities) {
+    private record SpawnedParticles(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups) {
     }
 }

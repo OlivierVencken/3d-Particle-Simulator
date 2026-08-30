@@ -12,6 +12,10 @@ layout(std430, binding = 2) readonly buffer GridCounts {
     int grid_counts[];
 };
 
+layout(std430, binding = 9) readonly buffer ParticleGroups {
+    int groups[];
+};
+
 uniform mat4 uViewProjection;
 uniform mat4 uView;
 uniform float uPointSize;
@@ -39,7 +43,7 @@ int getGridIndex(ivec3 coord) {
 void main() {
     vec4 particle = positions[gl_VertexID];
     vec3 position = particle.xyz;
-    int group = int(mod(particle.w, float(max(uGroupCount, 1))));
+    int group = clamp(groups[gl_VertexID], 0, max(uGroupCount - 1, 0));
 
     vec4 worldPosition = vec4(position, 1.0);
     vec4 viewPosition = uView * worldPosition;

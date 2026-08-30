@@ -285,6 +285,7 @@ public final class ParticleRenderer {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particleBuffers.positionSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, particleBuffers.velocitySsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, spatialGridBuffers.countsSsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, particleBuffers.groupSsbo());
 
         glUniformMatrix4fv(uViewProjectionLoc, false, frameViewProjection);
         if (uViewLoc != -1) {
@@ -342,6 +343,7 @@ public final class ParticleRenderer {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, particleBuffers.velocitySsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, spatialGridBuffers.countsSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, trailHistoryBuffers.historySsbo());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, particleBuffers.groupSsbo());
 
         glUniformMatrix4fv(uTrailViewProjectionLoc, false, frameViewProjection);
         glUniformMatrix4fv(uTrailViewLoc, false, viewMatrix);

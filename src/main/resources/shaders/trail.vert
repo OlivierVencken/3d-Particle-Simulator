@@ -16,6 +16,10 @@ layout(std430, binding = 4) readonly buffer TrailHistory {
     vec4 history[];
 };
 
+layout(std430, binding = 9) readonly buffer ParticleGroups {
+    int groups[];
+};
+
 uniform mat4 uViewProjection;
 uniform mat4 uView;
 uniform vec2 uViewport;
@@ -132,7 +136,7 @@ void main() {
     vec2 offset = normal * (thickness / uViewport) * side;
     gl_Position = vec4(clip.xy + offset * clip.w, clip.zw);
 
-    int group = int(mod(positions[particleId].w, float(max(uGroupCount, 1))));
+    int group = clamp(groups[particleId], 0, max(uGroupCount - 1, 0));
     fColor = particleColor(particleId, position, group);
     float age = float(segmentAge + endpoint);
     fAlpha = (1.0 - clamp(age / float(max(uSampleCount - 1, 1)), 0.0, 1.0)) * 0.78;

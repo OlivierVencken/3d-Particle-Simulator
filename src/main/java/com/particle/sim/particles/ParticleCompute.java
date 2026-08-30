@@ -131,6 +131,7 @@ public final class ParticleCompute {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, particles.nextPositionSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, particles.nextVelocitySsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, captureTrail ? trailHistory.historySsbo() : 0);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, particles.groupSsbo());
 
         glUniform1f(uDeltaTimeLoc, deltaTime);
         glUniform1i(uParticleCountLoc, system.particleCount());

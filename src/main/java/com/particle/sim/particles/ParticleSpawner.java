@@ -1,39 +1,45 @@
 package com.particle.sim.particles;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.Random;
 
 public final class ParticleSpawner {
 
-    public static void spawnParticles(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, SpawnMode mode, Random random) {
+    public static void spawnParticles(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, SpawnMode mode, Random random) {
         switch (mode) {
             case POINT:
-                spawnPoint(positions, velocities, count, groupCount, random);
+                spawnPoint(positions, velocities, groups, count, groupCount, random);
                 break;
             case SHELL:
-                spawnShell(positions, velocities, count, bounds, groupCount, random);
+                spawnShell(positions, velocities, groups, count, bounds, groupCount, random);
                 break;
             case SPHERICAL:
-                spawnSpherical(positions, velocities, count, bounds, groupCount, random);
+                spawnSpherical(positions, velocities, groups, count, bounds, groupCount, random);
                 break;
             case DISC:
-                spawnDisc(positions, velocities, count, bounds, groupCount, random);
+                spawnDisc(positions, velocities, groups, count, bounds, groupCount, random);
                 break;
             case SPIRAL:
-                spawnSpiral(positions, velocities, count, bounds, groupCount, random);
+                spawnSpiral(positions, velocities, groups, count, bounds, groupCount, random);
                 break;
             case CLUSTERS:
-                spawnClusters(positions, velocities, count, bounds, groupCount, random);
+                spawnClusters(positions, velocities, groups, count, bounds, groupCount, random);
                 break;
             case GRID:
-                spawnGrid(positions, velocities, count, bounds, groupCount, random);
+                spawnGrid(positions, velocities, groups, count, bounds, groupCount, random);
                 break;
             case RANDOM:
             default:
-                spawnRandom(positions, velocities, count, bounds, groupCount, random);
+                spawnRandom(positions, velocities, groups, count, bounds, groupCount, random);
                 break;
         }
+    }
+
+    private static void writePosition(FloatBuffer positions, IntBuffer groups, float x, float y, float z, int group) {
+        positions.put(x).put(y).put(z).put(0.0f);
+        groups.put(group);
     }
 
     private static void writeVelocity(FloatBuffer velocities, Random random) {
@@ -44,16 +50,16 @@ public final class ParticleSpawner {
                 .put(0.0f);
     }
 
-    private static void spawnPoint(FloatBuffer positions, FloatBuffer velocities, int count, int groupCount,
-            Random random) {
+    private static void spawnPoint(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            int groupCount, Random random) {
         for (int i = 0; i < count; i++) {
-            positions.put(0.0f).put(0.0f).put(0.0f).put(random.nextInt(groupCount));
+            writePosition(positions, groups, 0.0f, 0.0f, 0.0f, random.nextInt(groupCount));
             writeVelocity(velocities, random);
         }
     }
 
-    private static void spawnShell(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnShell(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, Random random) {
         float r = bounds * 0.6f;
         for (int i = 0; i < count; i++) {
             float theta = random.nextFloat() * (float) Math.PI * 2.0f;
@@ -62,13 +68,13 @@ public final class ParticleSpawner {
             float y = r * (float) Math.cos(phi);
             float z = r * (float) Math.sin(phi) * (float) Math.sin(theta);
 
-            positions.put(x).put(y).put(z).put(random.nextInt(groupCount));
+            writePosition(positions, groups, x, y, z, random.nextInt(groupCount));
             writeVelocity(velocities, random);
         }
     }
 
-    private static void spawnSpherical(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnSpherical(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, Random random) {
         for (int i = 0; i < count; i++) {
             float r = random.nextFloat() * bounds * 0.6f;
             float theta = random.nextFloat() * (float) Math.PI * 2.0f;
@@ -77,13 +83,13 @@ public final class ParticleSpawner {
             float y = r * (float) Math.cos(phi);
             float z = r * (float) Math.sin(phi) * (float) Math.sin(theta);
 
-            positions.put(x).put(y).put(z).put(random.nextInt(groupCount));
+            writePosition(positions, groups, x, y, z, random.nextInt(groupCount));
             writeVelocity(velocities, random);
         }
     }
 
-    private static void spawnDisc(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnDisc(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, Random random) {
         for (int i = 0; i < count; i++) {
             float r = (float) Math.sqrt(random.nextFloat()) * bounds * 0.8f;
             float theta = random.nextFloat() * (float) Math.PI * 2.0f;
@@ -91,13 +97,13 @@ public final class ParticleSpawner {
             float y = (random.nextFloat() - 0.5f) * bounds * 0.05f;
             float z = r * (float) Math.sin(theta);
 
-            positions.put(x).put(y).put(z).put(random.nextInt(groupCount));
+            writePosition(positions, groups, x, y, z, random.nextInt(groupCount));
             writeVelocity(velocities, random);
         }
     }
 
-    private static void spawnSpiral(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnSpiral(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, Random random) {
         int arms = 3;
         for (int i = 0; i < count; i++) {
             int group = random.nextInt(groupCount);
@@ -108,13 +114,13 @@ public final class ParticleSpawner {
             float y = (random.nextFloat() - 0.5f) * bounds * 0.2f * (1.0f - t);
             float z = r * (float) Math.sin(theta);
 
-            positions.put(x).put(y).put(z).put(group);
+            writePosition(positions, groups, x, y, z, group);
             writeVelocity(velocities, random);
         }
     }
 
-    private static void spawnClusters(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnClusters(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, Random random) {
         float clusterRadius = bounds * 0.5f;
         for (int i = 0; i < count; i++) {
             int group = random.nextInt(groupCount);
@@ -127,13 +133,13 @@ public final class ParticleSpawner {
             float y = cy + (random.nextFloat() - 0.5f) * bounds * 0.2f;
             float z = cz + (random.nextFloat() - 0.5f) * bounds * 0.2f;
 
-            positions.put(x).put(y).put(z).put(group);
+            writePosition(positions, groups, x, y, z, group);
             writeVelocity(velocities, random);
         }
     }
 
-    private static void spawnGrid(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnGrid(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, Random random) {
         int gridSize = (int) Math.ceil(Math.pow(count, 1.0 / 3.0));
         if (gridSize == 0)
             gridSize = 1;
@@ -147,19 +153,19 @@ public final class ParticleSpawner {
             float y = -bounds + iy * gridSpacing + gridSpacing * 0.5f;
             float z = -bounds + iz * gridSpacing + gridSpacing * 0.5f;
 
-            positions.put(x).put(y).put(z).put(random.nextInt(groupCount));
+            writePosition(positions, groups, x, y, z, random.nextInt(groupCount));
             writeVelocity(velocities, random);
         }
     }
 
-    private static void spawnRandom(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnRandom(FloatBuffer positions, FloatBuffer velocities, IntBuffer groups, int count,
+            float bounds, int groupCount, Random random) {
         for (int i = 0; i < count; i++) {
             float x = (random.nextFloat() - 0.5f) * 2.0f * bounds;
             float y = (random.nextFloat() - 0.5f) * 2.0f * bounds;
             float z = (random.nextFloat() - 0.5f) * 2.0f * bounds;
 
-            positions.put(x).put(y).put(z).put(random.nextInt(groupCount));
+            writePosition(positions, groups, x, y, z, random.nextInt(groupCount));
             writeVelocity(velocities, random);
         }
     }

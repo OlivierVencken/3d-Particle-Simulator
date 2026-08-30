@@ -12,19 +12,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ShaderResourceTest {
     @Test
     void shaderResourcesArePackagedWithExpectedEntrypoints() throws IOException {
-        assertShaderContains("/shaders/particle.comp", "layout(local_size_x = 256) in;", "void main()");
+        assertShaderContains("/shaders/particle.comp", "layout(local_size_x = 256) in;",
+                "layout(std430, binding = 9) readonly buffer ParticleGroups", "void main()");
         assertShaderContains("/shaders/grid_count.comp", "atomicAdd", "void main()");
         assertShaderContains("/shaders/grid_scan.comp", "shared int values[512]", "void main()");
         assertShaderContains("/shaders/grid_scan_add.comp", "block_offsets", "void main()");
         assertShaderContains("/shaders/grid_scatter.comp", "particle_ids[destination]", "void main()");
-        assertShaderContains("/shaders/particle.vert", "uniform mat4 uViewProjection;", "void main()");
+        assertShaderContains("/shaders/particle.vert", "layout(std430, binding = 9) readonly buffer ParticleGroups",
+                "uniform mat4 uViewProjection;", "void main()");
         assertShaderContains("/shaders/particle.frag", "out vec4 fragColor;", "void main()");
         assertShaderContains("/shaders/fullscreen.vert", "out vec2 vUv;", "void main()");
         assertShaderContains("/shaders/bloom_extract.frag", "uniform sampler2D uScene;", "void main()");
         assertShaderContains("/shaders/blur.frag", "uniform float uRadius;", "1.384615", "void main()");
         assertShaderContains("/shaders/bloom_composite.frag", "uniform sampler2D uBloom;", "void main()");
         assertShaderContains("/shaders/trail.vert", "layout(std430, binding = 4) readonly buffer TrailHistory",
-                "uniform float uTrailThickness;", "gl_InstanceID", "void main()");
+                "layout(std430, binding = 9) readonly buffer ParticleGroups", "uniform float uTrailThickness;",
+                "gl_InstanceID", "void main()");
         assertShaderContains("/shaders/trail.frag", "out vec4 fragColor;", "void main()");
     }
 

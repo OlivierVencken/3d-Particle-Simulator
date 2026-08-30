@@ -99,6 +99,19 @@ class GpuParticleSystemOpenGlTest {
                 particleSeen[particleId] = true;
             }
 
+            int preservedCount = system.particleCount();
+            int[] preservedGroups = system.readGroups();
+            assertValidThreeDimensionalState(system);
+            system.addParticles(17);
+            assertEquals(preservedCount + 17, system.particleCount());
+            assertGroupPrefixEquals(preservedGroups, system.readGroups());
+            assertValidThreeDimensionalState(system);
+            system.removeParticles(17);
+            assertEquals(preservedCount, system.particleCount());
+            assertGroupPrefixEquals(preservedGroups, system.readGroups());
+            system.reset();
+            assertValidThreeDimensionalState(system);
+
             system.dispose();
             system = accuracySystem();
             for (boolean toroidal : new boolean[] { false, true }) {
@@ -108,12 +121,15 @@ class GpuParticleSystemOpenGlTest {
                     system.reset();
                     float[] initialPositions = system.readPositions();
                     float[] initialVelocities = system.readVelocities();
-                    ReferenceState expected = referenceStep(system, initialPositions, initialVelocities);
+                    int[] initialGroups = system.readGroups();
+                    ReferenceState expected = referenceStep(system, initialPositions, initialVelocities,
+                            initialGroups);
 
                     system.step();
                     glFinish();
                     assertStateClose(expected.positions(), system.readPositions(), 0.002f);
                     assertStateClose(expected.velocities(), system.readVelocities(), 0.002f);
+                    assertGroupPrefixEquals(initialGroups, system.readGroups());
                 }
             }
 
@@ -124,8 +140,9 @@ class GpuParticleSystemOpenGlTest {
                     -3.99f, 0.0f, 0.0f, 0.0f
             };
             float[] seamVelocities = new float[seamPositions.length];
-            system.replaceState(seamPositions, seamVelocities);
-            ReferenceState seamExpected = referenceStep(system, seamPositions, seamVelocities);
+            int[] seamGroups = { 0, 0 };
+            system.replaceState(seamPositions, seamVelocities, seamGroups);
+            ReferenceState seamExpected = referenceStep(system, seamPositions, seamVelocities, seamGroups);
 
             system.step();
             glFinish();
@@ -198,7 +215,8 @@ class GpuParticleSystemOpenGlTest {
         return system;
     }
 
-    private static ReferenceState referenceStep(GpuParticleSystem system, float[] positions, float[] velocities) {
+    private static ReferenceState referenceStep(GpuParticleSystem system, float[] positions, float[] velocities,
+            int[] groups) {
         float[] nextPositions = positions.clone();
         float[] nextVelocities = velocities.clone();
         float deltaTime = (float) SimulationDefaults.SIMULATION_STEP_SECONDS;
@@ -210,7 +228,7 @@ class GpuParticleSystemOpenGlTest {
             float forceX = 0.0f;
             float forceY = 0.0f;
             float forceZ = 0.0f;
-            int groupI = (int) positions[base + 3];
+            int groupI = groups[particle];
 
             for (int other = 0; other < system.particleCount(); other++) {
                 if (particle == other) {
@@ -243,7 +261,7 @@ class GpuParticleSystemOpenGlTest {
                     continue;
                 }
 
-                int groupJ = (int) positions[otherBase + 3];
+                int groupJ = groups[other];
                 float magnitude = normalizedDistance < repulsionRadius
                         ? normalizedDistance / repulsionRadius - 1.0f
                         : system.attraction(groupI, groupJ)
@@ -297,6 +315,7 @@ class GpuParticleSystemOpenGlTest {
             nextPositions[base] = positionX;
             nextPositions[base + 1] = positionY;
             nextPositions[base + 2] = positionZ;
+            nextPositions[base + 3] = 0.0f;
             nextVelocities[base] = velocityX;
             nextVelocities[base + 1] = velocityY;
             nextVelocities[base + 2] = velocityZ;
@@ -314,6 +333,28 @@ class GpuParticleSystemOpenGlTest {
         assertEquals(expected.length, actual.length);
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], actual[i], tolerance, "State differs at float index " + i);
+        }
+    }
+
+    private static void assertValidThreeDimensionalState(GpuParticleSystem system) {
+        float[] positions = system.readPositions();
+        float[] velocities = system.readVelocities();
+        int[] groups = system.readGroups();
+        assertEquals(system.particleCount(), groups.length);
+        for (int particle = 0; particle < system.particleCount(); particle++) {
+            assertEquals(0.0f, positions[particle * 4 + 3], 0.0f,
+                    "Generated position W must remain zero in Phase 1");
+            assertEquals(0.0f, velocities[particle * 4 + 3], 0.0f,
+                    "Generated velocity W must remain zero in Phase 1");
+            assertTrue(groups[particle] >= 0 && groups[particle] < system.groupCount(),
+                    "Generated particle group was outside the active range");
+        }
+    }
+
+    private static void assertGroupPrefixEquals(int[] expected, int[] actual) {
+        assertTrue(actual.length >= expected.length);
+        for (int particle = 0; particle < expected.length; particle++) {
+            assertEquals(expected[particle], actual[particle], "Group changed for particle " + particle);
         }
     }
 

@@ -15,7 +15,7 @@ import static org.lwjgl.opengl.GL43C.glGetIntegeri;
 
 public final class GpuParticleSystem {
     private static final int COMPUTE_WORK_GROUP_SIZE = 256;
-    private static final int BYTES_PER_PARTICLE = 4 * 4 * Float.BYTES + Integer.BYTES;
+    private static final int BYTES_PER_PARTICLE = 4 * 4 * Float.BYTES + 2 * Integer.BYTES;
 
     private final ParticleBuffers particleBuffers = new ParticleBuffers();
     private final TrailHistoryBuffers trailHistoryBuffers = new TrailHistoryBuffers();
@@ -469,15 +469,20 @@ public final class GpuParticleSystem {
         return particleBuffers.readVelocities(particleCount());
     }
 
-    void replaceState(float[] positions, float[] velocities) {
+    int[] readGroups() {
+        return particleBuffers.readGroups(particleCount());
+    }
+
+    void replaceState(float[] positions, float[] velocities, int[] groups) {
         int expectedFloatCount = Math.multiplyExact(particleCount(), 4);
         if (!initialized) {
             throw new IllegalStateException("Particle system must be initialized before replacing its state");
         }
-        if (positions.length != expectedFloatCount || velocities.length != expectedFloatCount) {
-            throw new IllegalArgumentException("Particle state must contain four floats per particle");
+        if (positions.length != expectedFloatCount || velocities.length != expectedFloatCount
+                || groups.length != particleCount()) {
+            throw new IllegalArgumentException("Particle state must contain two vec4 values and one group per particle");
         }
-        particleBuffers.replaceState(positions, velocities);
+        particleBuffers.replaceState(positions, velocities, groups);
         trailHistoryBuffers.clear();
     }
 
