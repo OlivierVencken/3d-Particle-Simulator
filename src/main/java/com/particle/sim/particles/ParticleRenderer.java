@@ -113,6 +113,14 @@ public final class ParticleRenderer {
     private int uTrailBoundsLoc;
     private int uTrailInteractionRangeLoc;
     private int uTrailGridSizeLoc;
+    private int uTrailSimulationDimensionLoc;
+    private int uTrailFourDVisualizationModeLoc;
+    private int uTrailRotation4DLoc;
+    private int uTrailPerspectiveDistanceLoc;
+    private int uTrailSliceCenterWLoc;
+    private int uTrailSliceThicknessLoc;
+    private int uTrailSliceFeatherLoc;
+    private int uTrailWColorRangeLoc;
 
     private int uBlurTextureLoc;
     private int uBlurDirectionLoc;
@@ -193,6 +201,14 @@ public final class ParticleRenderer {
         uTrailBoundsLoc = glGetUniformLocation(trailProgram, "uBounds");
         uTrailInteractionRangeLoc = glGetUniformLocation(trailProgram, "uInteractionRange");
         uTrailGridSizeLoc = glGetUniformLocation(trailProgram, "uGridSize");
+        uTrailSimulationDimensionLoc = glGetUniformLocation(trailProgram, "uSimulationDimension");
+        uTrailFourDVisualizationModeLoc = glGetUniformLocation(trailProgram, "uFourDVisualizationMode");
+        uTrailRotation4DLoc = glGetUniformLocation(trailProgram, "uRotation4D");
+        uTrailPerspectiveDistanceLoc = glGetUniformLocation(trailProgram, "uPerspectiveDistance");
+        uTrailSliceCenterWLoc = glGetUniformLocation(trailProgram, "uSliceCenterW");
+        uTrailSliceThicknessLoc = glGetUniformLocation(trailProgram, "uSliceThickness");
+        uTrailSliceFeatherLoc = glGetUniformLocation(trailProgram, "uSliceFeather");
+        uTrailWColorRangeLoc = glGetUniformLocation(trailProgram, "uWColorRange");
 
         uBlurTextureLoc = glGetUniformLocation(blurProgram, "uTexture");
         uBlurDirectionLoc = glGetUniformLocation(blurProgram, "uDirection");
@@ -352,24 +368,27 @@ public final class ParticleRenderer {
         if (uGridSizeLoc != -1) {
             glUniform1i(uGridSizeLoc, SpatialGridSizing.gridSize(bounds, interactionRange));
         }
-        uploadFourDUniforms();
+        uploadFourDUniforms(uSimulationDimensionLoc, uFourDVisualizationModeLoc, uRotation4DLoc,
+                uPerspectiveDistanceLoc, uSliceCenterWLoc, uSliceThicknessLoc, uSliceFeatherLoc, uWColorRangeLoc);
         particleTimer.begin();
         glDrawArrays(GL_POINTS, 0, particleCount);
         particleTimer.end();
     }
 
-    private void uploadFourDUniforms() {
-        glUniform1i(uSimulationDimensionLoc, frameSimulationDimension.componentCount());
+    private void uploadFourDUniforms(int simulationDimensionLoc, int visualizationModeLoc, int rotationLoc,
+            int perspectiveDistanceLoc, int sliceCenterLoc, int sliceThicknessLoc, int sliceFeatherLoc,
+            int colorRangeLoc) {
+        glUniform1i(simulationDimensionLoc, frameSimulationDimension.componentCount());
         if (frameSimulationDimension != SimulationDimension.FOUR_D) {
             return;
         }
-        glUniform1i(uFourDVisualizationModeLoc, frameFourDView.visualizationMode().ordinal());
-        glUniformMatrix4fv(uRotation4DLoc, false, toFloatMatrix(frameFourDView.rotationMatrix()));
-        glUniform1f(uPerspectiveDistanceLoc, (float) frameFourDView.perspectiveDistance());
-        glUniform1f(uSliceCenterWLoc, (float) frameFourDView.sliceCenterW());
-        glUniform1f(uSliceThicknessLoc, (float) frameFourDView.sliceThickness());
-        glUniform1f(uSliceFeatherLoc, (float) frameFourDView.sliceFeather());
-        glUniform1f(uWColorRangeLoc, (float) frameFourDView.colorRange());
+        glUniform1i(visualizationModeLoc, frameFourDView.visualizationMode().ordinal());
+        glUniformMatrix4fv(rotationLoc, false, toFloatMatrix(frameFourDView.rotationMatrix()));
+        glUniform1f(perspectiveDistanceLoc, (float) frameFourDView.perspectiveDistance());
+        glUniform1f(sliceCenterLoc, (float) frameFourDView.sliceCenterW());
+        glUniform1f(sliceThicknessLoc, (float) frameFourDView.sliceThickness());
+        glUniform1f(sliceFeatherLoc, (float) frameFourDView.sliceFeather());
+        glUniform1f(colorRangeLoc, (float) frameFourDView.colorRange());
     }
 
     private static float[] toFloatMatrix(double[] matrix) {
@@ -424,6 +443,9 @@ public final class ParticleRenderer {
         glUniform1f(uTrailBoundsLoc, bounds);
         glUniform1f(uTrailInteractionRangeLoc, interactionRange);
         glUniform1i(uTrailGridSizeLoc, SpatialGridSizing.gridSize(bounds, interactionRange));
+        uploadFourDUniforms(uTrailSimulationDimensionLoc, uTrailFourDVisualizationModeLoc, uTrailRotation4DLoc,
+                uTrailPerspectiveDistanceLoc, uTrailSliceCenterWLoc, uTrailSliceThicknessLoc,
+                uTrailSliceFeatherLoc, uTrailWColorRangeLoc);
 
         int instanceCount = Math.multiplyExact(renderedParticleCount, segmentsPerParticle);
         trailTimer.begin();

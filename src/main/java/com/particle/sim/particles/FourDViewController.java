@@ -10,7 +10,6 @@ import com.particle.sim.math.RotationPlane4d;
  */
 public final class FourDViewController {
     private static final int REORTHONORMALIZE_INTERVAL = 256;
-    private static final double DEFAULT_XW_AUTO_SPEED = Math.toRadians(8.0);
     private static final double MINIMUM_PERSPECTIVE_MARGIN = 0.25;
     private static final double MOTION_STEP_SECONDS = 1.0 / 240.0;
     private FourDViewConfiguration configuration = FourDViewConfiguration.defaults();
@@ -18,7 +17,7 @@ public final class FourDViewController {
     private double xwAngle;
     private double ywAngle;
     private double zwAngle;
-    private double xwAutoSpeed = DEFAULT_XW_AUTO_SPEED;
+    private double xwAutoSpeed = FourDViewState.defaults().xwAutoSpeed();
     private double ywAutoSpeed;
     private double zwAutoSpeed;
     private boolean xwAutoEnabled = true;
@@ -32,6 +31,35 @@ public final class FourDViewController {
 
     public FourDViewConfiguration configuration() {
         return configuration;
+    }
+
+    public FourDViewState state() {
+        return new FourDViewState(configuration, xwAngle, ywAngle, zwAngle,
+                xwAutoSpeed, ywAutoSpeed, zwAutoSpeed,
+                xwAutoEnabled, ywAutoEnabled, zwAutoEnabled,
+                motionPaused, sliceSweepEnabled, sliceSweepSpeed);
+    }
+
+    public void applyState(FourDViewState state) {
+        if (state == null) {
+            throw new IllegalArgumentException("4D view state is required");
+        }
+        configuration = state.configuration();
+        xwAngle = wrapAngle(state.xwAngle());
+        ywAngle = wrapAngle(state.ywAngle());
+        zwAngle = wrapAngle(state.zwAngle());
+        xwAutoSpeed = state.xwAutoSpeed();
+        ywAutoSpeed = state.ywAutoSpeed();
+        zwAutoSpeed = state.zwAutoSpeed();
+        xwAutoEnabled = state.xwAutoEnabled();
+        ywAutoEnabled = state.ywAutoEnabled();
+        zwAutoEnabled = state.zwAutoEnabled();
+        motionPaused = state.motionPaused();
+        sliceSweepEnabled = state.sliceSweepEnabled();
+        sliceSweepSpeed = state.sliceSweepSpeed();
+        sliceSweepDirection = 1;
+        rotationsSinceOrthonormalization = 0;
+        motionAccumulator = 0.0;
     }
 
     public void resetOrientation() {

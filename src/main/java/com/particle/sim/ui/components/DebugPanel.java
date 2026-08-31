@@ -39,6 +39,11 @@ public final class DebugPanel {
     private String gpuIntegration = "";
     private String gpuRendering = "";
     private String gpuBuffers = "";
+    private String simulationDimension = "";
+    private String fourDView = "";
+    private String fourDMotion = "";
+    private String fourDMapping = "";
+    private String groupBuffer = "";
 
     public void render(float deltaTime, float currentFps, SimulationUiModel model,
             SimulationUiActions actions, ImBoolean open) {
@@ -101,11 +106,16 @@ public final class DebugPanel {
         UIMetric.row("Grid", gridDimensions);
         UIMetric.row("Grid cells", gridCells);
         UIMetric.row("Cell storage", "Exact compact ranges");
+        UIMetric.row("Simulation dimension", simulationDimension);
+        UIMetric.row("4D visualization", fourDView);
+        UIMetric.row("XW / YW / ZW auto", fourDMotion);
+        UIMetric.row("Effective W mapping", fourDMapping);
         UIMetric.row("GPU simulation", gpuSimulation);
         UIMetric.row("Count / scan / scatter", gpuStages);
         UIMetric.row("Force integration", gpuIntegration);
         UIMetric.row("Particles / trails / bloom", gpuRendering);
         UIMetric.row("Estimated GPU buffers", gpuBuffers);
+        UIMetric.row("Particle groups SSBO", groupBuffer);
         UIMetric.row("Simulation step", "%.2f ms (%.0f Hz)".formatted(
                 SimulationDefaults.SIMULATION_STEP_SECONDS * 1000.0,
                 1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS));
@@ -117,6 +127,27 @@ public final class DebugPanel {
         gridDimensions = "%d × %d × %d".formatted(
                 diagnostics.gridSize(), diagnostics.gridSize(), diagnostics.gridSize());
         gridCells = "%,d".formatted(diagnostics.gridCellCount());
+        simulationDimension = diagnostics.simulationDimension() == null
+                ? "unknown"
+                : diagnostics.simulationDimension() == com.particle.sim.particles.SimulationDimension.FOUR_D
+                        ? "4D"
+                        : "3D";
+        fourDView = diagnostics.simulationDimension() == com.particle.sim.particles.SimulationDimension.FOUR_D
+                ? switch (diagnostics.fourDVisualizationMode()) {
+                    case PERSPECTIVE -> "Perspective";
+                    case SLICE -> "W slice";
+                    case W_COLOR -> "W color";
+                }
+                : "inactive (3D)";
+        fourDMotion = "%.1f°/s / %.1f°/s / %.1f°/s".formatted(
+                diagnostics.fourDXwAutoSpeedDegrees(), diagnostics.fourDYwAutoSpeedDegrees(),
+                diagnostics.fourDZwAutoSpeedDegrees());
+        fourDMapping = switch (diagnostics.fourDVisualizationMode()) {
+            case PERSPECTIVE -> "distance %.2f".formatted(diagnostics.fourDPerspectiveDistance());
+            case SLICE -> "center %.2f, thickness %.2f".formatted(
+                    diagnostics.fourDSliceCenterW(), diagnostics.fourDSliceThickness());
+            case W_COLOR -> "color range ±%.2f".formatted(diagnostics.fourDColorRange());
+        };
         gpuSimulation = formatMilliseconds(diagnostics.simulationMilliseconds());
         gpuStages = "%s / %s / %s".formatted(
                 formatMilliseconds(diagnostics.gridCountMilliseconds()),
@@ -128,6 +159,7 @@ public final class DebugPanel {
                 formatMilliseconds(diagnostics.trailRenderMilliseconds()),
                 formatMilliseconds(diagnostics.bloomMilliseconds()));
         gpuBuffers = formatBytes(diagnostics.allocatedGpuBytes());
+        groupBuffer = formatBytes(diagnostics.groupBufferBytes());
     }
 
     private void renderRuntime() {

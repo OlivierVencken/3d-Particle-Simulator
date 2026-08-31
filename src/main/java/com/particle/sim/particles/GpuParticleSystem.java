@@ -62,8 +62,7 @@ public final class GpuParticleSystem {
 
         spatialGridBuffers.ensureCapacity(particleCount(), gridCellCount());
         compute.buildGrid(this, particleBuffers, spatialGridBuffers);
-        boolean captureTrail = simulationDimension() == SimulationDimension.THREE_D
-                && effectEnabled(EffectMode.TRAILS)
+        boolean captureTrail = effectEnabled(EffectMode.TRAILS)
                 && trailHistoryBuffers.prepareCapture(particleCount(), trailLength());
         compute.integrate(this, particleBuffers, spatialGridBuffers, trailHistoryBuffers, captureTrail, deltaTime);
         particleBuffers.swapState();
@@ -74,8 +73,7 @@ public final class GpuParticleSystem {
     }
 
     public void render(FramebufferViewport viewport, float[] viewMatrix) {
-        boolean renderTrails = simulationDimension() == SimulationDimension.THREE_D
-                && effectEnabled(EffectMode.TRAILS);
+        boolean renderTrails = effectEnabled(EffectMode.TRAILS);
         renderer.render(viewport, viewMatrix, particleBuffers, spatialGridBuffers, particleCount(), pointSize(),
                 fixedParticleScreenSize(), effectEnabled(EffectMode.GLOW), renderTrails,
                 colorMode().ordinal(), groupCount(), maxVelocity(), bounds(), interactionRange(),
@@ -92,6 +90,17 @@ public final class GpuParticleSystem {
 
     public FourDViewConfiguration fourDViewConfiguration() {
         return fourDViewController.configuration();
+    }
+
+    public FourDViewState fourDViewState() {
+        return fourDViewController.state();
+    }
+
+    public void fourDViewState(FourDViewState state) {
+        fourDViewController.applyState(state);
+        if (fourDViewController.configuration().perspectiveDistance() < minimumFourDPerspectiveDistance()) {
+            fourDViewController.perspectiveDistance(minimumFourDPerspectiveDistance());
+        }
     }
 
     public double fourDXwAngle() { return fourDViewController.xwAngle(); }
@@ -551,8 +560,8 @@ public final class GpuParticleSystem {
 
     public PerformanceSnapshot performanceSnapshot() {
         if (!initialized) {
-            return new PerformanceSnapshot(-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0L, particleCount(),
-                    maxParticleCount(), gridCellCount());
+            return new PerformanceSnapshot(-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0L, 0L,
+                    particleCount(), maxParticleCount(), gridCellCount());
         }
         double countMilliseconds = compute.gridCountMilliseconds();
         double scanMilliseconds = compute.gridScanMilliseconds();
@@ -566,8 +575,8 @@ public final class GpuParticleSystem {
                 + trailHistoryBuffers.allocatedBytes() + renderer.allocatedEffectBytes();
         return new PerformanceSnapshot(countMilliseconds, scanMilliseconds, scatterMilliseconds,
                 integrationMilliseconds, simulationMilliseconds, renderer.particleRenderMilliseconds(),
-                renderer.trailRenderMilliseconds(), renderer.bloomMilliseconds(), allocatedBytes, particleCount(),
-                maxParticleCount(), gridCellCount());
+                renderer.trailRenderMilliseconds(), renderer.bloomMilliseconds(), allocatedBytes,
+                particleBuffers.groupAllocatedBytes(), particleCount(), maxParticleCount(), gridCellCount());
     }
 
     float[] readPositions() {

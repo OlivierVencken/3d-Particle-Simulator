@@ -4,8 +4,13 @@ import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
+import com.particle.sim.particles.FourDViewConfiguration;
+import com.particle.sim.particles.FourDViewController;
+import com.particle.sim.particles.FourDViewState;
+import com.particle.sim.particles.FourDVisualizationMode;
 import com.particle.sim.particles.GpuParticleSystem;
 import com.particle.sim.particles.ParticleSimulationConfig;
+import com.particle.sim.particles.SimulationDimension;
 import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.ui.SimulationUI;
 
@@ -21,11 +26,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class AppSettings {
-    public static final int VERSION = 1;
+    public static final int VERSION = 2;
     public static final String PRESET_EXTENSION = ".3dps";
 
     private final ParticleSimulationConfig particleConfig = ParticleSimulationConfig.defaults();
     private float[] attractionMatrix;
+    private FourDViewState fourDViewState = FourDViewState.defaults();
 
     private float cameraSensitivity = SimulationDefaults.CAMERA_SENSITIVITY;
     private float cameraFlySpeed = SimulationDefaults.CAMERA_FLY_SPEED;
@@ -59,6 +65,7 @@ public final class AppSettings {
             return settings;
         }
 
+        int loadedVersion = intProperty(properties, "version", 1);
         ParticleSimulationConfig particleConfig = settings.particleConfig;
         particleConfig.particleCount(intProperty(properties, "particleCount", particleConfig.particleCount()));
         particleConfig.pointSize(floatProperty(properties, "pointSize", particleConfig.pointSize()));
@@ -86,7 +93,14 @@ public final class AppSettings {
                 particleConfig.distanceMetric()));
         particleConfig.groupCount(intProperty(properties, "groupCount", particleConfig.groupCount()));
         particleConfig.colorMode(enumProperty(properties, "colorMode", ColorMode.class, particleConfig.colorMode()));
+        particleConfig.simulationDimension(loadedVersion >= 2
+                ? enumProperty(properties, "simulationDimension", SimulationDimension.class,
+                        SimulationDimension.THREE_D)
+                : SimulationDimension.THREE_D);
         particleConfig.spawnMode(enumProperty(properties, "spawnMode", SpawnMode.class, particleConfig.spawnMode()));
+        settings.fourDViewState = loadedVersion >= 2
+                ? fourDViewStateProperty(properties, particleConfig.bounds())
+                : FourDViewState.defaults();
         settings.cameraSensitivity = floatProperty(properties, "cameraSensitivity", settings.cameraSensitivity);
         settings.cameraFlySpeed = floatProperty(properties, "cameraFlySpeed", settings.cameraFlySpeed);
         settings.paused = booleanProperty(properties, "paused", settings.paused);
@@ -160,7 +174,9 @@ public final class AppSettings {
         properties.setProperty("distanceMetric", particleConfig.distanceMetric().name());
         properties.setProperty("groupCount", Integer.toString(particleConfig.groupCount()));
         properties.setProperty("colorMode", particleConfig.colorMode().name());
+        properties.setProperty("simulationDimension", particleConfig.simulationDimension().name());
         properties.setProperty("spawnMode", particleConfig.spawnMode().name());
+        saveFourDViewState(properties, fourDViewState);
         properties.setProperty("cameraSensitivity", Float.toString(cameraSensitivity));
         properties.setProperty("cameraFlySpeed", Float.toString(cameraFlySpeed));
         properties.setProperty("paused", Boolean.toString(paused));
@@ -194,6 +210,7 @@ public final class AppSettings {
     public void applySimulationTo(GpuParticleSystem particles, CameraController camera, SimulationUI ui) {
         sanitize();
         particles.applyConfig(particleConfig);
+        particles.fourDViewState(fourDViewState);
 
         camera.setSensitivity(cameraSensitivity);
         camera.setFlySpeed(cameraFlySpeed);
@@ -206,6 +223,7 @@ public final class AppSettings {
     public static AppSettings capture(GpuParticleSystem particles, CameraController camera, SimulationUI ui) {
         AppSettings settings = defaults();
         settings.particleConfig.applyFrom(particles.config());
+        settings.fourDViewState = particles.fourDViewState();
         int attractionIndex = 0;
         for (int row = 0; row < settings.particleConfig.groupCount(); row++) {
             for (int column = 0; column < settings.particleConfig.groupCount(); column++) {
@@ -226,6 +244,7 @@ public final class AppSettings {
 
     private void sanitize() {
         particleConfig.sanitize();
+        fourDViewState = sanitizedFourDViewState(fourDViewState, particleConfig.bounds());
         cameraSensitivity = Math.max(0.0001f, cameraSensitivity);
         cameraFlySpeed = Math.max(0.1f, cameraFlySpeed);
         fpsCap = fpsCap <= 0 ? 0 : Math.max(SimulationDefaults.MIN_FPS_CAP,
@@ -253,6 +272,100 @@ public final class AppSettings {
         } catch (NumberFormatException e) {
             return fallback;
         }
+    }
+
+    private static double doubleProperty(Properties properties, String key, double fallback) {
+        try {
+            double value = Double.parseDouble(properties.getProperty(key, Double.toString(fallback)));
+            return Double.isFinite(value) ? value : fallback;
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
+    }
+
+    private static FourDViewState fourDViewStateProperty(Properties properties, float bounds) {
+        FourDViewState defaults = FourDViewState.defaults();
+        FourDViewConfiguration defaultView = defaults.configuration();
+        double[] rotation = defaultView.rotationMatrix();
+        for (int index = 0; index < rotation.length; index++) {
+            rotation[index] = doubleProperty(properties, "fourDRotation." + index, rotation[index]);
+        }
+
+        try {
+            FourDViewConfiguration configuration = new FourDViewConfiguration(
+                    enumProperty(properties, "fourDVisualizationMode", FourDVisualizationMode.class,
+                            defaultView.visualizationMode()),
+                    rotation,
+                    doubleProperty(properties, "fourDPerspectiveDistance", defaultView.perspectiveDistance()),
+                    doubleProperty(properties, "fourDSliceCenterW", defaultView.sliceCenterW()),
+                    doubleProperty(properties, "fourDSliceThickness", defaultView.sliceThickness()),
+                    doubleProperty(properties, "fourDSliceFeather", defaultView.sliceFeather()),
+                    doubleProperty(properties, "fourDColorRange", defaultView.colorRange()));
+            return sanitizedFourDViewState(new FourDViewState(configuration,
+                    doubleProperty(properties, "fourDXwAngleRadians", defaults.xwAngle()),
+                    doubleProperty(properties, "fourDYwAngleRadians", defaults.ywAngle()),
+                    doubleProperty(properties, "fourDZwAngleRadians", defaults.zwAngle()),
+                    doubleProperty(properties, "fourDXwAutoSpeedRadians", defaults.xwAutoSpeed()),
+                    doubleProperty(properties, "fourDYwAutoSpeedRadians", defaults.ywAutoSpeed()),
+                    doubleProperty(properties, "fourDZwAutoSpeedRadians", defaults.zwAutoSpeed()),
+                    booleanProperty(properties, "fourDXwAutoEnabled", defaults.xwAutoEnabled()),
+                    booleanProperty(properties, "fourDYwAutoEnabled", defaults.ywAutoEnabled()),
+                    booleanProperty(properties, "fourDZwAutoEnabled", defaults.zwAutoEnabled()),
+                    booleanProperty(properties, "fourDViewMotionPaused", defaults.motionPaused()),
+                    booleanProperty(properties, "fourDSliceSweepEnabled", defaults.sliceSweepEnabled()),
+                    doubleProperty(properties, "fourDSliceSweepSpeed", defaults.sliceSweepSpeed())), bounds);
+        } catch (IllegalArgumentException exception) {
+            return defaults;
+        }
+    }
+
+    private static void saveFourDViewState(Properties properties, FourDViewState state) {
+        FourDViewConfiguration view = state.configuration();
+        properties.setProperty("fourDVisualizationMode", view.visualizationMode().name());
+        double[] rotation = view.rotationMatrix();
+        for (int index = 0; index < rotation.length; index++) {
+            properties.setProperty("fourDRotation." + index, Double.toString(rotation[index]));
+        }
+        properties.setProperty("fourDPerspectiveDistance", Double.toString(view.perspectiveDistance()));
+        properties.setProperty("fourDSliceCenterW", Double.toString(view.sliceCenterW()));
+        properties.setProperty("fourDSliceThickness", Double.toString(view.sliceThickness()));
+        properties.setProperty("fourDSliceFeather", Double.toString(view.sliceFeather()));
+        properties.setProperty("fourDColorRange", Double.toString(view.colorRange()));
+        properties.setProperty("fourDXwAngleRadians", Double.toString(state.xwAngle()));
+        properties.setProperty("fourDYwAngleRadians", Double.toString(state.ywAngle()));
+        properties.setProperty("fourDZwAngleRadians", Double.toString(state.zwAngle()));
+        properties.setProperty("fourDXwAutoSpeedRadians", Double.toString(state.xwAutoSpeed()));
+        properties.setProperty("fourDYwAutoSpeedRadians", Double.toString(state.ywAutoSpeed()));
+        properties.setProperty("fourDZwAutoSpeedRadians", Double.toString(state.zwAutoSpeed()));
+        properties.setProperty("fourDXwAutoEnabled", Boolean.toString(state.xwAutoEnabled()));
+        properties.setProperty("fourDYwAutoEnabled", Boolean.toString(state.ywAutoEnabled()));
+        properties.setProperty("fourDZwAutoEnabled", Boolean.toString(state.zwAutoEnabled()));
+        properties.setProperty("fourDViewMotionPaused", Boolean.toString(state.motionPaused()));
+        properties.setProperty("fourDSliceSweepEnabled", Boolean.toString(state.sliceSweepEnabled()));
+        properties.setProperty("fourDSliceSweepSpeed", Double.toString(state.sliceSweepSpeed()));
+    }
+
+    private static FourDViewState sanitizedFourDViewState(FourDViewState state, float bounds) {
+        FourDViewState fallback = state == null ? FourDViewState.defaults() : state;
+        FourDViewConfiguration view = fallback.configuration();
+        double safeBounds = Math.max(0.1, Math.abs(bounds));
+        double perspectiveDistance = Math.max(view.perspectiveDistance(),
+                FourDViewController.minimumPerspectiveDistance(safeBounds));
+        double sliceThickness = clamp(view.sliceThickness(), 0.05, safeBounds * 2.0);
+        FourDViewConfiguration sanitizedView = new FourDViewConfiguration(view.visualizationMode(),
+                view.rotationMatrix(), perspectiveDistance,
+                clamp(view.sliceCenterW(), -safeBounds, safeBounds), sliceThickness,
+                clamp(view.sliceFeather(), 0.0, sliceThickness * 0.5),
+                clamp(view.colorRange(), 0.05, safeBounds * 2.0));
+        double maximumAutoSpeed = Math.toRadians(90.0);
+        return new FourDViewState(sanitizedView,
+                fallback.xwAngle(), fallback.ywAngle(), fallback.zwAngle(),
+                clamp(fallback.xwAutoSpeed(), -maximumAutoSpeed, maximumAutoSpeed),
+                clamp(fallback.ywAutoSpeed(), -maximumAutoSpeed, maximumAutoSpeed),
+                clamp(fallback.zwAutoSpeed(), -maximumAutoSpeed, maximumAutoSpeed),
+                fallback.xwAutoEnabled(), fallback.ywAutoEnabled(), fallback.zwAutoEnabled(),
+                fallback.motionPaused(), fallback.sliceSweepEnabled(),
+                clamp(fallback.sliceSweepSpeed(), 0.0, safeBounds * 2.0));
     }
 
     private static boolean booleanProperty(Properties properties, String key, boolean fallback) {
@@ -292,6 +405,10 @@ public final class AppSettings {
     }
 
     private static float clamp(float value, float min, float max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private static double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
     }
 }

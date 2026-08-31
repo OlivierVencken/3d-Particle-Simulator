@@ -10,6 +10,7 @@ public record PerformanceSnapshot(
         double trailRenderMilliseconds,
         double bloomMilliseconds,
         long allocatedGpuBytes,
+        long groupBufferBytes,
         int particleCount,
         int maximumParticleCount,
         int gridCellCount) {

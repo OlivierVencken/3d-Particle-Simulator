@@ -1,8 +1,13 @@
 package com.particle.sim;
 
-import java.nio.file.Path;
+import com.particle.sim.particles.SimulationDimension;
+import com.particle.sim.particles.SpawnMode;
 
-record ParticleBenchmarkOptions(Integer particleCount, int warmupSteps, int sampleSteps, Path outputPath) {
+import java.nio.file.Path;
+import java.util.Locale;
+
+record ParticleBenchmarkOptions(Integer particleCount, int warmupSteps, int sampleSteps, Path outputPath,
+        SimulationDimension simulationDimension, SpawnMode spawnMode) {
     private static final int DEFAULT_WARMUP_STEPS = 10;
     private static final int DEFAULT_SAMPLE_STEPS = 30;
 
@@ -11,6 +16,8 @@ record ParticleBenchmarkOptions(Integer particleCount, int warmupSteps, int samp
         int warmupSteps = DEFAULT_WARMUP_STEPS;
         int sampleSteps = DEFAULT_SAMPLE_STEPS;
         Path outputPath = null;
+        SimulationDimension simulationDimension = SimulationDimension.THREE_D;
+        SpawnMode spawnMode = SpawnMode.RANDOM;
 
         for (String argument : args) {
             if (argument.startsWith("--particles=")) {
@@ -25,12 +32,31 @@ record ParticleBenchmarkOptions(Integer particleCount, int warmupSteps, int samp
                     throw new IllegalArgumentException("--output requires a path");
                 }
                 outputPath = Path.of(path);
+            } else if (argument.startsWith("--dimension=")) {
+                String value = argument.substring("--dimension=".length()).trim().toLowerCase(Locale.ROOT);
+                simulationDimension = switch (value) {
+                    case "3d", "three_d" -> SimulationDimension.THREE_D;
+                    case "4d", "four_d" -> SimulationDimension.FOUR_D;
+                    default -> throw new IllegalArgumentException("Unknown simulation dimension: " + value);
+                };
+            } else if (argument.startsWith("--spawn=")) {
+                String value = argument.substring("--spawn=".length()).trim().toUpperCase(Locale.ROOT);
+                try {
+                    spawnMode = SpawnMode.valueOf(value);
+                } catch (IllegalArgumentException exception) {
+                    throw new IllegalArgumentException("Unknown spawn mode: " + value, exception);
+                }
             } else if (!argument.equals("--benchmark")) {
                 throw new IllegalArgumentException("Unknown benchmark option: " + argument);
             }
         }
 
-        return new ParticleBenchmarkOptions(particleCount, warmupSteps, sampleSteps, outputPath);
+        if (!spawnMode.supportedIn(simulationDimension)) {
+            throw new IllegalArgumentException(spawnMode + " spawning is unavailable in "
+                    + simulationDimension.componentCount() + "D");
+        }
+        return new ParticleBenchmarkOptions(particleCount, warmupSteps, sampleSteps, outputPath,
+                simulationDimension, spawnMode);
     }
 
     private static int positiveInt(String argument, String prefix) {

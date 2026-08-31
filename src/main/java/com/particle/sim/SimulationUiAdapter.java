@@ -66,6 +66,15 @@ final class SimulationUiAdapter {
                 snapshot.maximumParticleCount(),
                 particles.gridSize(),
                 snapshot.gridCellCount(),
+                particles.simulationDimension(),
+                particles.fourDViewConfiguration().visualizationMode(),
+                Math.toDegrees(particles.fourDXwAutoSpeed()),
+                Math.toDegrees(particles.fourDYwAutoSpeed()),
+                Math.toDegrees(particles.fourDZwAutoSpeed()),
+                particles.fourDViewConfiguration().perspectiveDistance(),
+                particles.fourDViewConfiguration().sliceCenterW(),
+                particles.fourDViewConfiguration().sliceThickness(),
+                particles.fourDViewConfiguration().colorRange(),
                 snapshot.gridCountMilliseconds(),
                 snapshot.gridScanMilliseconds(),
                 snapshot.gridScatterMilliseconds(),
@@ -74,7 +83,8 @@ final class SimulationUiAdapter {
                 snapshot.particleRenderMilliseconds(),
                 snapshot.trailRenderMilliseconds(),
                 snapshot.bloomMilliseconds(),
-                snapshot.allocatedGpuBytes());
+                snapshot.allocatedGpuBytes(),
+                snapshot.groupBufferBytes());
     }
 
     void onSavePreset(Runnable action) {
@@ -548,7 +558,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDVisualizationMode(FourDVisualizationMode value) {
-            particles.fourDVisualizationMode(value);
+            settingChanged(() -> particles.fourDVisualizationMode(value));
         }
 
         @Override
@@ -558,7 +568,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDXwAngleDegrees(float value) {
-            particles.fourDXwAngle(Math.toRadians(value));
+            settingChanged(() -> particles.fourDXwAngle(Math.toRadians(value)));
         }
 
         @Override
@@ -568,7 +578,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDYwAngleDegrees(float value) {
-            particles.fourDYwAngle(Math.toRadians(value));
+            settingChanged(() -> particles.fourDYwAngle(Math.toRadians(value)));
         }
 
         @Override
@@ -578,7 +588,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDZwAngleDegrees(float value) {
-            particles.fourDZwAngle(Math.toRadians(value));
+            settingChanged(() -> particles.fourDZwAngle(Math.toRadians(value)));
         }
 
         @Override
@@ -588,7 +598,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDXwAutoSpeedDegrees(float value) {
-            particles.fourDXwAutoSpeed(Math.toRadians(value));
+            settingChanged(() -> particles.fourDXwAutoSpeed(Math.toRadians(value)));
         }
 
         @Override
@@ -598,7 +608,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDXwAutoEnabled(boolean value) {
-            particles.fourDXwAutoEnabled(value);
+            settingChanged(() -> particles.fourDXwAutoEnabled(value));
         }
 
         @Override
@@ -608,7 +618,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDYwAutoSpeedDegrees(float value) {
-            particles.fourDYwAutoSpeed(Math.toRadians(value));
+            settingChanged(() -> particles.fourDYwAutoSpeed(Math.toRadians(value)));
         }
 
         @Override
@@ -618,7 +628,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDYwAutoEnabled(boolean value) {
-            particles.fourDYwAutoEnabled(value);
+            settingChanged(() -> particles.fourDYwAutoEnabled(value));
         }
 
         @Override
@@ -628,7 +638,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDZwAutoSpeedDegrees(float value) {
-            particles.fourDZwAutoSpeed(Math.toRadians(value));
+            settingChanged(() -> particles.fourDZwAutoSpeed(Math.toRadians(value)));
         }
 
         @Override
@@ -638,7 +648,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDZwAutoEnabled(boolean value) {
-            particles.fourDZwAutoEnabled(value);
+            settingChanged(() -> particles.fourDZwAutoEnabled(value));
         }
 
         @Override
@@ -648,12 +658,12 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDViewMotionPaused(boolean value) {
-            particles.fourDViewMotionPaused(value);
+            settingChanged(() -> particles.fourDViewMotionPaused(value));
         }
 
         @Override
         public void resetFourDOrientation() {
-            particles.resetFourDOrientation();
+            settingChanged(particles::resetFourDOrientation);
         }
 
         @Override
@@ -668,7 +678,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDPerspectiveDistance(float value) {
-            particles.fourDPerspectiveDistance(value);
+            settingChanged(() -> particles.fourDPerspectiveDistance(value));
         }
 
         @Override
@@ -678,7 +688,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDSliceCenterW(float value) {
-            particles.fourDSlice(value, view().sliceThickness(), view().sliceFeather());
+            settingChanged(() -> particles.fourDSlice(value, view().sliceThickness(), view().sliceFeather()));
         }
 
         @Override
@@ -688,7 +698,8 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDSliceThickness(float value) {
-            particles.fourDSlice(view().sliceCenterW(), value, Math.min(view().sliceFeather(), value * 0.5));
+            settingChanged(() -> particles.fourDSlice(view().sliceCenterW(), value,
+                    Math.min(view().sliceFeather(), value * 0.5)));
         }
 
         @Override
@@ -698,7 +709,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDSliceFeather(float value) {
-            particles.fourDSlice(view().sliceCenterW(), view().sliceThickness(), value);
+            settingChanged(() -> particles.fourDSlice(view().sliceCenterW(), view().sliceThickness(), value));
         }
 
         @Override
@@ -708,7 +719,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDSliceSweepEnabled(boolean value) {
-            particles.fourDSliceSweepEnabled(value);
+            settingChanged(() -> particles.fourDSliceSweepEnabled(value));
         }
 
         @Override
@@ -718,7 +729,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDSliceSweepSpeed(float value) {
-            particles.fourDSliceSweepSpeed(value);
+            settingChanged(() -> particles.fourDSliceSweepSpeed(value));
         }
 
         @Override
@@ -728,7 +739,7 @@ final class SimulationUiAdapter {
 
         @Override
         public void setFourDColorRange(float value) {
-            particles.fourDColorRange(value);
+            settingChanged(() -> particles.fourDColorRange(value));
         }
 
         private FourDViewConfiguration view() {

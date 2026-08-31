@@ -117,7 +117,8 @@ final class CameraSection {
         UIControls.sectionHeading("W color");
         controls.settingSlider("W color range", "four-d-color-range", camera.fourDColorRange(),
                 0.1f, simulation.bounds() * 2.0f, 2, actions::setFourDColorRange);
-        UIText.helper("Blue shows negative W, a light midpoint shows W = 0, and orange shows positive W.");
+        UIText.helper("Blue shows negative W, a light midpoint shows W = 0, and orange shows positive W. "
+                + "This visualization overrides the normal particle color mode.");
     }
 
     static boolean showsFourDControls(SimulationDimension dimension) {

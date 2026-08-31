@@ -61,7 +61,11 @@ public class SettingsController {
     }
 
     public void flush() {
-        settingsSaver.saveIfDue(Double.POSITIVE_INFINITY);
+        if (settingsSaver.hasPendingSave()) {
+            settingsSaver.flush();
+        } else {
+            saveNow();
+        }
     }
 
     private void saveNow() {

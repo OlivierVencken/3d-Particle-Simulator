@@ -11,6 +11,27 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FourDViewControllerTest {
+
+    @Test
+    void restoresCompletePersistentStateWithoutRebuildingOrderDependentOrientation() {
+        FourDViewController source = new FourDViewController();
+        source.rotateXw(0.4);
+        source.rotateYw(-0.3);
+        source.rotateZw(0.2);
+        source.visualizationMode(FourDVisualizationMode.SLICE);
+        source.xwAutoEnabled(false);
+        source.ywAutoEnabled(true);
+        source.ywAutoSpeed(-0.25);
+        source.motionPaused(true);
+        source.slice(0.5, 1.25, 0.2);
+        source.sliceSweepEnabled(true);
+        source.sliceSweepSpeed(1.75);
+
+        FourDViewController restored = new FourDViewController();
+        restored.applyState(source.state());
+
+        assertEquals(source.state(), restored.state());
+    }
     private static final double EPSILON = 1.0e-12;
 
     @Test

@@ -3,7 +3,10 @@ package com.particle.sim.settings;
 import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
+import com.particle.sim.particles.FourDViewState;
+import com.particle.sim.particles.FourDVisualizationMode;
 import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.particles.SimulationDimension;
 import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.ui.SimulationUI;
@@ -102,6 +105,70 @@ class AppSettingsTest {
         assertEquals(240, loadedUi.fpsCap());
         assertEquals(0.2f, loadedUi.matrixEditStep(), EPSILON);
         assertEquals(42, loadedUi.customSpawnAmount());
+    }
+
+    @Test
+    void roundTripsFourDimensionalSimulationAndCompleteViewState() throws Exception {
+        GpuParticleSystem particles = new GpuParticleSystem();
+        particles.simulationDimension(SimulationDimension.FOUR_D);
+        particles.spawnMode(SpawnMode.SHELL);
+        particles.fourDVisualizationMode(FourDVisualizationMode.SLICE);
+        particles.fourDXwAngle(0.42);
+        particles.fourDYwAngle(-0.27);
+        particles.fourDZwAngle(0.18);
+        particles.fourDXwAutoSpeed(0.31);
+        particles.fourDYwAutoSpeed(-0.22);
+        particles.fourDZwAutoSpeed(0.13);
+        particles.fourDXwAutoEnabled(false);
+        particles.fourDYwAutoEnabled(true);
+        particles.fourDZwAutoEnabled(true);
+        particles.fourDViewMotionPaused(true);
+        particles.fourDPerspectiveDistance(14.0);
+        particles.fourDSlice(0.75, 1.5, 0.3);
+        particles.fourDSliceSweepEnabled(true);
+        particles.fourDSliceSweepSpeed(1.75);
+        particles.fourDColorRange(3.25);
+        FourDViewState expected = particles.fourDViewState();
+
+        Path settingsFile = tempDir.resolve("four-dimensional.3dps");
+        AppSettings.capture(particles, new CameraController(), new SimulationUI()).save(settingsFile);
+
+        GpuParticleSystem loaded = new GpuParticleSystem();
+        AppSettings.load(settingsFile).applySimulationTo(loaded, new CameraController(), new SimulationUI());
+        FourDViewState actual = loaded.fourDViewState();
+
+        assertEquals(SimulationDimension.FOUR_D, loaded.simulationDimension());
+        assertEquals(SpawnMode.SHELL, loaded.spawnMode());
+        assertEquals(expected.configuration(), actual.configuration());
+        assertEquals(expected.xwAngle(), actual.xwAngle(), EPSILON);
+        assertEquals(expected.ywAngle(), actual.ywAngle(), EPSILON);
+        assertEquals(expected.zwAngle(), actual.zwAngle(), EPSILON);
+        assertEquals(expected.xwAutoSpeed(), actual.xwAutoSpeed(), EPSILON);
+        assertEquals(expected.ywAutoSpeed(), actual.ywAutoSpeed(), EPSILON);
+        assertEquals(expected.zwAutoSpeed(), actual.zwAutoSpeed(), EPSILON);
+        assertEquals(expected.xwAutoEnabled(), actual.xwAutoEnabled());
+        assertEquals(expected.ywAutoEnabled(), actual.ywAutoEnabled());
+        assertEquals(expected.zwAutoEnabled(), actual.zwAutoEnabled());
+        assertEquals(expected.motionPaused(), actual.motionPaused());
+        assertEquals(expected.sliceSweepEnabled(), actual.sliceSweepEnabled());
+        assertEquals(expected.sliceSweepSpeed(), actual.sliceSweepSpeed(), EPSILON);
+        assertTrue(java.nio.file.Files.readString(settingsFile).contains("version=2"));
+    }
+
+    @Test
+    void oldPresetWithoutFourDimensionalKeysLoadsAsThreeDimensionalDefaults() throws Exception {
+        Path preset = tempDir.resolve("old.3dps");
+        java.nio.file.Files.writeString(preset,
+                "version=1\nparticleCount=42\nspawnMode=SPIRAL\nsimulationDimension=FOUR_D\n"
+                        + "fourDVisualizationMode=W_COLOR\n");
+
+        GpuParticleSystem loaded = new GpuParticleSystem();
+        AppSettings.load(preset).applySimulationTo(loaded, new CameraController(), new SimulationUI());
+
+        assertEquals(42, loaded.particleCount());
+        assertEquals(SimulationDimension.THREE_D, loaded.simulationDimension());
+        assertEquals(SpawnMode.SPIRAL, loaded.spawnMode());
+        assertEquals(FourDViewState.defaults(), loaded.fourDViewState());
     }
 
     @Test

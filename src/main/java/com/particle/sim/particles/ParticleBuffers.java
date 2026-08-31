@@ -51,6 +51,10 @@ final class ParticleBuffers {
         return (long) particleCapacity * (4L * 4L * Float.BYTES + Integer.BYTES);
     }
 
+    long groupAllocatedBytes() {
+        return (long) particleCapacity * Integer.BYTES;
+    }
+
     float[] readPositions(int particleCount) {
         return readFloatBuffer(positionSsbo, particleCount);
     }

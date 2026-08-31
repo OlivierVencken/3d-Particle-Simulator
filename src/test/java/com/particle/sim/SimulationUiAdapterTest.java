@@ -100,6 +100,7 @@ class SimulationUiAdapterTest {
         assertTrue(adapter.model().camera().fourDViewMotionPaused());
         assertEquals(1.5f, adapter.model().camera().fourDSliceCenterW(), 0.0001f);
         assertTrue(adapter.model().camera().fourDSliceSweepEnabled());
+        assertEquals(7, settings.saveRequests);
     }
 
     @Test

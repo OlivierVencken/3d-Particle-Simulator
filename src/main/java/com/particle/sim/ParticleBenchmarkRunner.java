@@ -70,6 +70,8 @@ public final class ParticleBenchmarkRunner {
             glfwMakeContextCurrent(window);
             GL.createCapabilities();
             system = new GpuParticleSystem();
+            system.simulationDimension(options.simulationDimension());
+            system.spawnMode(options.spawnMode());
             system.setParticleCount(Math.min(options.particleCount() == null ? 65_536 : options.particleCount(),
                     system.maxParticleCount()));
             system.init();
@@ -205,6 +207,8 @@ public final class ParticleBenchmarkRunner {
         appendJsonString(json, "vendor", glGetString(GL_VENDOR), true);
         appendJsonString(json, "renderer", glGetString(GL_RENDERER), true);
         appendJsonString(json, "openGlVersion", glGetString(GL_VERSION), true);
+        appendJsonString(json, "simulationDimension", simulationDimensionLabel(system), true);
+        appendJsonString(json, "spawnMode", system.spawnMode().name(), true);
         json.append("  \"runtimeParticleLimit\": ").append(system.maxParticleCount()).append(",\n");
         json.append("  \"targetP95Milliseconds\": ")
                 .append(format(TARGET_P95_MILLISECONDS)).append(",\n");
@@ -222,6 +226,10 @@ public final class ParticleBenchmarkRunner {
         }
         json.append("  ]\n}");
         return json.toString();
+    }
+
+    private static String simulationDimensionLabel(GpuParticleSystem system) {
+        return system.simulationDimension().componentCount() + "D";
     }
 
     private static void appendJsonString(StringBuilder json, String name, String value, boolean comma) {

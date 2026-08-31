@@ -159,30 +159,37 @@ void main() {
             vec3(0.85, 0.85, 0.9)
         );
         vColor = palette[group];
-    }  else if (uColorMode == 2) {
+    } else if (uColorMode == 2) {
         // POSITION mode
-        vec3 normalizedPos = (position + vec3(uBounds)) / (2.0 * uBounds);
+        vec3 normalizedPos = (transformedParticle.xyz + vec3(uBounds)) / (2.0 * uBounds);
         vColor = clamp(normalizedPos, 0.0, 1.0);
     } else if (uColorMode == 3) {
         // DISTANCE from center mode
-        float dist = length(position);
+        float dist = uSimulationDimension == DIMENSION_4D
+                ? length(transformedParticle)
+                : length(transformedParticle.xyz);
         float normalizedDist = clamp(dist / (uBounds * 0.8), 0.0, 1.0);
         vColor = mix(vec3(1.0, 1.0, 0.5), vec3(0.05, 0.1, 0.4), normalizedDist);
     } else if (uColorMode == 4) {
         // DIRECTION mode
-        vec3 velocity = velocities[gl_VertexID].xyz;
+        vec4 velocity = velocities[gl_VertexID];
+        if (uSimulationDimension == DIMENSION_4D) {
+            velocity = uRotation4D * velocity;
+        } else {
+            velocity.w = 0.0;
+        }
         float speed = length(velocity);
-        vec3 direction = speed > 0.001 ? normalize(velocity) : vec3(0.0);
+        vec3 direction = speed > 0.001 ? velocity.xyz / speed : vec3(0.0);
         vColor = direction * 0.5 + 0.5;
     } else if (uColorMode == 5) {
         // DENSITY mode
-        ivec3 gridCoord = getGridCoord(position);
+        ivec3 gridCoord = getGridCoord(particle.xyz);
         int count = grid_counts[getGridIndex(gridCoord)];
         float normalizedDensity = clamp(float(count) / 30.0, 0.0, 1.0); // Arbitrary scaling factor
         vColor = mix(vec3(0.1, 0.2, 0.8), vec3(1.0, 0.1, 0.1), normalizedDensity);
     } else {
-        vec3 velocity = velocities[gl_VertexID].xyz;
-        float speed = length(velocity);
+        vec4 velocity = velocities[gl_VertexID];
+        float speed = uSimulationDimension == DIMENSION_4D ? length(velocity) : length(velocity.xyz);
         float normalizedSpeed = clamp(speed / uMaxVelocity, 0.0, 1.0);
         vColor = mix(vec3(0.0, 0.0, 1.0), vec3(1.0, 0.0, 0.0), normalizedSpeed);
     }

@@ -112,6 +112,27 @@ class GpuParticleSystemOpenGlTest {
             system.reset();
             assertValidThreeDimensionalState(system);
 
+            system.simulationDimension(SimulationDimension.FOUR_D);
+            system.spawnMode(SpawnMode.RANDOM);
+            system.reset();
+            for (int i = 0; i < 6; i++) {
+                system.step();
+            }
+            for (FourDVisualizationMode visualizationMode : FourDVisualizationMode.values()) {
+                system.fourDVisualizationMode(visualizationMode);
+                for (ColorMode colorMode : ColorMode.values()) {
+                    system.colorMode(colorMode);
+                    for (boolean glow : new boolean[] { false, true }) {
+                        system.effectEnabled(EffectMode.GLOW, glow);
+                        system.render(new FramebufferViewport(0, 0, 96, 80), identity);
+                        glFinish();
+                        assertEquals(GL_NO_ERROR, glGetError(),
+                                visualizationMode + " failed with 4D trails, color=" + colorMode
+                                        + ", glow=" + glow);
+                    }
+                }
+            }
+
             system.dispose();
             system = accuracySystem();
             for (SimulationDimension dimension : SimulationDimension.values()) {
