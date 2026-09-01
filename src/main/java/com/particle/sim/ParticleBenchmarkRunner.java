@@ -71,7 +71,7 @@ public final class ParticleBenchmarkRunner {
             system.particleCount(
                     Math.min(
                             options.particleCount() == null ? 65_536 : options.particleCount(),
-                            system.maxParticleCount()));
+                            system.maximumParticleCount()));
             system.init();
             configureDeterministicScene(system);
 
@@ -106,7 +106,7 @@ public final class ParticleBenchmarkRunner {
     private static List<Measurement> searchCapacity(
             ParticleSystem system, ParticleBenchmarkOptions options) {
         List<Measurement> measurements = new ArrayList<>();
-        int hardwareMaximum = system.maxParticleCount();
+        int hardwareMaximum = system.maximumParticleCount();
         int lower = Math.min(65_536, hardwareMaximum);
         Measurement lowerMeasurement = measure(system, lower, options);
         measurements.add(lowerMeasurement);
@@ -150,7 +150,7 @@ public final class ParticleBenchmarkRunner {
 
     private static Measurement measure(
             ParticleSystem system, int requestedCount, ParticleBenchmarkOptions options) {
-        int count = Math.max(1, Math.min(requestedCount, system.maxParticleCount()));
+        int count = Math.max(1, Math.min(requestedCount, system.maximumParticleCount()));
         system.randomSeed(BENCHMARK_SEED);
         system.particleCount(count);
 
@@ -215,7 +215,9 @@ public final class ParticleBenchmarkRunner {
         appendJsonString(json, "vendor", glGetString(GL_VENDOR), true);
         appendJsonString(json, "renderer", glGetString(GL_RENDERER), true);
         appendJsonString(json, "openGlVersion", glGetString(GL_VERSION), true);
-        json.append("  \"runtimeParticleLimit\": ").append(system.maxParticleCount()).append(",\n");
+        json.append("  \"runtimeParticleLimit\": ")
+                .append(system.maximumParticleCount())
+                .append(",\n");
         json.append("  \"targetP95Milliseconds\": ")
                 .append(format(TARGET_P95_MILLISECONDS))
                 .append(",\n");

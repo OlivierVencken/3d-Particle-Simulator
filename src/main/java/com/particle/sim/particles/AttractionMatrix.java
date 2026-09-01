@@ -8,17 +8,17 @@ public final class AttractionMatrix {
     private static final int HISTORY_LIMIT = 64;
     private static final float ANIMATED_MUTATION_PER_SECOND = 0.18f;
     private final float[] matrix;
-    private final int maxGroups;
+    private final int maximumGroupCount;
     private final Random random = new Random();
     private final Deque<State> undoHistory = new ArrayDeque<>();
     private final Deque<State> redoHistory = new ArrayDeque<>();
     private int groupCount;
     private boolean animatedMutation;
 
-    public AttractionMatrix(int groupCount, int maxGroups) {
-        this.maxGroups = maxGroups;
+    public AttractionMatrix(int groupCount, int maximumGroupCount) {
+        this.maximumGroupCount = maximumGroupCount;
         this.groupCount = clampGroupCount(groupCount);
-        this.matrix = new float[maxGroups * maxGroups];
+        this.matrix = new float[maximumGroupCount * maximumGroupCount];
         fillRandom();
     }
 
@@ -173,8 +173,8 @@ public final class AttractionMatrix {
         this.groupCount = clampGroupCount(groupCount);
     }
 
-    public int maxGroups() {
-        return maxGroups;
+    public int maximumGroupCount() {
+        return maximumGroupCount;
     }
 
     void randomSeed(long seed) {
@@ -384,7 +384,7 @@ public final class AttractionMatrix {
     }
 
     private int index(int groupA, int groupB) {
-        return groupA * maxGroups + groupB;
+        return groupA * maximumGroupCount + groupB;
     }
 
     private static float clamp(float value) {
@@ -396,7 +396,7 @@ public final class AttractionMatrix {
     }
 
     private int clampGroupCount(int groupCount) {
-        return Math.max(1, Math.min(maxGroups, groupCount));
+        return Math.max(1, Math.min(maximumGroupCount, groupCount));
     }
 
     private record State(float[] values) {}

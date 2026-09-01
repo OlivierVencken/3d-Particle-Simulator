@@ -72,7 +72,7 @@ void main() {
             vec3(0.85, 0.85, 0.9)
         );
         vColor = palette[group];
-    }  else if (uColorMode == 2) {
+    } else if (uColorMode == 2) {
         // POSITION mode
         vec3 normalizedPos = (position + vec3(uBounds)) / (2.0 * uBounds);
         vColor = clamp(normalizedPos, 0.0, 1.0);

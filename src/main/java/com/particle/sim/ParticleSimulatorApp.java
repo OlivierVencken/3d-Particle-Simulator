@@ -33,7 +33,7 @@ public final class ParticleSimulatorApp {
             new SimulationViewAdapter(particles, camera, ui, settingsController);
     private boolean windowInitialized;
     private boolean presetDialogInitialized;
-    private boolean imguiInitialized;
+    private boolean imGuiInitialized;
     private boolean particlesInitialized;
 
     public static void main(String[] args) {
@@ -56,7 +56,7 @@ public final class ParticleSimulatorApp {
             presetDialogInitialized = true;
             initOpenGl();
             imGui.init(window.handle());
-            imguiInitialized = true;
+            imGuiInitialized = true;
             particles.init();
             particlesInitialized = true;
             AppHotkeys.register(hotkeys, this);
@@ -134,7 +134,7 @@ public final class ParticleSimulatorApp {
             settingsController.flush();
         } finally {
             try {
-                if (imguiInitialized) {
+                if (imGuiInitialized) {
                     ui.dispose();
                 }
             } finally {
@@ -145,9 +145,9 @@ public final class ParticleSimulatorApp {
                     }
                 } finally {
                     try {
-                        if (imguiInitialized) {
+                        if (imGuiInitialized) {
                             imGui.dispose();
-                            imguiInitialized = false;
+                            imGuiInitialized = false;
                         }
                     } finally {
                         try {

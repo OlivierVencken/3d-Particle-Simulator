@@ -108,7 +108,7 @@ public final class ParticleSystem {
         return config.particleCount();
     }
 
-    public int maxParticleCount() {
+    public int maximumParticleCount() {
         return maximumParticleCount;
     }
 
@@ -484,8 +484,8 @@ public final class ParticleSystem {
         }
     }
 
-    public int maxGroupCount() {
-        return attractionMatrix.maxGroups();
+    public int maximumGroupCount() {
+        return attractionMatrix.maximumGroupCount();
     }
 
     public ImVec4[] groupColors() {
@@ -517,7 +517,7 @@ public final class ParticleSystem {
                     -1.0,
                     0L,
                     particleCount(),
-                    maxParticleCount(),
+                    maximumParticleCount(),
                     gridCellCount());
         }
         double countMilliseconds = compute.gridCountMilliseconds();
@@ -550,7 +550,7 @@ public final class ParticleSystem {
                 renderer.bloomMilliseconds(),
                 allocatedBytes,
                 particleCount(),
-                maxParticleCount(),
+                maximumParticleCount(),
                 gridCellCount());
     }
 

@@ -62,7 +62,7 @@ class ParticleSystemOpenGlTest {
             system.effectEnabled(EffectMode.TRAILS, true);
             system.effectEnabled(EffectMode.GLOW, true);
             system.init();
-            assertTrue(system.maxParticleCount() > 1_000_000);
+            assertTrue(system.maximumParticleCount() > 1_000_000);
             for (int i = 0; i < 6; i++) {
                 system.step();
             }

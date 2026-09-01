@@ -8,7 +8,7 @@ import com.particle.sim.ui.SimulationView;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class SettingsController {
+public final class SettingsController implements SettingsActions {
     private static final double SETTINGS_SAVE_DEBOUNCE_SECONDS = 0.5;
     private final Path settingsPath = AppSettings.defaultPath();
     private final DebouncedSettingsSaver settingsSaver;
@@ -31,10 +31,12 @@ public class SettingsController {
         }
     }
 
+    @Override
     public void onSettingsChanged() {
         settingsSaver.requestSave(glfwGetTime());
     }
 
+    @Override
     public void onResetRequested() {
         AppSettings.defaults().applySimulationTo(particles, camera, ui);
         particles.reset();

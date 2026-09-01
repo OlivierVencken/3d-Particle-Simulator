@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ParticleSystem;
-import com.particle.sim.settings.SettingsController;
+import com.particle.sim.settings.SettingsActions;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.SimulationView;
 import com.particle.sim.ui.SimulationViewActions;
@@ -20,7 +20,7 @@ class SimulationViewAdapterTest {
     private ParticleSystem particles;
     private CameraController camera;
     private SimulationView ui;
-    private RecordingSettingsController settings;
+    private RecordingSettingsActions settings;
     private SimulationViewAdapter adapter;
     private SimulationViewActions actions;
 
@@ -29,7 +29,7 @@ class SimulationViewAdapterTest {
         particles = new ParticleSystem();
         camera = new CameraController();
         ui = new SimulationView();
-        settings = new RecordingSettingsController(particles, camera, ui);
+        settings = new RecordingSettingsActions();
         adapter = new SimulationViewAdapter(particles, camera, ui, settings);
         actions = adapter.actions();
         ui.connect(adapter.model(), actions);
@@ -130,17 +130,15 @@ class SimulationViewAdapterTest {
         assertEquals(0, settings.saveRequests);
     }
 
-    private static final class RecordingSettingsController extends SettingsController {
+    private static final class RecordingSettingsActions implements SettingsActions {
         private int saveRequests;
-
-        private RecordingSettingsController(
-                ParticleSystem particles, CameraController camera, SimulationView ui) {
-            super(particles, camera, ui);
-        }
 
         @Override
         public void onSettingsChanged() {
             saveRequests++;
         }
+
+        @Override
+        public void onResetRequested() {}
     }
 }

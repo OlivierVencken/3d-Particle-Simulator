@@ -8,7 +8,7 @@ import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.particles.PerformanceSnapshot;
 import com.particle.sim.particles.SpawnMode;
-import com.particle.sim.settings.SettingsController;
+import com.particle.sim.settings.SettingsActions;
 import com.particle.sim.ui.SimulationView;
 import com.particle.sim.ui.SimulationViewActions;
 import com.particle.sim.ui.SimulationViewDiagnostics;
@@ -22,7 +22,7 @@ final class SimulationViewAdapter {
     private final ParticleSystem particles;
     private final CameraController camera;
     private final SimulationView ui;
-    private final SettingsController settingsController;
+    private final SettingsActions settingsActions;
     private final SimulationDomain simulation = new SimulationDomain();
     private final ParticleDomain particleDomain = new ParticleDomain();
     private final VisualDomain visuals = new VisualDomain();
@@ -40,11 +40,11 @@ final class SimulationViewAdapter {
             ParticleSystem particles,
             CameraController camera,
             SimulationView ui,
-            SettingsController settingsController) {
+            SettingsActions settingsActions) {
         this.particles = Objects.requireNonNull(particles, "particles");
         this.camera = Objects.requireNonNull(camera, "camera");
         this.ui = Objects.requireNonNull(ui, "ui");
-        this.settingsController = Objects.requireNonNull(settingsController, "settingsController");
+        this.settingsActions = Objects.requireNonNull(settingsActions, "settingsActions");
     }
 
     SimulationViewModel model() {
@@ -88,7 +88,7 @@ final class SimulationViewAdapter {
 
     private void settingChanged(Runnable mutation) {
         mutation.run();
-        settingsController.onSettingsChanged();
+        settingsActions.onSettingsChanged();
     }
 
     private final class Model implements SimulationViewModel {
@@ -287,7 +287,7 @@ final class SimulationViewAdapter {
 
         @Override
         public int maximumParticleCount() {
-            return particles.maxParticleCount();
+            return particles.maximumParticleCount();
         }
 
         @Override
@@ -297,7 +297,7 @@ final class SimulationViewAdapter {
 
         @Override
         public int maximumGroupCount() {
-            return particles.maxGroupCount();
+            return particles.maximumGroupCount();
         }
 
         @Override
@@ -604,7 +604,7 @@ final class SimulationViewAdapter {
 
         @Override
         public void resetSettings() {
-            settingsController.onResetRequested();
+            settingsActions.onResetRequested();
         }
 
         @Override

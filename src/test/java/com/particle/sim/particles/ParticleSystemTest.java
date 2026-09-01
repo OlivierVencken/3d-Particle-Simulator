@@ -17,7 +17,7 @@ class ParticleSystemTest {
         ParticleSystem system = new ParticleSystem();
 
         assertEquals(65_536, system.particleCount());
-        assertEquals(16_000_000, system.maxParticleCount());
+        assertEquals(16_000_000, system.maximumParticleCount());
         assertEquals(6, system.groupCount());
         assertEquals(ColorMode.GROUP, system.colorMode());
         assertTrue(system.effectModes().isEmpty());
