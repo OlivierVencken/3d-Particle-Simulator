@@ -1,8 +1,5 @@
 package com.particle.sim.particles;
 
-import com.particle.sim.graphics.ShaderProgram;
-import com.particle.sim.graphics.GpuTimerQuery;
-
 import static org.lwjgl.opengl.GL43C.GL_BUFFER_UPDATE_BARRIER_BIT;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BARRIER_BIT;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
@@ -16,23 +13,30 @@ import static org.lwjgl.opengl.GL43C.glUniform1fv;
 import static org.lwjgl.opengl.GL43C.glUniform1i;
 import static org.lwjgl.opengl.GL43C.glUseProgram;
 
+import com.particle.sim.graphics.GpuTimerQuery;
+import com.particle.sim.graphics.ShaderProgram;
+
 public final class ParticleCompute {
     private static final int PARTICLE_WORK_GROUP_SIZE = 256;
-
     private int countProgram;
     private int scanProgram;
     private int addScanOffsetsProgram;
     private int scatterProgram;
     private int integrateProgram;
-
     private int countParticleCountLoc, countBoundsLoc, countInteractionRangeLoc, countGridSizeLoc;
     private int scanElementCountLoc, addElementCountLoc;
-    private int scatterParticleCountLoc, scatterBoundsLoc, scatterInteractionRangeLoc, scatterGridSizeLoc;
+    private int scatterParticleCountLoc,
+            scatterBoundsLoc,
+            scatterInteractionRangeLoc,
+            scatterGridSizeLoc;
     private int uDeltaTimeLoc, uParticleCountLoc, uGroupCountLoc, uForceFactorLoc;
     private int uVelocityDampingLoc, uInteractionRangeLoc, uRepulsionRadiusLoc;
     private int uMaxVelocityLoc, uBoundaryBounceLoc, uBoundsLoc, uGridSizeLoc;
     private int uToroidalWrapLoc, uDensityRegulationEnabledLoc, uDensityLimitLoc;
-    private int uDistanceMetricLoc, uAttractionMatrixLoc, uTrailCaptureEnabledLoc, uTrailWriteOffsetLoc;
+    private int uDistanceMetricLoc,
+            uAttractionMatrixLoc,
+            uTrailCaptureEnabledLoc,
+            uTrailWriteOffsetLoc;
     private GpuTimerQuery countTimer;
     private GpuTimerQuery scanTimer;
     private GpuTimerQuery scatterTimer;
@@ -70,7 +74,8 @@ public final class ParticleCompute {
         uMaxVelocityLoc = glGetUniformLocation(integrateProgram, "uMaxVelocity");
         uBoundaryBounceLoc = glGetUniformLocation(integrateProgram, "uBoundaryBounce");
         uBoundsLoc = glGetUniformLocation(integrateProgram, "uBounds");
-        uDensityRegulationEnabledLoc = glGetUniformLocation(integrateProgram, "uDensityRegulationEnabled");
+        uDensityRegulationEnabledLoc =
+                glGetUniformLocation(integrateProgram, "uDensityRegulationEnabled");
         uDensityLimitLoc = glGetUniformLocation(integrateProgram, "uDensityLimit");
         uDistanceMetricLoc = glGetUniformLocation(integrateProgram, "uDistanceMetric");
         uGridSizeLoc = glGetUniformLocation(integrateProgram, "uGridSize");
@@ -80,7 +85,8 @@ public final class ParticleCompute {
         uTrailWriteOffsetLoc = glGetUniformLocation(integrateProgram, "uTrailWriteOffset");
     }
 
-    public void buildGrid(ParticleSystem system, ParticleBuffers particles, SpatialGridBuffers grid) {
+    public void buildGrid(
+            ParticleSystem system, ParticleBuffers particles, SpatialGridBuffers grid) {
         int particleCount = system.particleCount();
         int cellCount = system.gridCellCount();
         grid.clearCounts(cellCount);
@@ -119,8 +125,13 @@ public final class ParticleCompute {
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 
-    public void integrate(ParticleSystem system, ParticleBuffers particles, SpatialGridBuffers grid,
-            TrailHistoryBuffers trailHistory, boolean captureTrail, float deltaTime) {
+    public void integrate(
+            ParticleSystem system,
+            ParticleBuffers particles,
+            SpatialGridBuffers grid,
+            TrailHistoryBuffers trailHistory,
+            boolean captureTrail,
+            float deltaTime) {
         integrationTimer.begin();
         glUseProgram(integrateProgram);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particles.positionSsbo());
@@ -130,7 +141,8 @@ public final class ParticleCompute {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, grid.offsetsSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, particles.nextPositionSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, particles.nextVelocitySsbo());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, captureTrail ? trailHistory.historySsbo() : 0);
+        glBindBufferBase(
+                GL_SHADER_STORAGE_BUFFER, 8, captureTrail ? trailHistory.historySsbo() : 0);
 
         glUniform1f(uDeltaTimeLoc, deltaTime);
         glUniform1i(uParticleCountLoc, system.particleCount());
@@ -147,7 +159,7 @@ public final class ParticleCompute {
         glUniform1i(uDistanceMetricLoc, system.distanceMetric().ordinal());
         glUniform1i(uGridSizeLoc, system.gridSize());
         glUniform1i(uToroidalWrapLoc, system.toroidalWrap() ? 1 : 0);
-        glUniform1fv(uAttractionMatrixLoc, system.getAttractionMatrix());
+        glUniform1fv(uAttractionMatrixLoc, system.attractionMatrix());
         glUniform1i(uTrailCaptureEnabledLoc, captureTrail ? 1 : 0);
         glUniform1i(uTrailWriteOffsetLoc, captureTrail ? trailHistory.writeElementOffset() : 0);
 
@@ -172,7 +184,12 @@ public final class ParticleCompute {
         return integrationTimer.latestMilliseconds();
     }
 
-    private void scan(SpatialGridBuffers grid, int inputBuffer, int outputBuffer, int elementCount, int level) {
+    private void scan(
+            SpatialGridBuffers grid,
+            int inputBuffer,
+            int outputBuffer,
+            int elementCount,
+            int level) {
         if (level >= grid.scanLevelCount()) {
             throw new IllegalStateException("Spatial-grid scan scratch is undersized");
         }

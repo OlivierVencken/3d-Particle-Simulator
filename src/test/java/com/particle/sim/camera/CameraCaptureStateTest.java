@@ -1,8 +1,5 @@
 package com.particle.sim.camera;
 
-import com.particle.sim.ui.InputOwnership;
-import org.junit.jupiter.api.Test;
-
 import static com.particle.sim.camera.CameraCaptureState.Transition.CAPTURED;
 import static com.particle.sim.camera.CameraCaptureState.Transition.NONE;
 import static com.particle.sim.camera.CameraCaptureState.Transition.RELEASED;
@@ -10,13 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.particle.sim.ui.InputOwnership;
+import org.junit.jupiter.api.Test;
+
 class CameraCaptureStateTest {
-    private static final InputOwnership SIMULATION =
-            new InputOwnership(true, false, false, false);
-    private static final InputOwnership UI =
-            new InputOwnership(true, true, true, false);
-    private static final InputOwnership MODAL =
-            new InputOwnership(true, true, true, true);
+    private static final InputOwnership SIMULATION = new InputOwnership(true, false, false, false);
+    private static final InputOwnership UI = new InputOwnership(true, true, true, false);
+    private static final InputOwnership MODAL = new InputOwnership(true, true, true, true);
 
     @Test
     void initiatingClickMustBelongToSimulation() {
@@ -60,8 +57,8 @@ class CameraCaptureStateTest {
         assertEquals(CAPTURED, capture.update(true, false, false, true, SIMULATION));
     }
 
-    private static void assertReleaseOn(boolean left, boolean right, boolean escape,
-            InputOwnership ownership) {
+    private static void assertReleaseOn(
+            boolean left, boolean right, boolean escape, InputOwnership ownership) {
         CameraCaptureState capture = capturedState();
 
         assertEquals(RELEASED, capture.update(left, right, escape, true, ownership));

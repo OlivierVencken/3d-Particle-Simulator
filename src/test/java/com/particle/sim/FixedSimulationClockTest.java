@@ -1,11 +1,11 @@
 package com.particle.sim;
 
-import com.particle.sim.settings.SimulationDefaults;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.particle.sim.settings.SimulationDefaults;
+import org.junit.jupiter.api.Test;
 
 class FixedSimulationClockTest {
     private static final double EPSILON = 0.000001;
@@ -20,7 +20,8 @@ class FixedSimulationClockTest {
 
     @Test
     void reportsElapsedSimulationTimeFromConsumedFixedSteps() {
-        FixedSimulationClock clock = new FixedSimulationClock(SimulationDefaults.SIMULATION_STEP_SECONDS);
+        FixedSimulationClock clock =
+                new FixedSimulationClock(SimulationDefaults.SIMULATION_STEP_SECONDS);
 
         clock.addFrameTime(1.0 / 30.0);
 
@@ -32,7 +33,8 @@ class FixedSimulationClockTest {
 
     @Test
     void ignoresNegativeFrameTime() {
-        FixedSimulationClock clock = new FixedSimulationClock(SimulationDefaults.SIMULATION_STEP_SECONDS);
+        FixedSimulationClock clock =
+                new FixedSimulationClock(SimulationDefaults.SIMULATION_STEP_SECONDS);
 
         clock.addFrameTime(-1.0);
 
@@ -52,7 +54,8 @@ class FixedSimulationClockTest {
     }
 
     private int countFrameLimitedStepsForOneSecondAtFps(int fps) {
-        FixedSimulationClock clock = new FixedSimulationClock(SimulationDefaults.SIMULATION_STEP_SECONDS);
+        FixedSimulationClock clock =
+                new FixedSimulationClock(SimulationDefaults.SIMULATION_STEP_SECONDS);
         int steps = 0;
 
         for (int frame = 0; frame < fps; frame++) {

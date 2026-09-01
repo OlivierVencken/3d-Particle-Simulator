@@ -9,7 +9,6 @@ public record PreparedFrame(
         FramebufferViewport simulationViewport,
         boolean uiVisible,
         InputOwnership inputOwnership) {
-
     public PreparedFrame {
         Objects.requireNonNull(displayMetrics, "displayMetrics");
         Objects.requireNonNull(layout, "layout");

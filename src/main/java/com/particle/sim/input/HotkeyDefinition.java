@@ -1,9 +1,4 @@
 package com.particle.sim.input;
 
 public record HotkeyDefinition(
-        int key,
-        HotkeyAction action,
-        HotkeyContext context,
-        boolean activeWhileUiOwnsKeyboard
-) {
-}
+        int key, HotkeyAction action, HotkeyContext context, boolean activeWhileUiOwnsKeyboard) {}

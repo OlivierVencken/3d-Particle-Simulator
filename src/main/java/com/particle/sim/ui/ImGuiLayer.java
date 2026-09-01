@@ -1,12 +1,12 @@
 package com.particle.sim.ui;
 
 import static imgui.ImGui.getIO;
+import static org.lwjgl.glfw.GLFW.glfwGetWindowContentScale;
 
-import com.particle.sim.util.ResourceLoader;
 import com.particle.sim.ui.theme.DesignTokens;
 import com.particle.sim.ui.theme.Fonts;
 import com.particle.sim.ui.theme.Theme;
-
+import com.particle.sim.util.ResourceLoader;
 import imgui.ImFont;
 import imgui.ImFontAtlas;
 import imgui.ImFontConfig;
@@ -16,18 +16,16 @@ import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 
-import static org.lwjgl.glfw.GLFW.glfwGetWindowContentScale;
-
 public final class ImGuiLayer {
     private static final float MATERIAL_SCALE_CHANGE = 0.05f;
-
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
     private final float[] contentScaleX = new float[1];
     private final float[] contentScaleY = new float[1];
-    private final byte[] regularFontBytes = ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Regular.ttf");
-    private final byte[] mediumFontBytes = ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Medium.ttf");
-
+    private final byte[] regularFontBytes =
+            ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Regular.ttf");
+    private final byte[] mediumFontBytes =
+            ResourceLoader.loadBytesArray("/assets/IBMPlexSans-Medium.ttf");
     private long window;
     private float uiScale = 1.0f;
     private boolean rendererInitialized;
@@ -59,17 +57,22 @@ public final class ImGuiLayer {
         fontConfig.setPixelSnapH(false);
         try {
             DesignTokens tokens = DesignTokens.atScale(scale);
-            ImFont body = fontAtlas.addFontFromMemoryTTF(
-                    regularFontBytes, tokens.bodyFontSize(), fontConfig);
+            ImFont body =
+                    fontAtlas.addFontFromMemoryTTF(
+                            regularFontBytes, tokens.bodyFontSize(), fontConfig);
             Fonts.setBody(body);
-            Fonts.setMedium(fontAtlas.addFontFromMemoryTTF(
-                    mediumFontBytes, tokens.mediumFontSize(), fontConfig));
-            Fonts.setCommandBar(fontAtlas.addFontFromMemoryTTF(
-                    mediumFontBytes, tokens.commandBarFontSize(), fontConfig));
-            Fonts.setSection(fontAtlas.addFontFromMemoryTTF(
-                    mediumFontBytes, tokens.sectionFontSize(), fontConfig));
-            Fonts.setTitle(fontAtlas.addFontFromMemoryTTF(
-                    mediumFontBytes, tokens.titleFontSize(), fontConfig));
+            Fonts.setMedium(
+                    fontAtlas.addFontFromMemoryTTF(
+                            mediumFontBytes, tokens.mediumFontSize(), fontConfig));
+            Fonts.setCommandBar(
+                    fontAtlas.addFontFromMemoryTTF(
+                            mediumFontBytes, tokens.commandBarFontSize(), fontConfig));
+            Fonts.setSection(
+                    fontAtlas.addFontFromMemoryTTF(
+                            mediumFontBytes, tokens.sectionFontSize(), fontConfig));
+            Fonts.setTitle(
+                    fontAtlas.addFontFromMemoryTTF(
+                            mediumFontBytes, tokens.titleFontSize(), fontConfig));
             io.setFontDefault(body);
 
             if (!fontAtlas.build()) {

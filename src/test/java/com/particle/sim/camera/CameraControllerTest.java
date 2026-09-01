@@ -1,9 +1,9 @@
 package com.particle.sim.camera;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 class CameraControllerTest {
     private static final float EPSILON = 0.0001f;
@@ -22,12 +22,13 @@ class CameraControllerTest {
     void defaultViewMatrixUsesExpectedCameraPositionAndPitch() {
         CameraController camera = new CameraController();
 
-        assertArrayEquals(new float[] {
-                -1.0f, 0.0f, -0.0f, 0.0f,
-                0.0f, 1.0f, -0.0f, 0.0f,
-                0.0f, -0.0f, -1.0f, 0.0f,
-                -0.0f, -0.0f, -18.5f, 1.0f
-        }, camera.viewMatrix(), EPSILON);
+        assertArrayEquals(
+                new float[] {
+                    -1.0f, 0.0f, -0.0f, 0.0f, 0.0f, 1.0f, -0.0f, 0.0f, 0.0f, -0.0f, -1.0f, 0.0f,
+                    -0.0f, -0.0f, -18.5f, 1.0f
+                },
+                camera.viewMatrix(),
+                EPSILON);
     }
 
     @Test

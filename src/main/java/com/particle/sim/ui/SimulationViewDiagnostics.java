@@ -17,7 +17,6 @@ public record SimulationViewDiagnostics(
         long allocatedGpuBytes) {
     public static SimulationViewDiagnostics unavailable() {
         return new SimulationViewDiagnostics(
-                0, 0, 0, 0,
-                -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0L);
+                0, 0, 0, 0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0L);
     }
 }

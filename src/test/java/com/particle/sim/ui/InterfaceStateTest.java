@@ -1,12 +1,11 @@
 package com.particle.sim.ui;
 
-import com.particle.sim.ui.sidebar.SidebarSection;
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.particle.sim.ui.sidebar.SidebarSection;
+import org.junit.jupiter.api.Test;
 
 class InterfaceStateTest {
     @Test

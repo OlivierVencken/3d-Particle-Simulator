@@ -50,6 +50,18 @@ The reported limit depends heavily on world bounds, interaction range, and resul
 
 ## Testing
 
+Format all Java production and test sources:
+
+```powershell
+.\mvnw.cmd spotless:apply
+```
+
+Check formatting without changing files:
+
+```powershell
+.\mvnw.cmd spotless:check
+```
+
 The normal test suite does not require a display or GPU context:
 
 ```powershell

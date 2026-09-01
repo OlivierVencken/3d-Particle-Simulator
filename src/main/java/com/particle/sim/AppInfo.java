@@ -8,8 +8,7 @@ public final class AppInfo {
     private static final String UNKNOWN_VERSION = "dev";
     private static final Properties PROPERTIES = loadProperties();
 
-    private AppInfo() {
-    }
+    private AppInfo() {}
 
     public static String version() {
         return PROPERTIES.getProperty("app.version", UNKNOWN_VERSION);

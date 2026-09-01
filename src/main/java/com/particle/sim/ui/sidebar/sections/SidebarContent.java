@@ -11,10 +11,12 @@ public final class SidebarContent {
     private final CameraSection cameraSection = new CameraSection();
     private final AttractionMatrixEditor matrixEditor = new AttractionMatrixEditor();
 
-    public void render(SidebarSection section, SimulationViewModel model, SimulationViewActions actions) {
+    public void render(
+            SidebarSection section, SimulationViewModel model, SimulationViewActions actions) {
         switch (section) {
-            case SIMULATION -> simulationSection.render(
-                    model.simulation(), model.application(), actions.simulation());
+            case SIMULATION ->
+                    simulationSection.render(
+                            model.simulation(), model.application(), actions.simulation());
             case PARTICLES -> particlesSection.render(model.particles(), actions.particles());
             case VISUALS -> visualsSection.render(model.visuals(), actions.visuals());
             case CAMERA -> cameraSection.render(model.camera(), actions.camera());

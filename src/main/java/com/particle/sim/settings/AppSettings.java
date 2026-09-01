@@ -4,11 +4,10 @@ import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
-import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.particles.ParticleSimulationConfig;
+import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.particles.SpawnMode;
 import com.particle.sim.ui.SimulationView;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,10 +22,8 @@ import java.util.stream.Collectors;
 public final class AppSettings {
     public static final int VERSION = 1;
     public static final String PRESET_EXTENSION = ".3dps";
-
     private final ParticleSimulationConfig particleConfig = ParticleSimulationConfig.defaults();
     private float[] attractionMatrix;
-
     private float cameraSensitivity = SimulationDefaults.CAMERA_SENSITIVITY;
     private float cameraFlySpeed = SimulationDefaults.CAMERA_FLY_SPEED;
     private boolean paused = SimulationDefaults.PAUSED;
@@ -35,11 +32,13 @@ public final class AppSettings {
     private int customSpawnAmount = SimulationDefaults.CUSTOM_SPAWN_AMOUNT;
 
     public AppSettings() {
-        attractionMatrix = new float[SimulationDefaults.MAX_GROUP_COUNT * SimulationDefaults.MAX_GROUP_COUNT];
+        attractionMatrix =
+                new float[SimulationDefaults.MAX_GROUP_COUNT * SimulationDefaults.MAX_GROUP_COUNT];
     }
 
     public static Path defaultPath() {
-        return Path.of(System.getProperty("user.home"), ".particle-simulator", "settings.properties");
+        return Path.of(
+                System.getProperty("user.home"), ".particle-simulator", "settings.properties");
     }
 
     public static AppSettings defaults() {
@@ -60,43 +59,78 @@ public final class AppSettings {
         }
 
         ParticleSimulationConfig particleConfig = settings.particleConfig;
-        particleConfig.particleCount(intProperty(properties, "particleCount", particleConfig.particleCount()));
-        particleConfig.pointSize(floatProperty(properties, "pointSize", particleConfig.pointSize()));
-        particleConfig.fixedParticleScreenSize(booleanProperty(properties, "fixedParticleScreenSize",
-                particleConfig.fixedParticleScreenSize()));
+        particleConfig.particleCount(
+                intProperty(properties, "particleCount", particleConfig.particleCount()));
+        particleConfig.pointSize(
+                floatProperty(properties, "pointSize", particleConfig.pointSize()));
+        particleConfig.fixedParticleScreenSize(
+                booleanProperty(
+                        properties,
+                        "fixedParticleScreenSize",
+                        particleConfig.fixedParticleScreenSize()));
         particleConfig.effectModes(effectModesProperty(properties.getProperty("effectModes")));
-        particleConfig.glowBlurPasses(intProperty(properties, "glowBlurPasses", particleConfig.glowBlurPasses()));
-        particleConfig.glowStrength(floatProperty(properties, "glowStrength", particleConfig.glowStrength()));
-        particleConfig.glowRadius(floatProperty(properties, "glowRadius", particleConfig.glowRadius()));
-        particleConfig.glowFalloff(floatProperty(properties, "glowFalloff", particleConfig.glowFalloff()));
-        particleConfig.trailLength(intProperty(properties, "trailLength", particleConfig.trailLength()));
-        particleConfig.trailThickness(floatProperty(properties, "trailThickness", particleConfig.trailThickness()));
+        particleConfig.glowBlurPasses(
+                intProperty(properties, "glowBlurPasses", particleConfig.glowBlurPasses()));
+        particleConfig.glowStrength(
+                floatProperty(properties, "glowStrength", particleConfig.glowStrength()));
+        particleConfig.glowRadius(
+                floatProperty(properties, "glowRadius", particleConfig.glowRadius()));
+        particleConfig.glowFalloff(
+                floatProperty(properties, "glowFalloff", particleConfig.glowFalloff()));
+        particleConfig.trailLength(
+                intProperty(properties, "trailLength", particleConfig.trailLength()));
+        particleConfig.trailThickness(
+                floatProperty(properties, "trailThickness", particleConfig.trailThickness()));
         particleConfig.bounds(floatProperty(properties, "bounds", particleConfig.bounds()));
-        particleConfig.forceFactor(floatProperty(properties, "forceFactor", particleConfig.forceFactor()));
-        particleConfig.velocityDamping(floatProperty(properties, "velocityDamping", particleConfig.velocityDamping()));
-        particleConfig.interactionRange(floatProperty(properties, "interactionRange", particleConfig.interactionRange()));
-        particleConfig.repulsionRadius(floatProperty(properties, "repulsionRadius", particleConfig.repulsionRadius()));
-        particleConfig.maxVelocity(floatProperty(properties, "maxVelocity", particleConfig.maxVelocity()));
-        particleConfig.boundaryBounce(floatProperty(properties, "boundaryBounce", particleConfig.boundaryBounce()));
-        particleConfig.toroidalWrap(booleanProperty(properties, "toroidalWrap", particleConfig.toroidalWrap()));
-        particleConfig.densityRegulationEnabled(booleanProperty(properties, "densityRegulationEnabled",
-                particleConfig.densityRegulationEnabled()));
-        particleConfig.densityLimit(floatProperty(properties, "densityLimit", particleConfig.densityLimit()));
-        particleConfig.distanceMetric(enumProperty(properties, "distanceMetric", DistanceMetric.class,
-                particleConfig.distanceMetric()));
-        particleConfig.groupCount(intProperty(properties, "groupCount", particleConfig.groupCount()));
-        particleConfig.colorMode(enumProperty(properties, "colorMode", ColorMode.class, particleConfig.colorMode()));
-        particleConfig.spawnMode(enumProperty(properties, "spawnMode", SpawnMode.class, particleConfig.spawnMode()));
-        settings.cameraSensitivity = floatProperty(properties, "cameraSensitivity", settings.cameraSensitivity);
-        settings.cameraFlySpeed = floatProperty(properties, "cameraFlySpeed", settings.cameraFlySpeed);
+        particleConfig.forceFactor(
+                floatProperty(properties, "forceFactor", particleConfig.forceFactor()));
+        particleConfig.velocityDamping(
+                floatProperty(properties, "velocityDamping", particleConfig.velocityDamping()));
+        particleConfig.interactionRange(
+                floatProperty(properties, "interactionRange", particleConfig.interactionRange()));
+        particleConfig.repulsionRadius(
+                floatProperty(properties, "repulsionRadius", particleConfig.repulsionRadius()));
+        particleConfig.maxVelocity(
+                floatProperty(properties, "maxVelocity", particleConfig.maxVelocity()));
+        particleConfig.boundaryBounce(
+                floatProperty(properties, "boundaryBounce", particleConfig.boundaryBounce()));
+        particleConfig.toroidalWrap(
+                booleanProperty(properties, "toroidalWrap", particleConfig.toroidalWrap()));
+        particleConfig.densityRegulationEnabled(
+                booleanProperty(
+                        properties,
+                        "densityRegulationEnabled",
+                        particleConfig.densityRegulationEnabled()));
+        particleConfig.densityLimit(
+                floatProperty(properties, "densityLimit", particleConfig.densityLimit()));
+        particleConfig.distanceMetric(
+                enumProperty(
+                        properties,
+                        "distanceMetric",
+                        DistanceMetric.class,
+                        particleConfig.distanceMetric()));
+        particleConfig.groupCount(
+                intProperty(properties, "groupCount", particleConfig.groupCount()));
+        particleConfig.colorMode(
+                enumProperty(properties, "colorMode", ColorMode.class, particleConfig.colorMode()));
+        particleConfig.spawnMode(
+                enumProperty(properties, "spawnMode", SpawnMode.class, particleConfig.spawnMode()));
+        settings.cameraSensitivity =
+                floatProperty(properties, "cameraSensitivity", settings.cameraSensitivity);
+        settings.cameraFlySpeed =
+                floatProperty(properties, "cameraFlySpeed", settings.cameraFlySpeed);
         settings.paused = booleanProperty(properties, "paused", settings.paused);
         settings.fpsCap = intProperty(properties, "fpsCap", settings.fpsCap);
-        settings.matrixEditStep = floatProperty(properties, "matrixEditStep", settings.matrixEditStep);
-        settings.customSpawnAmount = intProperty(properties, "customSpawnAmount", settings.customSpawnAmount);
+        settings.matrixEditStep =
+                floatProperty(properties, "matrixEditStep", settings.matrixEditStep);
+        settings.customSpawnAmount =
+                intProperty(properties, "customSpawnAmount", settings.customSpawnAmount);
 
-        int attractionValueCount = settings.particleConfig.groupCount() * settings.particleConfig.groupCount();
+        int attractionValueCount =
+                settings.particleConfig.groupCount() * settings.particleConfig.groupCount();
         for (int i = 0; i < attractionValueCount; i++) {
-            settings.attractionMatrix[i] = floatProperty(properties, "attraction." + i, settings.attractionMatrix[i]);
+            settings.attractionMatrix[i] =
+                    floatProperty(properties, "attraction." + i, settings.attractionMatrix[i]);
         }
 
         settings.sanitize();
@@ -138,7 +172,9 @@ public final class AppSettings {
         }
         properties.setProperty("particleCount", Integer.toString(particleConfig.particleCount()));
         properties.setProperty("pointSize", Float.toString(particleConfig.pointSize()));
-        properties.setProperty("fixedParticleScreenSize", Boolean.toString(particleConfig.fixedParticleScreenSize()));
+        properties.setProperty(
+                "fixedParticleScreenSize",
+                Boolean.toString(particleConfig.fixedParticleScreenSize()));
         properties.setProperty("effectModes", effectModesString(particleConfig.effectModes()));
         properties.setProperty("glowBlurPasses", Integer.toString(particleConfig.glowBlurPasses()));
         properties.setProperty("glowStrength", Float.toString(particleConfig.glowStrength()));
@@ -149,12 +185,14 @@ public final class AppSettings {
         properties.setProperty("bounds", Float.toString(particleConfig.bounds()));
         properties.setProperty("forceFactor", Float.toString(particleConfig.forceFactor()));
         properties.setProperty("velocityDamping", Float.toString(particleConfig.velocityDamping()));
-        properties.setProperty("interactionRange", Float.toString(particleConfig.interactionRange()));
+        properties.setProperty(
+                "interactionRange", Float.toString(particleConfig.interactionRange()));
         properties.setProperty("repulsionRadius", Float.toString(particleConfig.repulsionRadius()));
         properties.setProperty("maxVelocity", Float.toString(particleConfig.maxVelocity()));
         properties.setProperty("boundaryBounce", Float.toString(particleConfig.boundaryBounce()));
         properties.setProperty("toroidalWrap", Boolean.toString(particleConfig.toroidalWrap()));
-        properties.setProperty("densityRegulationEnabled",
+        properties.setProperty(
+                "densityRegulationEnabled",
                 Boolean.toString(particleConfig.densityRegulationEnabled()));
         properties.setProperty("densityLimit", Float.toString(particleConfig.densityLimit()));
         properties.setProperty("distanceMetric", particleConfig.distanceMetric().name());
@@ -188,10 +226,11 @@ public final class AppSettings {
 
     public void applyTo(ParticleSystem particles, CameraController camera, SimulationView ui) {
         applySimulationTo(particles, camera, ui);
-        particles.setAttractionMatrix(attractionMatrix);
+        particles.attractionMatrix(attractionMatrix);
     }
 
-    public void applySimulationTo(ParticleSystem particles, CameraController camera, SimulationView ui) {
+    public void applySimulationTo(
+            ParticleSystem particles, CameraController camera, SimulationView ui) {
         sanitize();
         particles.applyConfig(particleConfig);
 
@@ -203,7 +242,8 @@ public final class AppSettings {
         ui.setCustomSpawnAmount(customSpawnAmount);
     }
 
-    public static AppSettings capture(ParticleSystem particles, CameraController camera, SimulationView ui) {
+    public static AppSettings capture(
+            ParticleSystem particles, CameraController camera, SimulationView ui) {
         AppSettings settings = defaults();
         settings.particleConfig.applyFrom(particles.config());
         int attractionIndex = 0;
@@ -228,8 +268,12 @@ public final class AppSettings {
         particleConfig.sanitize();
         cameraSensitivity = Math.max(0.0001f, cameraSensitivity);
         cameraFlySpeed = Math.max(0.1f, cameraFlySpeed);
-        fpsCap = fpsCap <= 0 ? 0 : Math.max(SimulationDefaults.MIN_FPS_CAP,
-                Math.min(SimulationDefaults.MAX_FPS_CAP, fpsCap));
+        fpsCap =
+                fpsCap <= 0
+                        ? 0
+                        : Math.max(
+                                SimulationDefaults.MIN_FPS_CAP,
+                                Math.min(SimulationDefaults.MAX_FPS_CAP, fpsCap));
         matrixEditStep = clamp(matrixEditStep, 0.01f, 0.5f);
         customSpawnAmount = Math.max(0, customSpawnAmount);
 
@@ -260,7 +304,8 @@ public final class AppSettings {
         return value == null ? fallback : Boolean.parseBoolean(value);
     }
 
-    private static <E extends Enum<E>> E enumProperty(Properties properties, String key, Class<E> type, E fallback) {
+    private static <E extends Enum<E>> E enumProperty(
+            Properties properties, String key, Class<E> type, E fallback) {
         try {
             return Enum.valueOf(type, properties.getProperty(key, fallback.name()));
         } catch (IllegalArgumentException e) {
@@ -279,16 +324,15 @@ public final class AppSettings {
                 EffectMode effectMode = EffectMode.valueOf(token.trim());
                 effectModes.add(effectMode);
             } catch (IllegalArgumentException e) {
-                // Ignore unknown future effect names so older builds can still load the rest of the preset.
+                // Ignore unknown future effect names so older builds can still load the rest of the
+                // preset.
             }
         }
         return effectModes;
     }
 
     private static String effectModesString(Set<EffectMode> effectModes) {
-        return effectModes.stream()
-                .map(EffectMode::name)
-                .collect(Collectors.joining(","));
+        return effectModes.stream().map(EffectMode::name).collect(Collectors.joining(","));
     }
 
     private static float clamp(float value, float min, float max) {

@@ -1,5 +1,11 @@
 package com.particle.sim.ui.components;
 
+import static org.lwjgl.opengl.GL43C.GL_RENDERER;
+import static org.lwjgl.opengl.GL43C.GL_SHADING_LANGUAGE_VERSION;
+import static org.lwjgl.opengl.GL43C.GL_VENDOR;
+import static org.lwjgl.opengl.GL43C.GL_VERSION;
+import static org.lwjgl.opengl.GL43C.glGetString;
+
 import com.particle.sim.AppInfo;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.system.SystemLoadMonitor;
@@ -7,25 +13,18 @@ import com.particle.sim.system.SystemLoadSnapshot;
 import com.particle.sim.ui.SimulationViewActions;
 import com.particle.sim.ui.SimulationViewDiagnostics;
 import com.particle.sim.ui.SimulationViewModel;
-import com.particle.sim.ui.theme.Theme;
 import com.particle.sim.ui.theme.Fonts;
+import com.particle.sim.ui.theme.Theme;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
 import org.lwjgl.Version;
-
-import static org.lwjgl.opengl.GL43C.GL_RENDERER;
-import static org.lwjgl.opengl.GL43C.GL_SHADING_LANGUAGE_VERSION;
-import static org.lwjgl.opengl.GL43C.GL_VENDOR;
-import static org.lwjgl.opengl.GL43C.GL_VERSION;
-import static org.lwjgl.opengl.GL43C.glGetString;
 
 public final class DebugPanel {
     private static final float DIAGNOSTIC_REFRESH_SECONDS = 0.25f;
     private final SystemLoadMonitor systemLoadMonitor = new SystemLoadMonitor();
     private final ImBoolean unlimitedFps = new ImBoolean();
     private final ImInt fpsCapRef = new ImInt();
-
     private String glVendor;
     private String glRenderer;
     private String glVersion;
@@ -40,14 +39,19 @@ public final class DebugPanel {
     private String gpuRendering = "";
     private String gpuBuffers = "";
 
-    public void render(float deltaTime, float currentFps, SimulationViewModel model,
-            SimulationViewActions actions, ImBoolean open) {
+    public void render(
+            float deltaTime,
+            float currentFps,
+            SimulationViewModel model,
+            SimulationViewActions actions,
+            ImBoolean open) {
         cacheOpenGlInfo();
 
         if (ImGui.begin("Debug", open)) {
             ImGui.pushFont(Fonts.medium());
             try {
-                renderPerformance(deltaTime, currentFps, model.application().fpsCap(), actions.application());
+                renderPerformance(
+                        deltaTime, currentFps, model.application().fpsCap(), actions.application());
                 renderSimulationInternals(deltaTime, model.performance().diagnostics());
                 renderRuntime();
                 renderGraphics();
@@ -58,7 +62,10 @@ public final class DebugPanel {
         ImGui.end();
     }
 
-    private void renderPerformance(float deltaTime, float currentFps, int fpsCap,
+    private void renderPerformance(
+            float deltaTime,
+            float currentFps,
+            int fpsCap,
             SimulationViewActions.Application actions) {
         Text.sectionHeading("Performance");
         Metric.row("FPS", "%.0f".formatted(currentFps));
@@ -72,8 +79,14 @@ public final class DebugPanel {
 
         if (!unlimitedFps.get()) {
             fpsCapRef.set(fpsCap);
-            if (IntegerInput.render("FPS cap", "debug-fps-cap", fpsCapRef, 5, 15,
-                    SimulationDefaults.MIN_FPS_CAP, SimulationDefaults.MAX_FPS_CAP,
+            if (IntegerInput.render(
+                    "FPS cap",
+                    "debug-fps-cap",
+                    fpsCapRef,
+                    5,
+                    15,
+                    SimulationDefaults.MIN_FPS_CAP,
+                    SimulationDefaults.MAX_FPS_CAP,
                     Theme.tokens().debugInputWidth())) {
                 actions.setFpsCap(fpsCapRef.get());
             }
@@ -106,27 +119,39 @@ public final class DebugPanel {
         Metric.row("Force integration", gpuIntegration);
         Metric.row("Particles / trails / bloom", gpuRendering);
         Metric.row("Estimated GPU buffers", gpuBuffers);
-        Metric.row("Simulation step", "%.2f ms (%.0f Hz)".formatted(
-                SimulationDefaults.SIMULATION_STEP_SECONDS * 1000.0,
-                1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS));
+        Metric.row(
+                "Simulation step",
+                "%.2f ms (%.0f Hz)"
+                        .formatted(
+                                SimulationDefaults.SIMULATION_STEP_SECONDS * 1000.0,
+                                1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS));
     }
 
     private void updateDiagnosticStrings(SimulationViewDiagnostics diagnostics) {
-        particleDiagnostics = "%,d / %,d".formatted(
-                diagnostics.particleCount(), diagnostics.maximumParticleCount());
-        gridDimensions = "%d × %d × %d".formatted(
-                diagnostics.gridSize(), diagnostics.gridSize(), diagnostics.gridSize());
+        particleDiagnostics =
+                "%,d / %,d"
+                        .formatted(diagnostics.particleCount(), diagnostics.maximumParticleCount());
+        gridDimensions =
+                "%d × %d × %d"
+                        .formatted(
+                                diagnostics.gridSize(),
+                                diagnostics.gridSize(),
+                                diagnostics.gridSize());
         gridCells = "%,d".formatted(diagnostics.gridCellCount());
         gpuSimulation = formatMilliseconds(diagnostics.simulationMilliseconds());
-        gpuStages = "%s / %s / %s".formatted(
-                formatMilliseconds(diagnostics.gridCountMilliseconds()),
-                formatMilliseconds(diagnostics.gridScanMilliseconds()),
-                formatMilliseconds(diagnostics.gridScatterMilliseconds()));
+        gpuStages =
+                "%s / %s / %s"
+                        .formatted(
+                                formatMilliseconds(diagnostics.gridCountMilliseconds()),
+                                formatMilliseconds(diagnostics.gridScanMilliseconds()),
+                                formatMilliseconds(diagnostics.gridScatterMilliseconds()));
         gpuIntegration = formatMilliseconds(diagnostics.integrationMilliseconds());
-        gpuRendering = "%s / %s / %s".formatted(
-                formatMilliseconds(diagnostics.particleRenderMilliseconds()),
-                formatMilliseconds(diagnostics.trailRenderMilliseconds()),
-                formatMilliseconds(diagnostics.bloomMilliseconds()));
+        gpuRendering =
+                "%s / %s / %s"
+                        .formatted(
+                                formatMilliseconds(diagnostics.particleRenderMilliseconds()),
+                                formatMilliseconds(diagnostics.trailRenderMilliseconds()),
+                                formatMilliseconds(diagnostics.bloomMilliseconds()));
         gpuBuffers = formatBytes(diagnostics.allocatedGpuBytes());
     }
 
@@ -136,9 +161,12 @@ public final class DebugPanel {
         Metric.row("App version", AppInfo.version());
         Metric.row("Java version", System.getProperty("java.version", "unknown"));
         Metric.row("JVM", System.getProperty("java.vm.name", "unknown"));
-        Metric.row("OS", "%s %s".formatted(
-                System.getProperty("os.name", "unknown"),
-                System.getProperty("os.version", "unknown")));
+        Metric.row(
+                "OS",
+                "%s %s"
+                        .formatted(
+                                System.getProperty("os.name", "unknown"),
+                                System.getProperty("os.version", "unknown")));
     }
 
     private void renderGraphics() {

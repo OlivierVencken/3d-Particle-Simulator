@@ -1,8 +1,8 @@
 package com.particle.sim;
 
 import com.particle.sim.camera.CameraController;
-import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.AttractionPattern;
+import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.ParticleSystem;
@@ -14,19 +14,15 @@ import com.particle.sim.ui.SimulationViewActions;
 import com.particle.sim.ui.SimulationViewDiagnostics;
 import com.particle.sim.ui.SimulationViewModel;
 import imgui.ImVec4;
-
 import java.util.Objects;
 
 /** Long-lived bridge between runtime implementations and presentation-facing contracts. */
 final class SimulationViewAdapter {
-    private static final Runnable NO_ACTION = () -> {
-    };
-
+    private static final Runnable NO_ACTION = () -> {};
     private final ParticleSystem particles;
     private final CameraController camera;
     private final SimulationView ui;
     private final SettingsController settingsController;
-
     private final SimulationDomain simulation = new SimulationDomain();
     private final ParticleDomain particleDomain = new ParticleDomain();
     private final VisualDomain visuals = new VisualDomain();
@@ -35,13 +31,15 @@ final class SimulationViewAdapter {
     private final ApplicationDomain application = new ApplicationDomain();
     private final Model model = new Model();
     private final Actions actions = new Actions();
-
     private SimulationViewDiagnostics diagnostics = SimulationViewDiagnostics.unavailable();
     private Runnable savePreset = NO_ACTION;
     private Runnable loadPreset = NO_ACTION;
     private Runnable exitApplication = NO_ACTION;
 
-    SimulationViewAdapter(ParticleSystem particles, CameraController camera, SimulationView ui,
+    SimulationViewAdapter(
+            ParticleSystem particles,
+            CameraController camera,
+            SimulationView ui,
             SettingsController settingsController) {
         this.particles = Objects.requireNonNull(particles, "particles");
         this.camera = Objects.requireNonNull(camera, "camera");
@@ -59,20 +57,21 @@ final class SimulationViewAdapter {
 
     void prepareFrame() {
         PerformanceSnapshot snapshot = particles.performanceSnapshot();
-        diagnostics = new SimulationViewDiagnostics(
-                snapshot.particleCount(),
-                snapshot.maximumParticleCount(),
-                particles.gridSize(),
-                snapshot.gridCellCount(),
-                snapshot.gridCountMilliseconds(),
-                snapshot.gridScanMilliseconds(),
-                snapshot.gridScatterMilliseconds(),
-                snapshot.integrationMilliseconds(),
-                snapshot.simulationMilliseconds(),
-                snapshot.particleRenderMilliseconds(),
-                snapshot.trailRenderMilliseconds(),
-                snapshot.bloomMilliseconds(),
-                snapshot.allocatedGpuBytes());
+        diagnostics =
+                new SimulationViewDiagnostics(
+                        snapshot.particleCount(),
+                        snapshot.maximumParticleCount(),
+                        particles.gridSize(),
+                        snapshot.gridCellCount(),
+                        snapshot.gridCountMilliseconds(),
+                        snapshot.gridScanMilliseconds(),
+                        snapshot.gridScatterMilliseconds(),
+                        snapshot.integrationMilliseconds(),
+                        snapshot.simulationMilliseconds(),
+                        snapshot.particleRenderMilliseconds(),
+                        snapshot.trailRenderMilliseconds(),
+                        snapshot.bloomMilliseconds(),
+                        snapshot.allocatedGpuBytes());
     }
 
     void onSavePreset(Runnable action) {
@@ -151,7 +150,8 @@ final class SimulationViewAdapter {
         }
     }
 
-    private final class SimulationDomain implements SimulationViewModel.Simulation, SimulationViewActions.Simulation {
+    private final class SimulationDomain
+            implements SimulationViewModel.Simulation, SimulationViewActions.Simulation {
         @Override
         public void togglePause() {
             ui.togglePause();
@@ -278,7 +278,8 @@ final class SimulationViewAdapter {
         }
     }
 
-    private final class ParticleDomain implements SimulationViewModel.Particles, SimulationViewActions.Particles {
+    private final class ParticleDomain
+            implements SimulationViewModel.Particles, SimulationViewActions.Particles {
         @Override
         public int particleCount() {
             return particles.particleCount();
@@ -431,7 +432,8 @@ final class SimulationViewAdapter {
         }
     }
 
-    private final class VisualDomain implements SimulationViewModel.Visuals, SimulationViewActions.Visuals {
+    private final class VisualDomain
+            implements SimulationViewModel.Visuals, SimulationViewActions.Visuals {
         @Override
         public float pointSize() {
             return particles.pointSize();
@@ -548,7 +550,8 @@ final class SimulationViewAdapter {
         }
     }
 
-    private final class CameraDomain implements SimulationViewModel.Camera, SimulationViewActions.Camera {
+    private final class CameraDomain
+            implements SimulationViewModel.Camera, SimulationViewActions.Camera {
         @Override
         public float sensitivity() {
             return camera.getSensitivity();

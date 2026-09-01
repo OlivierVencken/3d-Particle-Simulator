@@ -1,14 +1,13 @@
 package com.particle.sim.ui.commandbar;
 
 import com.particle.sim.ui.SimulationViewActions;
-import com.particle.sim.ui.components.ModalPopup;
 import com.particle.sim.ui.components.Button;
+import com.particle.sim.ui.components.ModalPopup;
 import com.particle.sim.ui.components.PopupActions;
 import com.particle.sim.ui.theme.ComponentVariant;
-import com.particle.sim.ui.theme.Fonts;
 import com.particle.sim.ui.theme.DesignTokens;
+import com.particle.sim.ui.theme.Fonts;
 import com.particle.sim.ui.theme.Theme;
-
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 
@@ -40,14 +39,22 @@ final class ResetSettingsPopup extends ModalPopup {
     }
 
     private void renderActions(DesignTokens tokens) {
-        if (Button.text("Reset settings", "confirm-reset-settings", ComponentVariant.DESTRUCTIVE,
-                tokens.buttonWidthXxl(), tokens.controlHeight())) {
+        if (Button.text(
+                "Reset settings",
+                "confirm-reset-settings",
+                ComponentVariant.DESTRUCTIVE,
+                tokens.buttonWidthXxl(),
+                tokens.controlHeight())) {
             actions.resetSettings();
             close();
         }
         ImGui.sameLine();
-        if (Button.text("Cancel", "cancel-reset-settings", ComponentVariant.SECONDARY,
-                tokens.buttonWidthMd(), tokens.controlHeight())) {
+        if (Button.text(
+                "Cancel",
+                "cancel-reset-settings",
+                ComponentVariant.SECONDARY,
+                tokens.buttonWidthMd(),
+                tokens.controlHeight())) {
             close();
         }
     }

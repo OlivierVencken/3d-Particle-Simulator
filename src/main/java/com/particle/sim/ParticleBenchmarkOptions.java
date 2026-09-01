@@ -2,7 +2,8 @@ package com.particle.sim;
 
 import java.nio.file.Path;
 
-record ParticleBenchmarkOptions(Integer particleCount, int warmupSteps, int sampleSteps, Path outputPath) {
+record ParticleBenchmarkOptions(
+        Integer particleCount, int warmupSteps, int sampleSteps, Path outputPath) {
     private static final int DEFAULT_WARMUP_STEPS = 10;
     private static final int DEFAULT_SAMPLE_STEPS = 30;
 

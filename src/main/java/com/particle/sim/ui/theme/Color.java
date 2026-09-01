@@ -8,7 +8,8 @@ public record Color(float red, float green, float blue, float alpha) {
         int red = Integer.parseInt(normalized.substring(0, 2), 16);
         int green = Integer.parseInt(normalized.substring(2, 4), 16);
         int blue = Integer.parseInt(normalized.substring(4, 6), 16);
-        int alpha = normalized.length() == 8 ? Integer.parseInt(normalized.substring(6, 8), 16) : 255;
+        int alpha =
+                normalized.length() == 8 ? Integer.parseInt(normalized.substring(6, 8), 16) : 255;
 
         return new Color(red / 255.0f, green / 255.0f, blue / 255.0f, alpha / 255.0f);
     }
@@ -27,8 +28,7 @@ public record Color(float red, float green, float blue, float alpha) {
                 red + (other.red - red) * t,
                 green + (other.green - green) * t,
                 blue + (other.blue - blue) * t,
-                alpha + (other.alpha - alpha) * t
-        );
+                alpha + (other.alpha - alpha) * t);
     }
 
     private static String normalizeHex(String hex) {

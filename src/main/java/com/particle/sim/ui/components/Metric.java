@@ -9,15 +9,19 @@ import imgui.flag.ImGuiWindowFlags;
 
 /** Compact diagnostic card and aligned label/value row. */
 public final class Metric {
-    private Metric() {
-    }
+    private Metric() {}
 
     public static void card(String id, String label, String value, float width) {
         ImGui.pushStyleColor(ImGuiCol.ChildBg, Colors.SURFACE_DEFAULT.withAlpha(0.72f).vec4());
         int flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
         try {
-            boolean visible = ImGui.beginChild("###metric-" + id, width,
-                    Theme.tokens().metricCardHeight(), true, flags);
+            boolean visible =
+                    ImGui.beginChild(
+                            "###metric-" + id,
+                            width,
+                            Theme.tokens().metricCardHeight(),
+                            true,
+                            flags);
             try {
                 if (visible) {
                     ImGui.textDisabled(label);
@@ -40,11 +44,13 @@ public final class Metric {
         ImGui.textDisabled(label);
         float valueWidth = ImGui.calcTextSize(value).x;
         float right = ImGui.getWindowContentRegionMaxX();
-        ImGui.sameLine(Math.max(ImGui.getCursorPosX() + Theme.tokens().spaceMd(), right - valueWidth));
+        ImGui.sameLine(
+                Math.max(ImGui.getCursorPosX() + Theme.tokens().spaceMd(), right - valueWidth));
         ImGui.textUnformatted(value);
     }
 
-    static float secondaryWidth(float availableWidth, float primaryWidth, float spacing, float minimum) {
+    static float secondaryWidth(
+            float availableWidth, float primaryWidth, float spacing, float minimum) {
         return Math.max(minimum, availableWidth - primaryWidth - spacing);
     }
 }

@@ -21,7 +21,8 @@ class AttractionMatrixControlTest {
     @Test
     void colorRulePreservesAttractionNeutralAndRepulsionMeaning() {
         assertEquals(Colors.INTERACTION_ATTRACTION, AttractionMatrixControl.attractionColor(1.0f));
-        assertEquals(Colors.INTERACTION_NEUTRAL_SURFACE, AttractionMatrixControl.attractionColor(0.0f));
+        assertEquals(
+                Colors.INTERACTION_NEUTRAL_SURFACE, AttractionMatrixControl.attractionColor(0.0f));
         assertEquals(Colors.INTERACTION_REPULSION, AttractionMatrixControl.attractionColor(-1.0f));
     }
 
@@ -33,11 +34,17 @@ class AttractionMatrixControlTest {
 
     @Test
     void cellsRemainUsableWhenTheMatrixNeedsScrolling() {
-        assertEquals(32.0f,
-                AttractionMatrixControl.resolvedCellSize(360.0f, 16, 4.0f, 32.0f, 44.0f), EPSILON);
-        assertEquals(44.0f,
-                AttractionMatrixControl.resolvedCellSize(800.0f, 6, 4.0f, 32.0f, 44.0f), EPSILON);
-        assertEquals(0.0f,
-                AttractionMatrixControl.resolvedCellSize(0.0f, 6, 4.0f, 32.0f, 44.0f), EPSILON);
+        assertEquals(
+                32.0f,
+                AttractionMatrixControl.resolvedCellSize(360.0f, 16, 4.0f, 32.0f, 44.0f),
+                EPSILON);
+        assertEquals(
+                44.0f,
+                AttractionMatrixControl.resolvedCellSize(800.0f, 6, 4.0f, 32.0f, 44.0f),
+                EPSILON);
+        assertEquals(
+                0.0f,
+                AttractionMatrixControl.resolvedCellSize(0.0f, 6, 4.0f, 32.0f, 44.0f),
+                EPSILON);
     }
 }

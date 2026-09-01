@@ -1,27 +1,28 @@
 package com.particle.sim.ui.commandbar;
 
 import com.particle.sim.AppInfo;
-import com.particle.sim.ui.components.PopupWindow;
 import com.particle.sim.ui.components.Button;
+import com.particle.sim.ui.components.PopupWindow;
 import com.particle.sim.ui.components.Text;
 import com.particle.sim.ui.theme.ComponentVariant;
-import com.particle.sim.ui.theme.Fonts;
 import com.particle.sim.ui.theme.DesignTokens;
+import com.particle.sim.ui.theme.Fonts;
 import com.particle.sim.ui.theme.Theme;
 import imgui.ImGui;
-
 import java.awt.Desktop;
 import java.net.URI;
 
 final class AboutPopup extends PopupWindow {
     private static final String REPOSITORY_URL =
             "https://github.com/OlivierVencken/3d-Particle-Simulator";
-
     private String linkError;
 
     AboutPopup() {
-        super("About 3D Particle Simulator", "about-popup",
-                DesignTokens.unscaled().popupWidth(), DesignTokens.unscaled().aboutPopupHeight(),
+        super(
+                "About 3D Particle Simulator",
+                "about-popup",
+                DesignTokens.unscaled().popupWidth(),
+                DesignTokens.unscaled().aboutPopupHeight(),
                 "##command-bar");
     }
 
@@ -38,13 +39,21 @@ final class AboutPopup extends PopupWindow {
 
         ImGui.spacing();
         ImGui.textDisabled(REPOSITORY_URL);
-        if (Button.text("Open GitHub", "about-open-github", ComponentVariant.PRIMARY,
-                tokens.buttonWidthXl(), tokens.controlHeight())) {
+        if (Button.text(
+                "Open GitHub",
+                "about-open-github",
+                ComponentVariant.PRIMARY,
+                tokens.buttonWidthXl(),
+                tokens.controlHeight())) {
             openRepository();
         }
         ImGui.sameLine();
-        if (Button.text("Copy link", "about-copy-link", ComponentVariant.SECONDARY,
-                tokens.buttonWidthLg(), tokens.controlHeight())) {
+        if (Button.text(
+                "Copy link",
+                "about-copy-link",
+                ComponentVariant.SECONDARY,
+                tokens.buttonWidthLg(),
+                tokens.controlHeight())) {
             ImGui.setClipboardText(REPOSITORY_URL);
             linkError = null;
         }

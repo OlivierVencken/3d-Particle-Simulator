@@ -1,11 +1,11 @@
 package com.particle.sim.ui.theme;
 
-import imgui.ImGui;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+
+import imgui.ImGui;
+import org.junit.jupiter.api.Test;
 
 class ThemeTest {
     @Test
@@ -32,7 +32,8 @@ class ThemeTest {
         ComponentPalette primary = Theme.palette(ComponentVariant.PRIMARY);
 
         assertSame(primary, Theme.palette(ComponentVariant.PRIMARY));
-        assertNotEquals(primary.background(), Theme.palette(ComponentVariant.DESTRUCTIVE).background());
+        assertNotEquals(
+                primary.background(), Theme.palette(ComponentVariant.DESTRUCTIVE).background());
         assertEquals(Colors.TEXT_MUTED, Theme.palette(ComponentVariant.DISABLED).text());
     }
 }

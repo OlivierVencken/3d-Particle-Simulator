@@ -1,13 +1,5 @@
 package com.particle.sim.ui.components;
 
-import java.nio.ByteBuffer;
-
-import org.lwjgl.BufferUtils;
-import org.lwjgl.nanovg.NSVGImage;
-
-import com.particle.sim.util.ResourceLoader;
-import com.particle.sim.ui.theme.DesignTokens;
-
 import static org.lwjgl.nanovg.NanoSVG.nsvgCreateRasterizer;
 import static org.lwjgl.nanovg.NanoSVG.nsvgDelete;
 import static org.lwjgl.nanovg.NanoSVG.nsvgDeleteRasterizer;
@@ -29,10 +21,15 @@ import static org.lwjgl.opengl.GL43C.glGenTextures;
 import static org.lwjgl.opengl.GL43C.glTexImage2D;
 import static org.lwjgl.opengl.GL43C.glTexParameteri;
 
+import com.particle.sim.ui.theme.DesignTokens;
+import com.particle.sim.util.ResourceLoader;
+import java.nio.ByteBuffer;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.nanovg.NSVGImage;
+
 public final class SvgIconTexture {
     private static final int HIGH_DPI_RASTER_SIZE =
             DesignTokens.atScale(DesignTokens.MAXIMUM_SCALE).iconRasterSize();
-
     private final String resourcePath;
     private final int rasterSize;
     private int textureId;
@@ -69,8 +66,16 @@ public final class SvgIconTexture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, rasterSize, rasterSize, 0,
-                GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+        glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RGBA8,
+                rasterSize,
+                rasterSize,
+                0,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                pixels);
         glBindTexture(GL_TEXTURE_2D, 0);
         return texture;
     }
@@ -92,8 +97,16 @@ public final class SvgIconTexture {
             float scale = Math.min(rasterSize / image.width(), rasterSize / image.height());
             float offsetX = (rasterSize - image.width() * scale) * 0.5f;
             float offsetY = (rasterSize - image.height() * scale) * 0.5f;
-            nsvgRasterize(rasterizer, image, offsetX, offsetY, scale,
-                    pixels, rasterSize, rasterSize, rasterSize * 4);
+            nsvgRasterize(
+                    rasterizer,
+                    image,
+                    offsetX,
+                    offsetY,
+                    scale,
+                    pixels,
+                    rasterSize,
+                    rasterSize,
+                    rasterSize * 4);
         } finally {
             nsvgDeleteRasterizer(rasterizer);
             nsvgDelete(image);

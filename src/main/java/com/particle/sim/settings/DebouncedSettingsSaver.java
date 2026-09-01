@@ -11,8 +11,7 @@ public final class DebouncedSettingsSaver {
             throw new IllegalArgumentException("debounceSeconds must be non-negative.");
         }
         this.debounceSeconds = debounceSeconds;
-        this.save = save == null ? () -> {
-        } : save;
+        this.save = save == null ? () -> {} : save;
     }
 
     public void requestSave(double now) {

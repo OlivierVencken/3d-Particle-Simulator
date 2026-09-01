@@ -7,5 +7,4 @@ public record HotkeyBinding(
         HotkeyAction action,
         HotkeyContext context,
         boolean activeWhileUiOwnsKeyboard,
-        BooleanSupplier enabled
-) {}
+        BooleanSupplier enabled) {}

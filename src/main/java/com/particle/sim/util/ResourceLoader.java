@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-
 import org.lwjgl.BufferUtils;
 
-public class ResourceLoader {
+public final class ResourceLoader {
+    private ResourceLoader() {}
 
     public static ByteBuffer loadBytes(String path) {
         try (InputStream stream = ResourceLoader.class.getResourceAsStream(path)) {

@@ -10,7 +10,6 @@ import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.flag.ImGuiPopupFlags;
 import imgui.type.ImBoolean;
-
 import java.util.Objects;
 
 public final class SimulationView {
@@ -19,7 +18,6 @@ public final class SimulationView {
     private final Sidebar sidebar = new Sidebar();
     private final DebugPanel debugPanel = new DebugPanel();
     private final ImBoolean showDebug = new ImBoolean(false);
-
     private float currentFps;
     private float fpsTimeAccumulator;
     private int fpsFrameAccumulator;
@@ -45,7 +43,8 @@ public final class SimulationView {
         }
 
         if (preparedFrame == null) {
-            throw new IllegalStateException("Simulation UI frame must be prepared before rendering");
+            throw new IllegalStateException(
+                    "Simulation UI frame must be prepared before rendering");
         }
 
         Layout layout = preparedFrame.layout();
@@ -61,29 +60,42 @@ public final class SimulationView {
         return prepareFrame(framebufferWidth, framebufferHeight, 0.0f);
     }
 
-    public PreparedFrame prepareFrame(int framebufferWidth, int framebufferHeight, float deltaTime) {
+    public PreparedFrame prepareFrame(
+            int framebufferWidth, int framebufferHeight, float deltaTime) {
         state.advanceAnimations(deltaTime);
         DesignTokens tokens = Theme.tokens();
         ImGuiIO io = ImGui.getIO();
-        DisplayMetrics displayMetrics = DisplayMetrics.from(
-                io, tokens.scale(), framebufferWidth, framebufferHeight);
-        Layout layout = LayoutCalculator.calculate(
-                displayMetrics.logicalWidth(), displayMetrics.logicalHeight(),
-                state.sidebarReveal(), !hidden, tokens);
+        DisplayMetrics displayMetrics =
+                DisplayMetrics.from(io, tokens.scale(), framebufferWidth, framebufferHeight);
+        Layout layout =
+                LayoutCalculator.calculate(
+                        displayMetrics.logicalWidth(),
+                        displayMetrics.logicalHeight(),
+                        state.sidebarReveal(),
+                        !hidden,
+                        tokens);
         boolean modalOpen = !hidden && (commandBar.hasOpenModal() || sidebar.hasOpenModal());
-        boolean popupOpen = !hidden && (commandBar.hasOpenWindow()
-                || ImGui.isPopupOpen("", ImGuiPopupFlags.AnyPopup));
-        InputOwnership inputOwnership = InputOwnership.resolve(
-                layout, !hidden,
-                io.getMousePosX(), io.getMousePosY(),
-                io.getWantCaptureMouse(), io.getWantCaptureKeyboard(),
-                popupOpen, modalOpen);
-        preparedFrame = new PreparedFrame(
-                displayMetrics,
-                layout,
-                displayMetrics.toFramebuffer(layout.simulation()),
-                !hidden,
-                inputOwnership);
+        boolean popupOpen =
+                !hidden
+                        && (commandBar.hasOpenWindow()
+                                || ImGui.isPopupOpen("", ImGuiPopupFlags.AnyPopup));
+        InputOwnership inputOwnership =
+                InputOwnership.resolve(
+                        layout,
+                        !hidden,
+                        io.getMousePosX(),
+                        io.getMousePosY(),
+                        io.getWantCaptureMouse(),
+                        io.getWantCaptureKeyboard(),
+                        popupOpen,
+                        modalOpen);
+        preparedFrame =
+                new PreparedFrame(
+                        displayMetrics,
+                        layout,
+                        displayMetrics.toFramebuffer(layout.simulation()),
+                        !hidden,
+                        inputOwnership);
         state.setLayoutMode(layout.mode());
         return preparedFrame;
     }
@@ -140,8 +152,10 @@ public final class SimulationView {
             return;
         }
 
-        this.fpsCap = Math.max(SimulationDefaults.MIN_FPS_CAP,
-                Math.min(SimulationDefaults.MAX_FPS_CAP, fpsCap));
+        this.fpsCap =
+                Math.max(
+                        SimulationDefaults.MIN_FPS_CAP,
+                        Math.min(SimulationDefaults.MAX_FPS_CAP, fpsCap));
     }
 
     public void togglePause() {

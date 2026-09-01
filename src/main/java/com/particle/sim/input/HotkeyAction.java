@@ -8,7 +8,6 @@ public enum HotkeyAction {
     TOGGLE_PAUSE("Pause/resume simulation"),
     RESET_PARTICLES("Reset particles"),
     SIMULATION_STEP_FORWARD("Step simulation forward");
-
     private final String displayName;
 
     HotkeyAction(String displayName) {

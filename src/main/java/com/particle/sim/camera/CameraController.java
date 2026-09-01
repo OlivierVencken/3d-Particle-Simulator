@@ -1,15 +1,13 @@
 package com.particle.sim.camera;
 
-import com.particle.sim.math.Math3d;
-import com.particle.sim.settings.SimulationDefaults;
-import com.particle.sim.ui.InputOwnership;
-import imgui.ImGui;
-import imgui.flag.ImGuiConfigFlags;
-
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_DISABLED;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
+import static org.lwjgl.glfw.GLFW.GLFW_FOCUSED;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_HOME;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_HOME;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_CONTROL;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_CONTROL;
@@ -19,24 +17,24 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_DISABLED;
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
-import static org.lwjgl.glfw.GLFW.GLFW_FOCUSED;
 import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
 import static org.lwjgl.glfw.GLFW.glfwGetKey;
 import static org.lwjgl.glfw.GLFW.glfwGetMouseButton;
 import static org.lwjgl.glfw.GLFW.glfwGetWindowAttrib;
 import static org.lwjgl.glfw.GLFW.glfwSetInputMode;
 
+import com.particle.sim.math.Math3d;
+import com.particle.sim.settings.SimulationDefaults;
+import com.particle.sim.ui.InputOwnership;
+import imgui.ImGui;
+import imgui.flag.ImGuiConfigFlags;
+
 public final class CameraController {
     private float posX;
     private float posY;
     private float posZ;
-
     private float yaw;
     private float pitch;
-
     private float sensitivity = SimulationDefaults.CAMERA_SENSITIVITY;
     private float flySpeed = SimulationDefaults.CAMERA_FLY_SPEED;
     private final CameraCaptureState captureState = new CameraCaptureState();
@@ -50,20 +48,23 @@ public final class CameraController {
 
         float cosPitch = (float) Math.cos(pitch);
         float[] forward = {
-                cosPitch * (float) Math.sin(yaw),
-                (float) Math.sin(pitch),
-                cosPitch * (float) Math.cos(yaw)
+            cosPitch * (float) Math.sin(yaw),
+            (float) Math.sin(pitch),
+            cosPitch * (float) Math.cos(yaw)
         };
 
-        float[] right = Math3d.normalize(Math3d.cross(forward[0], forward[1], forward[2], 0.0f, 1.0f, 0.0f));
+        float[] right =
+                Math3d.normalize(
+                        Math3d.cross(forward[0], forward[1], forward[2], 0.0f, 1.0f, 0.0f));
 
         boolean windowFocused = glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE;
-        CameraCaptureState.Transition captureTransition = captureState.update(
-                glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS,
-                glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS,
-                isPressed(window, GLFW_KEY_ESCAPE),
-                windowFocused,
-                ownership);
+        CameraCaptureState.Transition captureTransition =
+                captureState.update(
+                        glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS,
+                        glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS,
+                        isPressed(window, GLFW_KEY_ESCAPE),
+                        windowFocused,
+                        ownership);
         applyCaptureTransition(window, captureTransition);
 
         if (captureState.captured()) {

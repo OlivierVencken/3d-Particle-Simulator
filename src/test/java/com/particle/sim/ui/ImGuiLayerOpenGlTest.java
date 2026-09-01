@@ -1,23 +1,5 @@
 package com.particle.sim.ui;
 
-import com.particle.sim.ui.components.AttractionMatrixControl;
-import com.particle.sim.ui.components.Button;
-import com.particle.sim.ui.components.Checkbox;
-import com.particle.sim.ui.components.Combo;
-import com.particle.sim.ui.components.IntegerInput;
-import com.particle.sim.ui.components.Metric;
-import com.particle.sim.ui.components.Slider;
-import com.particle.sim.ui.components.Text;
-import com.particle.sim.ui.testing.FakeSimulationViewModel;
-import com.particle.sim.ui.testing.RecordingSimulationViewActions;
-import com.particle.sim.ui.theme.ComponentVariant;
-import imgui.ImGui;
-import imgui.type.ImBoolean;
-import imgui.type.ImInt;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-import org.lwjgl.opengl.GL;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,6 +18,24 @@ import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import static org.lwjgl.opengl.GL43C.GL_NO_ERROR;
 import static org.lwjgl.opengl.GL43C.glGetError;
 import static org.lwjgl.system.MemoryUtil.NULL;
+
+import com.particle.sim.ui.components.AttractionMatrixControl;
+import com.particle.sim.ui.components.Button;
+import com.particle.sim.ui.components.Checkbox;
+import com.particle.sim.ui.components.Combo;
+import com.particle.sim.ui.components.IntegerInput;
+import com.particle.sim.ui.components.Metric;
+import com.particle.sim.ui.components.Slider;
+import com.particle.sim.ui.components.Text;
+import com.particle.sim.ui.testing.FakeSimulationViewModel;
+import com.particle.sim.ui.testing.RecordingSimulationViewActions;
+import com.particle.sim.ui.theme.ComponentVariant;
+import imgui.ImGui;
+import imgui.type.ImBoolean;
+import imgui.type.ImInt;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.lwjgl.opengl.GL;
 
 @EnabledIfSystemProperty(named = "gpuTests", matches = "true")
 class ImGuiLayerOpenGlTest {
@@ -62,8 +62,8 @@ class ImGuiLayerOpenGlTest {
             ImGui.textUnformatted("IBM Plex Sans");
             Button.text("Primary", "smoke-primary", ComponentVariant.PRIMARY);
             ImGui.sameLine();
-            Button.text("Disabled", "smoke-disabled", ComponentVariant.DISABLED,
-                    0.0f, 32.0f, false);
+            Button.text(
+                    "Disabled", "smoke-disabled", ComponentVariant.DISABLED, 0.0f, 32.0f, false);
             Slider.render("Float", "smoke-float", new float[] {0.5f}, 0.0f, 1.0f, 2);
             Slider.render("Integer", "smoke-integer", new int[] {4}, 0, 10);
             Checkbox.render("Checkbox", "smoke-checkbox", new ImBoolean(true));

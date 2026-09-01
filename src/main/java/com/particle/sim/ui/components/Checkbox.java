@@ -1,9 +1,8 @@
 package com.particle.sim.ui.components;
 
-import com.particle.sim.ui.theme.Fonts;
 import com.particle.sim.ui.theme.DesignTokens;
+import com.particle.sim.ui.theme.Fonts;
 import com.particle.sim.ui.theme.Theme;
-
 import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.ImVec2;
@@ -11,8 +10,7 @@ import imgui.flag.ImGuiCol;
 import imgui.type.ImBoolean;
 
 public final class Checkbox {
-    private Checkbox() {
-    }
+    private Checkbox() {}
 
     public static boolean render(String label, String id, ImBoolean valueRef) {
         return render(label, id, valueRef, true);
@@ -23,8 +21,10 @@ public final class Checkbox {
         DesignTokens tokens = Theme.tokens();
 
         float textHeight = ImGui.getTextLineHeight();
-        float rowHeight = Math.max(tokens.minimumHitTarget(),
-                Math.max(tokens.checkboxSize(), textHeight) + tokens.spaceXxs() * 2.0f);
+        float rowHeight =
+                Math.max(
+                        tokens.minimumHitTarget(),
+                        Math.max(tokens.checkboxSize(), textHeight) + tokens.spaceXxs() * 2.0f);
         float minimumWidth = tokens.checkboxSize() + tokens.spaceLg() + ImGui.calcTextSize(label).x;
         float rowWidth = Math.max(minimumWidth, ImGui.getContentRegionAvailX());
         ImVec2 origin = ImGui.getCursorScreenPos();
@@ -41,8 +41,13 @@ public final class Checkbox {
         return enabled && changed;
     }
 
-    private static void draw(String label, boolean checked, ImVec2 origin, float rowHeight,
-            DesignTokens tokens, boolean enabled) {
+    private static void draw(
+            String label,
+            boolean checked,
+            ImVec2 origin,
+            float rowHeight,
+            DesignTokens tokens,
+            boolean enabled) {
         boolean hovered = ImGui.isItemHovered();
         boolean active = ImGui.isItemActive();
         boolean focused = ImGui.isItemFocused();
@@ -57,7 +62,9 @@ public final class Checkbox {
         if (!enabled) {
             fillColor = ImGui.getColorU32(ImGuiCol.FrameBg);
         } else if (checked) {
-            fillColor = ImGui.getColorU32(hovered || active ? ImGuiCol.ButtonActive : ImGuiCol.FrameBgActive);
+            fillColor =
+                    ImGui.getColorU32(
+                            hovered || active ? ImGuiCol.ButtonActive : ImGuiCol.FrameBgActive);
         } else if (active) {
             fillColor = ImGui.getColorU32(ImGuiCol.FrameBgActive);
         } else if (hovered) {
@@ -66,34 +73,55 @@ public final class Checkbox {
             fillColor = ImGui.getColorU32(ImGuiCol.FrameBg);
         }
 
-        int borderColor = ImGui.getColorU32(focused ? ImGuiCol.NavHighlight
-                : hovered ? ImGuiCol.SeparatorHovered : ImGuiCol.Border);
+        int borderColor =
+                ImGui.getColorU32(
+                        focused
+                                ? ImGuiCol.NavHighlight
+                                : hovered ? ImGuiCol.SeparatorHovered : ImGuiCol.Border);
         float borderThickness = focused ? tokens.emphasizedBorderWidth() : tokens.borderWidth();
 
         ImDrawList drawList = ImGui.getWindowDrawList();
         drawList.addRectFilled(boxX, boxY, boxMaxX, boxMaxY, fillColor, tokens.radiusMd());
-        drawList.addRect(boxX, boxY, boxMaxX, boxMaxY, borderColor, tokens.radiusMd(), 0, borderThickness);
+        drawList.addRect(
+                boxX, boxY, boxMaxX, boxMaxY, borderColor, tokens.radiusMd(), 0, borderThickness);
 
         if (checked) {
             int checkColor = ImGui.getColorU32(ImGuiCol.CheckMark);
-            drawList.addLine(boxX + size * 0.225f, boxY + size * 0.525f,
-                    boxX + size * 0.43f, boxY + size * 0.725f, checkColor, tokens.checkmarkWidth());
-            drawList.addLine(boxX + size * 0.42f, boxY + size * 0.725f,
-                    boxX + size * 0.8f, boxY + size * 0.275f, checkColor, tokens.checkmarkWidth());
+            drawList.addLine(
+                    boxX + size * 0.225f,
+                    boxY + size * 0.525f,
+                    boxX + size * 0.43f,
+                    boxY + size * 0.725f,
+                    checkColor,
+                    tokens.checkmarkWidth());
+            drawList.addLine(
+                    boxX + size * 0.42f,
+                    boxY + size * 0.725f,
+                    boxX + size * 0.8f,
+                    boxY + size * 0.275f,
+                    checkColor,
+                    tokens.checkmarkWidth());
         }
 
         float labelX = boxMaxX + tokens.spaceLg();
         float labelY = origin.y + (rowHeight - ImGui.getTextLineHeight()) * 0.5f;
-        drawList.addText(labelX, labelY, ImGui.getColorU32(enabled ? ImGuiCol.Text : ImGuiCol.TextDisabled), label);
+        drawList.addText(
+                labelX,
+                labelY,
+                ImGui.getColorU32(enabled ? ImGuiCol.Text : ImGuiCol.TextDisabled),
+                label);
     }
 
-    public static boolean renderToggle(String label, String id, ImBoolean valueRef, boolean enabled) {
+    public static boolean renderToggle(
+            String label, String id, ImBoolean valueRef, boolean enabled) {
         ImGui.pushFont(Fonts.medium());
         DesignTokens tokens = Theme.tokens();
         float height = Math.max(tokens.minimumHitTarget(), tokens.checkboxSize());
         float toggleWidth = tokens.checkboxSize() * 1.8f;
-        float width = Math.max(toggleWidth + tokens.spaceLg() + ImGui.calcTextSize(label).x,
-                ImGui.getContentRegionAvailX());
+        float width =
+                Math.max(
+                        toggleWidth + tokens.spaceLg() + ImGui.calcTextSize(label).x,
+                        ImGui.getContentRegionAvailX());
         ImVec2 origin = ImGui.getCursorScreenPos();
         ImGui.beginDisabled(!enabled);
         boolean changed = ImGui.invisibleButton("###toggle-" + id, width, height);
@@ -107,21 +135,43 @@ public final class Checkbox {
         float trackHeight = tokens.checkboxSize();
         float trackY = origin.y + (height - trackHeight) * 0.5f;
         ImDrawList drawList = ImGui.getWindowDrawList();
-        int fill = ImGui.getColorU32(valueRef.get() ? ImGuiCol.FrameBgActive
-                : hovered ? ImGuiCol.FrameBgHovered : ImGuiCol.FrameBg);
-        drawList.addRectFilled(origin.x, trackY, origin.x + toggleWidth, trackY + trackHeight,
-                fill, trackHeight * 0.5f);
-        drawList.addRect(origin.x, trackY, origin.x + toggleWidth, trackY + trackHeight,
-                ImGui.getColorU32(focused ? ImGuiCol.NavHighlight : ImGuiCol.Border), trackHeight * 0.5f,
-                0, focused ? tokens.emphasizedBorderWidth() : tokens.borderWidth());
+        int fill =
+                ImGui.getColorU32(
+                        valueRef.get()
+                                ? ImGuiCol.FrameBgActive
+                                : hovered ? ImGuiCol.FrameBgHovered : ImGuiCol.FrameBg);
+        drawList.addRectFilled(
+                origin.x,
+                trackY,
+                origin.x + toggleWidth,
+                trackY + trackHeight,
+                fill,
+                trackHeight * 0.5f);
+        drawList.addRect(
+                origin.x,
+                trackY,
+                origin.x + toggleWidth,
+                trackY + trackHeight,
+                ImGui.getColorU32(focused ? ImGuiCol.NavHighlight : ImGuiCol.Border),
+                trackHeight * 0.5f,
+                0,
+                focused ? tokens.emphasizedBorderWidth() : tokens.borderWidth());
         float thumbRadius = trackHeight * 0.36f;
-        float thumbX = valueRef.get() ? origin.x + toggleWidth - trackHeight * 0.5f
-                : origin.x + trackHeight * 0.5f;
-        drawList.addCircleFilled(thumbX, trackY + trackHeight * 0.5f, thumbRadius,
-                ImGui.getColorU32(enabled ? ImGuiCol.CheckMark : ImGuiCol.TextDisabled), 20);
-        drawList.addText(origin.x + toggleWidth + tokens.spaceLg(),
+        float thumbX =
+                valueRef.get()
+                        ? origin.x + toggleWidth - trackHeight * 0.5f
+                        : origin.x + trackHeight * 0.5f;
+        drawList.addCircleFilled(
+                thumbX,
+                trackY + trackHeight * 0.5f,
+                thumbRadius,
+                ImGui.getColorU32(enabled ? ImGuiCol.CheckMark : ImGuiCol.TextDisabled),
+                20);
+        drawList.addText(
+                origin.x + toggleWidth + tokens.spaceLg(),
                 origin.y + (height - ImGui.getTextLineHeight()) * 0.5f,
-                ImGui.getColorU32(enabled ? ImGuiCol.Text : ImGuiCol.TextDisabled), label);
+                ImGui.getColorU32(enabled ? ImGuiCol.Text : ImGuiCol.TextDisabled),
+                label);
         ImGui.popFont();
         return enabled && changed;
     }

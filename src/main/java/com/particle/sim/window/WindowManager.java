@@ -1,22 +1,5 @@
 package com.particle.sim.window;
 
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.stb.STBImage;
-import org.lwjgl.system.MemoryStack;
-
-import com.particle.sim.system.StartupFailureException;
-import com.particle.sim.system.StartupValidationResult;
-import com.particle.sim.system.StartupValidator;
-import com.particle.sim.util.ResourceLoader;
-
-import javax.swing.JOptionPane;
-
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR;
 import static org.lwjgl.glfw.GLFW.GLFW_DECORATED;
@@ -54,23 +37,33 @@ import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import com.particle.sim.system.StartupFailureException;
+import com.particle.sim.system.StartupValidationResult;
+import com.particle.sim.system.StartupValidator;
+import com.particle.sim.util.ResourceLoader;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import javax.swing.JOptionPane;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWImage;
+import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.stb.STBImage;
+import org.lwjgl.system.MemoryStack;
+
 public final class WindowManager {
     private static final int DEFAULT_WINDOWED_WIDTH = 1920;
     private static final int DEFAULT_WINDOWED_HEIGHT = 1080;
     private static final int WINDOW_MARGIN_X = 160;
     private static final int WINDOW_MARGIN_Y = 120;
-
     private final String title;
-
     private long handle;
     private int width = DEFAULT_WINDOWED_WIDTH;
     private int height = DEFAULT_WINDOWED_HEIGHT;
-
     private int windowedX;
     private int windowedY;
     private int windowedWidth = DEFAULT_WINDOWED_WIDTH;
     private int windowedHeight = DEFAULT_WINDOWED_HEIGHT;
-
     private boolean fullscreen = true;
 
     public WindowManager(String title) {
@@ -106,11 +99,12 @@ public final class WindowManager {
 
         handle = glfwCreateWindow(width, height, title, NULL, NULL);
         if (handle == NULL) {
-            StartupValidationResult validation = StartupValidationResult.fail(
-                    "Unsupported graphics driver",
-                    "This application requires OpenGL 4.3+ with compute shader support.\n\n"
-                            + "Could not create a compatible OpenGL context.\n\n"
-                            + "Please update your graphics driver or use a system with a newer GPU.");
+            StartupValidationResult validation =
+                    StartupValidationResult.fail(
+                            "Unsupported graphics driver",
+                            "This application requires OpenGL 4.3+ with compute shader support.\n\n"
+                                    + "Could not create a compatible OpenGL context.\n\n"
+                                    + "Please update your graphics driver or use a system with a newer GPU.");
             abortStartup(validation);
         }
 
@@ -207,7 +201,8 @@ public final class WindowManager {
 
             fullscreen = true;
             glfwSetWindowAttrib(handle, GLFW_DECORATED, GLFW_FALSE);
-            glfwSetWindowMonitor(handle, NULL, monitorX, monitorY, videoMode.width(), videoMode.height(), 0);
+            glfwSetWindowMonitor(
+                    handle, NULL, monitorX, monitorY, videoMode.width(), videoMode.height(), 0);
         }
     }
 
@@ -235,8 +230,11 @@ public final class WindowManager {
     }
 
     private void setDefaultWindowedBounds(GLFWVidMode videoMode) {
-        windowedWidth = Math.min(DEFAULT_WINDOWED_WIDTH, Math.max(1, videoMode.width() - WINDOW_MARGIN_X));
-        windowedHeight = Math.min(DEFAULT_WINDOWED_HEIGHT, Math.max(1, videoMode.height() - WINDOW_MARGIN_Y));
+        windowedWidth =
+                Math.min(DEFAULT_WINDOWED_WIDTH, Math.max(1, videoMode.width() - WINDOW_MARGIN_X));
+        windowedHeight =
+                Math.min(
+                        DEFAULT_WINDOWED_HEIGHT, Math.max(1, videoMode.height() - WINDOW_MARGIN_Y));
         windowedX = (videoMode.width() - windowedWidth) / 2;
         windowedY = (videoMode.height() - windowedHeight) / 2;
     }
@@ -270,7 +268,8 @@ public final class WindowManager {
 
             ByteBuffer pixels = STBImage.stbi_load_from_memory(icon, w, h, channels, 4);
             if (pixels == null) {
-                throw new RuntimeException("Failed to load icon: " + STBImage.stbi_failure_reason());
+                throw new RuntimeException(
+                        "Failed to load icon: " + STBImage.stbi_failure_reason());
             }
 
             GLFWImage image = GLFWImage.malloc(stack);
@@ -294,10 +293,7 @@ public final class WindowManager {
         System.err.println(validation.title + ": " + validation.message);
         try {
             JOptionPane.showMessageDialog(
-                    null,
-                    validation.message,
-                    validation.title,
-                    JOptionPane.ERROR_MESSAGE);
+                    null, validation.message, validation.title, JOptionPane.ERROR_MESSAGE);
         } catch (RuntimeException | Error ignored) {
         }
     }

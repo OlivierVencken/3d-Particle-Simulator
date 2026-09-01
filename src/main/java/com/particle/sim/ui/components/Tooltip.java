@@ -6,15 +6,14 @@ import imgui.flag.ImGuiHoveredFlags;
 
 /** Delayed, wrapped tooltips that also appear for keyboard-focused items. */
 public final class Tooltip {
-    private Tooltip() {
-    }
+    private Tooltip() {}
 
     public static void forLastItem(String text) {
         if (!hasContent(text)) {
             return;
         }
-        boolean hoveredLongEnough = ImGui.isItemHovered(
-                ImGuiHoveredFlags.ForTooltip | ImGuiHoveredFlags.DelayNormal);
+        boolean hoveredLongEnough =
+                ImGui.isItemHovered(ImGuiHoveredFlags.ForTooltip | ImGuiHoveredFlags.DelayNormal);
         if (!hoveredLongEnough && !ImGui.isItemFocused()) {
             return;
         }

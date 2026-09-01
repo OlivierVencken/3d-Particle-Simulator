@@ -18,7 +18,9 @@ class SliderTest {
 
     @Test
     void numericEntryPolicyIsExplicit() {
-        assertEquals(ImGuiSliderFlags.NoInput, Slider.NumericEntryPolicy.KEYBOARD_ADJUSTMENT_ONLY.flags());
+        assertEquals(
+                ImGuiSliderFlags.NoInput,
+                Slider.NumericEntryPolicy.KEYBOARD_ADJUSTMENT_ONLY.flags());
         assertEquals(ImGuiSliderFlags.None, Slider.NumericEntryPolicy.DIRECT_ENTRY.flags());
     }
 }

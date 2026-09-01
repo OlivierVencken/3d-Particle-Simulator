@@ -6,7 +6,6 @@ public record HotkeyRoutingContext(
         boolean uiOwnsKeyboard,
         boolean modalOpen,
         boolean simulationCaptureActive) {
-
     boolean permits(HotkeyBinding binding) {
         if (binding.context() == HotkeyContext.SIMULATION) {
             return (simulationInputAllowed || simulationCaptureActive) && !modalOpen;

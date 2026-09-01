@@ -1,8 +1,5 @@
 package com.particle.sim.particles;
 
-import java.nio.FloatBuffer;
-import java.util.Random;
-
 import static org.lwjgl.opengl.GL43C.GL_COPY_READ_BUFFER;
 import static org.lwjgl.opengl.GL43C.GL_COPY_WRITE_BUFFER;
 import static org.lwjgl.opengl.GL43C.GL_DYNAMIC_DRAW;
@@ -16,6 +13,9 @@ import static org.lwjgl.opengl.GL43C.glGenBuffers;
 import static org.lwjgl.opengl.GL43C.glGetBufferSubData;
 import static org.lwjgl.system.MemoryUtil.memAllocFloat;
 import static org.lwjgl.system.MemoryUtil.memFree;
+
+import java.nio.FloatBuffer;
+import java.util.Random;
 
 final class ParticleBuffers {
     private int positionSsbo;
@@ -57,17 +57,29 @@ final class ParticleBuffers {
         writeFloatBuffer(velocitySsbo, velocities);
     }
 
-    void resize(int oldParticleCount, int requestedParticleCount, boolean preserveExisting,
-            ParticleSimulationConfig config, Random random) {
-        int copiedParticleCount = preserveExisting ? Math.min(oldParticleCount, requestedParticleCount) : 0;
+    void resize(
+            int oldParticleCount,
+            int requestedParticleCount,
+            boolean preserveExisting,
+            ParticleSimulationConfig config,
+            Random random) {
+        int copiedParticleCount =
+                preserveExisting ? Math.min(oldParticleCount, requestedParticleCount) : 0;
         int appendedParticleCount = requestedParticleCount - copiedParticleCount;
 
         if (requestedParticleCount <= particleCapacity) {
             if (!preserveExisting && requestedParticleCount > 0) {
-                uploadRandomParticles(positionSsbo, velocitySsbo, 0, requestedParticleCount, config, random);
+                uploadRandomParticles(
+                        positionSsbo, velocitySsbo, 0, requestedParticleCount, config, random);
             } else if (appendedParticleCount > 0) {
                 long byteOffset = (long) copiedParticleCount * 4L * Float.BYTES;
-                uploadRandomParticles(positionSsbo, velocitySsbo, byteOffset, appendedParticleCount, config, random);
+                uploadRandomParticles(
+                        positionSsbo,
+                        velocitySsbo,
+                        byteOffset,
+                        appendedParticleCount,
+                        config,
+                        random);
             }
             return;
         }
@@ -97,7 +109,13 @@ final class ParticleBuffers {
 
         if (appendedParticleCount > 0) {
             long byteOffset = (long) copiedParticleCount * 4L * Float.BYTES;
-            uploadRandomParticles(newPositionSsbo, newVelocitySsbo, byteOffset, appendedParticleCount, config, random);
+            uploadRandomParticles(
+                    newPositionSsbo,
+                    newVelocitySsbo,
+                    byteOffset,
+                    appendedParticleCount,
+                    config,
+                    random);
         }
 
         glDeleteBuffers(positionSsbo);
@@ -123,15 +141,26 @@ final class ParticleBuffers {
         nextVelocitySsbo = oldVelocitySsbo;
     }
 
-    private void uploadRandomParticles(int targetPositionSsbo, int targetVelocitySsbo, long byteOffset, int count,
-            ParticleSimulationConfig config, Random random) {
+    private void uploadRandomParticles(
+            int targetPositionSsbo,
+            int targetVelocitySsbo,
+            long byteOffset,
+            int count,
+            ParticleSimulationConfig config,
+            Random random) {
         FloatBuffer positions = null;
         FloatBuffer velocities = null;
         try {
             positions = memAllocFloat(Math.multiplyExact(count, 4));
             velocities = memAllocFloat(Math.multiplyExact(count, 4));
-            ParticleSpawner.spawnParticles(positions, velocities, count, config.bounds(), config.groupCount(),
-                    config.spawnMode(), random);
+            ParticleSpawner.spawnParticles(
+                    positions,
+                    velocities,
+                    count,
+                    config.bounds(),
+                    config.groupCount(),
+                    config.spawnMode(),
+                    random);
 
             positions.flip();
             velocities.flip();

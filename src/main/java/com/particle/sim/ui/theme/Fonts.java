@@ -9,8 +9,7 @@ public final class Fonts {
     private static ImFont section;
     private static ImFont title;
 
-    private Fonts() {
-    }
+    private Fonts() {}
 
     public static void setBody(ImFont font) {
         body = font;

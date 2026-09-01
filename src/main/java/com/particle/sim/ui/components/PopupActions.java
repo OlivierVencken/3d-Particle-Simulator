@@ -4,8 +4,7 @@ import imgui.ImGui;
 
 /** Consistent separation and spacing for popup confirmation actions. */
 public final class PopupActions {
-    private PopupActions() {
-    }
+    private PopupActions() {}
 
     public static void row(Runnable actions) {
         Text.divider();

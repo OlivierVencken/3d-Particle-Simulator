@@ -1,11 +1,6 @@
 package com.particle.sim.ui;
 
-public record Layout(
-        Mode mode,
-        Panel commandBar,
-        Panel sidebar,
-        Panel simulation) {
-
+public record Layout(Mode mode, Panel commandBar, Panel sidebar, Panel simulation) {
     public enum Mode {
         WIDE,
         MEDIUM,
@@ -31,9 +26,7 @@ public record Layout(
         }
 
         public boolean contains(float pointX, float pointY) {
-            return visible()
-                    && pointX >= x && pointX < right()
-                    && pointY >= y && pointY < bottom();
+            return visible() && pointX >= x && pointX < right() && pointY >= y && pointY < bottom();
         }
     }
 }

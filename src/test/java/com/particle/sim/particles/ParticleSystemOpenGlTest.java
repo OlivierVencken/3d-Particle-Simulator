@@ -1,16 +1,9 @@
 package com.particle.sim.particles;
 
-import com.particle.sim.settings.SimulationDefaults;
-import com.particle.sim.ui.FramebufferViewport;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-import org.lwjgl.opengl.GL;
-
-import java.nio.ByteBuffer;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.lwjgl.BufferUtils.createByteBuffer;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
@@ -35,8 +28,14 @@ import static org.lwjgl.opengl.GL43C.glFinish;
 import static org.lwjgl.opengl.GL43C.glGetError;
 import static org.lwjgl.opengl.GL43C.glReadPixels;
 import static org.lwjgl.opengl.GL43C.glViewport;
-import static org.lwjgl.BufferUtils.createByteBuffer;
 import static org.lwjgl.system.MemoryUtil.NULL;
+
+import com.particle.sim.settings.SimulationDefaults;
+import com.particle.sim.ui.FramebufferViewport;
+import java.nio.ByteBuffer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.lwjgl.opengl.GL;
 
 @EnabledIfSystemProperty(named = "gpuTests", matches = "true")
 class ParticleSystemOpenGlTest {
@@ -56,7 +55,7 @@ class ParticleSystemOpenGlTest {
             GL.createCapabilities();
 
             system = new ParticleSystem();
-            system.setParticleCount(1_024);
+            system.particleCount(1_024);
             system.bounds(2.0f);
             system.interactionRange(0.4f);
             system.spawnMode(SpawnMode.POINT);
@@ -67,12 +66,7 @@ class ParticleSystemOpenGlTest {
             for (int i = 0; i < 6; i++) {
                 system.step();
             }
-            float[] identity = {
-                    1, 0, 0, 0,
-                    0, 1, 0, 0,
-                    0, 0, 1, 0,
-                    0, 0, 0, 1
-            };
+            float[] identity = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
             glDisable(GL_SCISSOR_TEST);
             glViewport(0, 0, 96, 80);
             glClearColor(0.75f, 0.125f, 0.5f, 1.0f);
@@ -81,7 +75,7 @@ class ParticleSystemOpenGlTest {
             glFinish();
 
             assertEquals(GL_NO_ERROR, glGetError());
-            assertPixelClose(new int[] { 191, 32, 128, 255 }, readPixel(2, 2), 2);
+            assertPixelClose(new int[] {191, 32, 128, 255}, readPixel(2, 2), 2);
 
             system.render(new FramebufferViewport(8, 8, 32, 24), identity);
             system.render(new FramebufferViewport(0, 0, 96, 80), identity);
@@ -95,20 +89,23 @@ class ParticleSystemOpenGlTest {
             boolean[] particleSeen = new boolean[system.particleCount()];
             for (int particleId : system.readGridParticleIds()) {
                 assertTrue(particleId >= 0 && particleId < particleSeen.length);
-                assertTrue(!particleSeen[particleId], "Particle occurred more than once in compact grid");
+                assertTrue(
+                        !particleSeen[particleId],
+                        "Particle occurred more than once in compact grid");
                 particleSeen[particleId] = true;
             }
 
             system.dispose();
             system = accuracySystem();
-            for (boolean toroidal : new boolean[] { false, true }) {
+            for (boolean toroidal : new boolean[] {false, true}) {
                 system.toroidalWrap(toroidal);
                 for (DistanceMetric metric : DistanceMetric.values()) {
                     system.distanceMetric(metric);
                     system.reset();
                     float[] initialPositions = system.readPositions();
                     float[] initialVelocities = system.readVelocities();
-                    ReferenceState expected = referenceStep(system, initialPositions, initialVelocities);
+                    ReferenceState expected =
+                            referenceStep(system, initialPositions, initialVelocities);
 
                     system.step();
                     glFinish();
@@ -119,10 +116,7 @@ class ParticleSystemOpenGlTest {
 
             system.dispose();
             system = seamInteractionSystem();
-            float[] seamPositions = {
-                    3.59f, 0.0f, 0.0f, 0.0f,
-                    -3.99f, 0.0f, 0.0f, 0.0f
-            };
+            float[] seamPositions = {3.59f, 0.0f, 0.0f, 0.0f, -3.99f, 0.0f, 0.0f, 0.0f};
             float[] seamVelocities = new float[seamPositions.length];
             system.replaceState(seamPositions, seamVelocities);
             ReferenceState seamExpected = referenceStep(system, seamPositions, seamVelocities);
@@ -130,9 +124,11 @@ class ParticleSystemOpenGlTest {
             system.step();
             glFinish();
             float[] actualSeamVelocities = system.readVelocities();
-            assertTrue(actualSeamVelocities[0] > 0.0001f,
+            assertTrue(
+                    actualSeamVelocities[0] > 0.0001f,
                     "Particle near the positive seam did not interact across the toroidal boundary");
-            assertTrue(actualSeamVelocities[4] < -0.0001f,
+            assertTrue(
+                    actualSeamVelocities[4] < -0.0001f,
                     "Particle near the negative seam did not interact across the toroidal boundary");
             assertStateClose(seamExpected.positions(), system.readPositions(), 0.00001f);
             assertStateClose(seamExpected.velocities(), actualSeamVelocities, 0.00001f);
@@ -152,24 +148,27 @@ class ParticleSystemOpenGlTest {
         ByteBuffer pixel = createByteBuffer(4);
         glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
         return new int[] {
-                Byte.toUnsignedInt(pixel.get(0)),
-                Byte.toUnsignedInt(pixel.get(1)),
-                Byte.toUnsignedInt(pixel.get(2)),
-                Byte.toUnsignedInt(pixel.get(3))
+            Byte.toUnsignedInt(pixel.get(0)),
+            Byte.toUnsignedInt(pixel.get(1)),
+            Byte.toUnsignedInt(pixel.get(2)),
+            Byte.toUnsignedInt(pixel.get(3))
         };
     }
 
     private static void assertPixelClose(int[] expected, int[] actual, int tolerance) {
         assertEquals(expected.length, actual.length);
         for (int channel = 0; channel < expected.length; channel++) {
-            assertEquals(expected[channel], actual[channel], tolerance,
+            assertEquals(
+                    expected[channel],
+                    actual[channel],
+                    tolerance,
                     "Pixel differs at channel " + channel);
         }
     }
 
     private static ParticleSystem accuracySystem() {
         ParticleSystem system = new ParticleSystem();
-        system.setParticleCount(96);
+        system.particleCount(96);
         system.bounds(2.0f);
         system.interactionRange(3.0f);
         system.groupCount(3);
@@ -186,7 +185,7 @@ class ParticleSystemOpenGlTest {
 
     private static ParticleSystem seamInteractionSystem() {
         ParticleSystem system = new ParticleSystem();
-        system.setParticleCount(2);
+        system.particleCount(2);
         system.bounds(4.0f);
         system.interactionRange(0.95f);
         system.groupCount(1);
@@ -198,7 +197,8 @@ class ParticleSystemOpenGlTest {
         return system;
     }
 
-    private static ReferenceState referenceStep(ParticleSystem system, float[] positions, float[] velocities) {
+    private static ReferenceState referenceStep(
+            ParticleSystem system, float[] positions, float[] velocities) {
         float[] nextPositions = positions.clone();
         float[] nextVelocities = velocities.clone();
         float deltaTime = (float) SimulationDefaults.SIMULATION_STEP_SECONDS;
@@ -227,38 +227,54 @@ class ParticleSystemOpenGlTest {
                     directionZ -= worldSize * Math.round(directionZ / worldSize);
                 }
 
-                float squaredDistance = directionX * directionX + directionY * directionY + directionZ * directionZ;
+                float squaredDistance =
+                        directionX * directionX + directionY * directionY + directionZ * directionZ;
                 if (squaredDistance <= 0.00000001f) {
                     continue;
                 }
                 float euclideanDistance = (float) Math.sqrt(squaredDistance);
-                float metricDistance = switch (system.distanceMetric()) {
-                    case MANHATTAN -> Math.abs(directionX) + Math.abs(directionY) + Math.abs(directionZ);
-                    case CHEBYSHEV -> Math.max(Math.max(Math.abs(directionX), Math.abs(directionY)),
-                            Math.abs(directionZ));
-                    case EUCLIDEAN -> euclideanDistance;
-                };
+                float metricDistance =
+                        switch (system.distanceMetric()) {
+                            case MANHATTAN ->
+                                    Math.abs(directionX)
+                                            + Math.abs(directionY)
+                                            + Math.abs(directionZ);
+                            case CHEBYSHEV ->
+                                    Math.max(
+                                            Math.max(Math.abs(directionX), Math.abs(directionY)),
+                                            Math.abs(directionZ));
+                            case EUCLIDEAN -> euclideanDistance;
+                        };
                 float normalizedDistance = metricDistance / interactionRange;
                 if (normalizedDistance >= 1.0f) {
                     continue;
                 }
 
                 int groupJ = (int) positions[otherBase + 3];
-                float magnitude = normalizedDistance < repulsionRadius
-                        ? normalizedDistance / repulsionRadius - 1.0f
-                        : system.attraction(groupI, groupJ)
-                                * (1.0f - Math.abs(2.0f * normalizedDistance - 1.0f - repulsionRadius)
-                                        / (1.0f - repulsionRadius));
+                float magnitude =
+                        normalizedDistance < repulsionRadius
+                                ? normalizedDistance / repulsionRadius - 1.0f
+                                : system.attraction(groupI, groupJ)
+                                        * (1.0f
+                                                - Math.abs(
+                                                                2.0f * normalizedDistance
+                                                                        - 1.0f
+                                                                        - repulsionRadius)
+                                                        / (1.0f - repulsionRadius));
                 float scale = magnitude * system.forceFactor() / euclideanDistance;
                 forceX += directionX * scale;
                 forceY += directionY * scale;
                 forceZ += directionZ * scale;
             }
 
-            float velocityX = (velocities[base] + forceX * deltaTime * 0.1f) * system.velocityDamping();
-            float velocityY = (velocities[base + 1] + forceY * deltaTime * 0.1f) * system.velocityDamping();
-            float velocityZ = (velocities[base + 2] + forceZ * deltaTime * 0.1f) * system.velocityDamping();
-            float squaredVelocity = velocityX * velocityX + velocityY * velocityY + velocityZ * velocityZ;
+            float velocityX =
+                    (velocities[base] + forceX * deltaTime * 0.1f) * system.velocityDamping();
+            float velocityY =
+                    (velocities[base + 1] + forceY * deltaTime * 0.1f) * system.velocityDamping();
+            float velocityZ =
+                    (velocities[base + 2] + forceZ * deltaTime * 0.1f) * system.velocityDamping();
+            float squaredVelocity =
+                    velocityX * velocityX + velocityY * velocityY + velocityZ * velocityZ;
             if (squaredVelocity > system.maxVelocity() * system.maxVelocity()) {
                 float scale = system.maxVelocity() / (float) Math.sqrt(squaredVelocity);
                 velocityX *= scale;
@@ -275,8 +291,8 @@ class ParticleSystemOpenGlTest {
                 positionY = wrap(positionY, system.bounds(), worldSize);
                 positionZ = wrap(positionZ, system.bounds(), worldSize);
             } else {
-                float[] bounded = { positionX, positionY, positionZ };
-                float[] velocity = { velocityX, velocityY, velocityZ };
+                float[] bounded = {positionX, positionY, positionZ};
+                float[] velocity = {velocityX, velocityY, velocityZ};
                 for (int axis = 0; axis < 3; axis++) {
                     if (bounded[axis] > system.bounds()) {
                         bounded[axis] = system.bounds();
@@ -317,6 +333,5 @@ class ParticleSystemOpenGlTest {
         }
     }
 
-    private record ReferenceState(float[] positions, float[] velocities) {
-    }
+    private record ReferenceState(float[] positions, float[] velocities) {}
 }

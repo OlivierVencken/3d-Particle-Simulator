@@ -1,11 +1,11 @@
 package com.particle.sim.particles;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 class AttractionMatrixTest {
     private static final float EPSILON = 0.0001f;
@@ -24,7 +24,7 @@ class AttractionMatrixTest {
     @Test
     void zeroClearsOnlyActiveGroupCells() {
         AttractionMatrix matrix = new AttractionMatrix(2, 4);
-        float[] flat = matrix.getFlatArray();
+        float[] flat = matrix.values();
         flat[15] = 0.75f;
 
         matrix.zero();
@@ -69,7 +69,7 @@ class AttractionMatrixTest {
         AttractionMatrix matrix = new AttractionMatrix(2, 16);
         matrix.zero();
 
-        matrix.setActiveValues(new float[] { -2.0f, -0.25f, 0.5f, 2.0f });
+        matrix.activeValues(new float[] {-2.0f, -0.25f, 0.5f, 2.0f});
 
         assertEquals(-1.0f, matrix.attraction(0, 0), EPSILON);
         assertEquals(-0.25f, matrix.attraction(0, 1), EPSILON);
@@ -83,7 +83,7 @@ class AttractionMatrixTest {
         matrix.zero();
         matrix.attraction(1, 1, 0.4f);
 
-        matrix.setActiveValues(new float[] { 0.2f });
+        matrix.activeValues(new float[] {0.2f});
 
         assertEquals(0.2f, matrix.attraction(0, 0), EPSILON);
         assertEquals(0.0f, matrix.attraction(0, 1), EPSILON);
@@ -102,7 +102,8 @@ class AttractionMatrixTest {
                 float value = matrix.attraction(row, column);
                 float min = row == column ? -0.35f : -0.6f;
                 float max = row == column ? 1.05f : 0.8f;
-                assertTrue(value >= min && value < max,
+                assertTrue(
+                        value >= min && value < max,
                         "cell " + row + "," + column + " was outside randomized range: " + value);
             }
         }
@@ -112,8 +113,8 @@ class AttractionMatrixTest {
     void flatArrayExposesBackingStorageForGpuUpload() {
         AttractionMatrix matrix = new AttractionMatrix(6, 16);
 
-        assertSame(matrix.getFlatArray(), matrix.getFlatArray());
-        assertEquals(16 * 16, matrix.getFlatArray().length);
+        assertSame(matrix.values(), matrix.values());
+        assertEquals(16 * 16, matrix.values().length);
     }
 
     @Test
@@ -154,7 +155,8 @@ class AttractionMatrixTest {
         matrix.generate(AttractionPattern.SYMMETRIC, 0.2f);
         for (int row = 0; row < 5; row++) {
             for (int column = 0; column < 5; column++) {
-                assertEquals(matrix.attraction(row, column), matrix.attraction(column, row), EPSILON);
+                assertEquals(
+                        matrix.attraction(row, column), matrix.attraction(column, row), EPSILON);
             }
         }
 
@@ -162,7 +164,8 @@ class AttractionMatrixTest {
         for (int row = 0; row < 5; row++) {
             for (int column = 0; column < 5; column++) {
                 assertTrue(matrix.attraction(row, column) > 0.0f);
-                assertEquals(matrix.attraction(row, column), matrix.attraction(column, row), EPSILON);
+                assertEquals(
+                        matrix.attraction(row, column), matrix.attraction(column, row), EPSILON);
             }
         }
     }

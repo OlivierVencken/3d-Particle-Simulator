@@ -2,7 +2,6 @@ package com.particle.sim;
 
 final class FixedSimulationClock {
     private static final double MAX_ACCUMULATED_SECONDS = 0.25;
-
     private final double stepSeconds;
     private double accumulatedSeconds;
     private double elapsedSeconds;

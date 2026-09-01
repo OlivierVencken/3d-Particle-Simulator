@@ -1,11 +1,11 @@
 package com.particle.sim.system;
 
+import com.sun.management.OperatingSystemMXBean;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
-import com.sun.management.OperatingSystemMXBean;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
@@ -16,16 +16,12 @@ public final class SystemLoadMonitor {
     private static final long UNKNOWN_MEMORY = -1L;
     private static final long SAMPLE_INTERVAL_NANOS = Duration.ofSeconds(1).toNanos();
     private static final long WINDOWS_SAMPLE_TIMEOUT_SECONDS = 3;
-
     private final OperatingSystemMXBean operatingSystem;
-    private final boolean windows = System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("win");
-
+    private final boolean windows =
+            System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("win");
     private long lastSampleNanos;
-    private SystemLoadSnapshot snapshot = new SystemLoadSnapshot(
-            UNKNOWN_LOAD,
-            UNKNOWN_MEMORY,
-            UNKNOWN_MEMORY,
-            UNKNOWN_LOAD);
+    private SystemLoadSnapshot snapshot =
+            new SystemLoadSnapshot(UNKNOWN_LOAD, UNKNOWN_MEMORY, UNKNOWN_MEMORY, UNKNOWN_LOAD);
     private CompletableFuture<WindowsPerformanceSample> windowsPerformanceFuture;
 
     public SystemLoadMonitor() {
@@ -41,11 +37,14 @@ public final class SystemLoadMonitor {
         lastSampleNanos = now;
         WindowsPerformanceSample windowsPerformance = latestWindowsPerformance();
         MemorySample memory = memorySample();
-        snapshot = new SystemLoadSnapshot(
-                windowsPerformance.cpuLoad() >= 0.0 ? windowsPerformance.cpuLoad() : systemCpuLoad(),
-                memory.usedBytes(),
-                memory.totalBytes(),
-                windowsPerformance.gpuLoad());
+        snapshot =
+                new SystemLoadSnapshot(
+                        windowsPerformance.cpuLoad() >= 0.0
+                                ? windowsPerformance.cpuLoad()
+                                : systemCpuLoad(),
+                        memory.usedBytes(),
+                        memory.totalBytes(),
+                        windowsPerformance.gpuLoad());
         return snapshot;
     }
 
@@ -70,7 +69,8 @@ public final class SystemLoadMonitor {
 
         if (windowsPerformanceFuture != null && windowsPerformanceFuture.isDone()) {
             try {
-                return windowsPerformanceFuture.getNow(new WindowsPerformanceSample(UNKNOWN_LOAD, UNKNOWN_LOAD));
+                return windowsPerformanceFuture.getNow(
+                        new WindowsPerformanceSample(UNKNOWN_LOAD, UNKNOWN_LOAD));
             } finally {
                 windowsPerformanceFuture = null;
             }
@@ -86,37 +86,42 @@ public final class SystemLoadMonitor {
     private WindowsPerformanceSample queryWindowsPerformance() {
         Process process = null;
         try {
-            process = new ProcessBuilder(
-                    "powershell",
-                    "-NoProfile",
-                    "-Command",
-                    "$cpu = Get-CimInstance Win32_PerfFormattedData_PerfOS_Processor "
-                            + "| Where-Object { $_.Name -eq '_Total' } "
-                            + "| Select-Object -ExpandProperty PercentProcessorTime; "
-                            + "$gpu = (Get-Counter '\\GPU Engine(*)\\Utilization Percentage').CounterSamples "
-                            + "| Measure-Object -Property CookedValue -Maximum "
-                            + "| Select-Object -ExpandProperty Maximum; "
-                            + "Write-Output ('CPU=' + $cpu); "
-                            + "Write-Output ('GPU=' + $gpu)")
-                    .redirectErrorStream(true)
-                    .start();
+            process =
+                    new ProcessBuilder(
+                                    "powershell",
+                                    "-NoProfile",
+                                    "-Command",
+                                    "$cpu = Get-CimInstance Win32_PerfFormattedData_PerfOS_Processor "
+                                            + "| Where-Object { $_.Name -eq '_Total' } "
+                                            + "| Select-Object -ExpandProperty PercentProcessorTime; "
+                                            + "$gpu = (Get-Counter '\\GPU Engine(*)\\Utilization Percentage').CounterSamples "
+                                            + "| Measure-Object -Property CookedValue -Maximum "
+                                            + "| Select-Object -ExpandProperty Maximum; "
+                                            + "Write-Output ('CPU=' + $cpu); "
+                                            + "Write-Output ('GPU=' + $gpu)")
+                            .redirectErrorStream(true)
+                            .start();
 
             if (!process.waitFor(WINDOWS_SAMPLE_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
                 process.destroyForcibly();
                 return new WindowsPerformanceSample(UNKNOWN_LOAD, UNKNOWN_LOAD);
             }
 
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+            try (BufferedReader reader =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    process.getInputStream(), StandardCharsets.UTF_8))) {
                 double cpuLoad = UNKNOWN_LOAD;
                 double gpuLoad = UNKNOWN_LOAD;
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String normalizedLine = line.trim().replace(',', '.');
                     if (normalizedLine.startsWith("CPU=")) {
-                        cpuLoad = normalizePercent(parseDoubleOrUnknown(normalizedLine.substring(4)));
+                        cpuLoad =
+                                normalizePercent(parseDoubleOrUnknown(normalizedLine.substring(4)));
                     } else if (normalizedLine.startsWith("GPU=")) {
-                        gpuLoad = normalizePercent(parseDoubleOrUnknown(normalizedLine.substring(4)));
+                        gpuLoad =
+                                normalizePercent(parseDoubleOrUnknown(normalizedLine.substring(4)));
                     }
                 }
 
@@ -158,9 +163,7 @@ public final class SystemLoadMonitor {
         return Math.max(0.0, Math.min(1.0, value));
     }
 
-    private record MemorySample(long usedBytes, long totalBytes) {
-    }
+    private record MemorySample(long usedBytes, long totalBytes) {}
 
-    private record WindowsPerformanceSample(double cpuLoad, double gpuLoad) {
-    }
+    private record WindowsPerformanceSample(double cpuLoad, double gpuLoad) {}
 }

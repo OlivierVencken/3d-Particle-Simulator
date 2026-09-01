@@ -1,5 +1,10 @@
 package com.particle.sim;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.settings.SettingsController;
@@ -7,15 +12,9 @@ import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.SimulationView;
 import com.particle.sim.ui.SimulationViewActions;
 import com.particle.sim.ui.SimulationViewDiagnostics;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SimulationViewAdapterTest {
     private ParticleSystem particles;
@@ -51,7 +50,9 @@ class SimulationViewAdapterTest {
         actions.simulation().setForceFactor(2.5f);
 
         assertEquals(2.5f, particles.forceFactor(), 0.0001f);
-        assertEquals(3, settings.saveRequests,
+        assertEquals(
+                3,
+                settings.saveRequests,
                 "Each changed slider frame refreshes the SettingsController debounce deadline");
     }
 
@@ -132,7 +133,8 @@ class SimulationViewAdapterTest {
     private static final class RecordingSettingsController extends SettingsController {
         private int saveRequests;
 
-        private RecordingSettingsController(ParticleSystem particles, CameraController camera, SimulationView ui) {
+        private RecordingSettingsController(
+                ParticleSystem particles, CameraController camera, SimulationView ui) {
             super(particles, camera, ui);
         }
 

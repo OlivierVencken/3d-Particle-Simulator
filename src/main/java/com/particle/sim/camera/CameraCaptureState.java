@@ -14,8 +14,12 @@ final class CameraCaptureState {
     private boolean previousLeftDown;
     private boolean pointerPressArmed = true;
 
-    Transition update(boolean leftDown, boolean rightDown, boolean escapeDown,
-            boolean windowFocused, InputOwnership ownership) {
+    Transition update(
+            boolean leftDown,
+            boolean rightDown,
+            boolean escapeDown,
+            boolean windowFocused,
+            InputOwnership ownership) {
         boolean leftPressed = leftDown && !previousLeftDown;
         Transition transition = Transition.NONE;
 
@@ -28,7 +32,9 @@ final class CameraCaptureState {
         } else if (captured && (rightDown || escapeDown || ownership.modalOpen())) {
             captured = false;
             transition = Transition.RELEASED;
-        } else if (!captured && pointerPressArmed && leftPressed
+        } else if (!captured
+                && pointerPressArmed
+                && leftPressed
                 && ownership.canStartCameraCapture()) {
             captured = true;
             transition = Transition.CAPTURED;

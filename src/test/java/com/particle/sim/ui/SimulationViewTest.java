@@ -1,13 +1,12 @@
 package com.particle.sim.ui;
 
-import org.junit.jupiter.api.Test;
-
-import com.particle.sim.ui.testing.FakeSimulationViewModel;
-import com.particle.sim.ui.testing.RecordingSimulationViewActions;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.particle.sim.ui.testing.FakeSimulationViewModel;
+import com.particle.sim.ui.testing.RecordingSimulationViewActions;
+import org.junit.jupiter.api.Test;
 
 class SimulationViewTest {
     @Test

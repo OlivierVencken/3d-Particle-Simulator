@@ -11,12 +11,9 @@ import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 
-/**
- * Shared placement and styling for modal and non-modal popup windows.
- */
+/** Shared placement and styling for modal and non-modal popup windows. */
 public abstract class PopupBase {
     private static final Color OPAQUE_BACKGROUND = Colors.BACKGROUND_WINDOW.withAlpha(1.0f);
-
     private final String label;
     private final float defaultWidth;
     private final float defaultHeight;
@@ -27,7 +24,11 @@ public abstract class PopupBase {
         this(title, id, defaultWidth, defaultHeight, null);
     }
 
-    protected PopupBase(String title, String id, float defaultWidth, float defaultHeight,
+    protected PopupBase(
+            String title,
+            String id,
+            float defaultWidth,
+            float defaultHeight,
             String returnFocusWindow) {
         this.label = title + "###" + id;
         this.defaultWidth = defaultWidth;
@@ -73,17 +74,23 @@ public abstract class PopupBase {
         DesignTokens tokens = Theme.tokens();
         ImGuiViewport viewport = ImGui.getMainViewport();
         ImGui.setNextWindowPos(
-                viewport.getWorkCenterX(), viewport.getWorkCenterY(),
-                ImGuiCond.Appearing, 0.5f, 0.5f);
+                viewport.getWorkCenterX(),
+                viewport.getWorkCenterY(),
+                ImGuiCond.Appearing,
+                0.5f,
+                0.5f);
 
         if (defaultWidth > 0.0f && defaultHeight > 0.0f) {
-            ImGui.setNextWindowSize(tokens.dp(defaultWidth), tokens.dp(defaultHeight), ImGuiCond.Appearing);
+            ImGui.setNextWindowSize(
+                    tokens.dp(defaultWidth), tokens.dp(defaultHeight), ImGuiCond.Appearing);
         }
 
         if (resizable()) {
             ImGui.setNextWindowSizeConstraints(
-                    tokens.dp(minimumWidth()), tokens.dp(minimumHeight()),
-                    scaledMaximum(tokens, maximumWidth()), scaledMaximum(tokens, maximumHeight()));
+                    tokens.dp(minimumWidth()),
+                    tokens.dp(minimumHeight()),
+                    scaledMaximum(tokens, maximumWidth()),
+                    scaledMaximum(tokens, maximumHeight()));
         }
     }
 

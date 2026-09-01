@@ -5,29 +5,51 @@ import imgui.ImGuiStyle;
 import imgui.flag.ImGuiCol;
 
 public final class Theme {
-    private static final ComponentPalette PRIMARY = new ComponentPalette(
-            Colors.PRIMARY_DEFAULT, Colors.PRIMARY_HOVER, Colors.PRIMARY_ACTIVE,
-            Colors.PRIMARY_HOVER, Colors.TEXT_PRIMARY);
-    private static final ComponentPalette SECONDARY = new ComponentPalette(
-            Colors.CONTROL_DEFAULT, Colors.CONTROL_HOVER, Colors.CONTROL_ACTIVE,
-            Colors.BORDER_DEFAULT, Colors.TEXT_PRIMARY);
-    private static final ComponentPalette GHOST = new ComponentPalette(
-            Colors.TRANSPARENT, Colors.SURFACE_HOVER, Colors.CONTROL_ACTIVE,
-            Colors.TRANSPARENT, Colors.TEXT_PRIMARY);
-    private static final ComponentPalette DESTRUCTIVE = new ComponentPalette(
-            Colors.DESTRUCTIVE_DEFAULT, Colors.DESTRUCTIVE_HOVER, Colors.DESTRUCTIVE_ACTIVE,
-            Colors.DESTRUCTIVE_HOVER, Colors.TEXT_PRIMARY);
-    private static final ComponentPalette SELECTED = new ComponentPalette(
-            Colors.SURFACE_ACTIVE, Colors.CONTROL_ACTIVE, Colors.CONTROL_ACTIVE,
-            Colors.BORDER_STRONG, Colors.TEXT_PRIMARY);
-    private static final ComponentPalette DISABLED = new ComponentPalette(
-            Colors.SURFACE_DEFAULT, Colors.SURFACE_DEFAULT, Colors.SURFACE_DEFAULT,
-            Colors.BORDER_SUBTLE, Colors.TEXT_MUTED);
-
+    private static final ComponentPalette PRIMARY =
+            new ComponentPalette(
+                    Colors.PRIMARY_DEFAULT,
+                    Colors.PRIMARY_HOVER,
+                    Colors.PRIMARY_ACTIVE,
+                    Colors.PRIMARY_HOVER,
+                    Colors.TEXT_PRIMARY);
+    private static final ComponentPalette SECONDARY =
+            new ComponentPalette(
+                    Colors.CONTROL_DEFAULT,
+                    Colors.CONTROL_HOVER,
+                    Colors.CONTROL_ACTIVE,
+                    Colors.BORDER_DEFAULT,
+                    Colors.TEXT_PRIMARY);
+    private static final ComponentPalette GHOST =
+            new ComponentPalette(
+                    Colors.TRANSPARENT,
+                    Colors.SURFACE_HOVER,
+                    Colors.CONTROL_ACTIVE,
+                    Colors.TRANSPARENT,
+                    Colors.TEXT_PRIMARY);
+    private static final ComponentPalette DESTRUCTIVE =
+            new ComponentPalette(
+                    Colors.DESTRUCTIVE_DEFAULT,
+                    Colors.DESTRUCTIVE_HOVER,
+                    Colors.DESTRUCTIVE_ACTIVE,
+                    Colors.DESTRUCTIVE_HOVER,
+                    Colors.TEXT_PRIMARY);
+    private static final ComponentPalette SELECTED =
+            new ComponentPalette(
+                    Colors.SURFACE_ACTIVE,
+                    Colors.CONTROL_ACTIVE,
+                    Colors.CONTROL_ACTIVE,
+                    Colors.BORDER_STRONG,
+                    Colors.TEXT_PRIMARY);
+    private static final ComponentPalette DISABLED =
+            new ComponentPalette(
+                    Colors.SURFACE_DEFAULT,
+                    Colors.SURFACE_DEFAULT,
+                    Colors.SURFACE_DEFAULT,
+                    Colors.BORDER_SUBTLE,
+                    Colors.TEXT_MUTED);
     private static DesignTokens tokens = DesignTokens.unscaled();
 
-    private Theme() {
-    }
+    private Theme() {}
 
     public static void applyDarkTheme() {
         applyDarkTheme(1.0f);

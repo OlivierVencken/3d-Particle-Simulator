@@ -11,7 +11,6 @@ public record DisplayMetrics(
         float framebufferScaleY,
         int framebufferWidth,
         int framebufferHeight) {
-
     public DisplayMetrics {
         logicalWidth = finiteNonNegative(logicalWidth);
         logicalHeight = finiteNonNegative(logicalHeight);
@@ -27,23 +26,27 @@ public record DisplayMetrics(
         float height = io.getDisplaySizeY();
         float scaleX = positiveOrOne(io.getDisplayFramebufferScaleX());
         float scaleY = positiveOrOne(io.getDisplayFramebufferScaleY());
-        return from(io, uiScale,
+        return from(
+                io,
+                uiScale,
                 Math.max(0, Math.round(width * scaleX)),
                 Math.max(0, Math.round(height * scaleY)));
     }
 
-    public static DisplayMetrics from(ImGuiIO io, float uiScale,
-            int framebufferWidth, int framebufferHeight) {
+    public static DisplayMetrics from(
+            ImGuiIO io, float uiScale, int framebufferWidth, int framebufferHeight) {
         float width = io.getDisplaySizeX();
         float height = io.getDisplaySizeY();
         int safeFramebufferWidth = Math.max(0, framebufferWidth);
         int safeFramebufferHeight = Math.max(0, framebufferHeight);
-        float scaleX = width > 0.0f && safeFramebufferWidth > 0
-                ? safeFramebufferWidth / width
-                : io.getDisplayFramebufferScaleX();
-        float scaleY = height > 0.0f && safeFramebufferHeight > 0
-                ? safeFramebufferHeight / height
-                : io.getDisplayFramebufferScaleY();
+        float scaleX =
+                width > 0.0f && safeFramebufferWidth > 0
+                        ? safeFramebufferWidth / width
+                        : io.getDisplayFramebufferScaleX();
+        float scaleY =
+                height > 0.0f && safeFramebufferHeight > 0
+                        ? safeFramebufferHeight / height
+                        : io.getDisplayFramebufferScaleY();
         return new DisplayMetrics(
                 width,
                 height,
@@ -60,10 +63,7 @@ public record DisplayMetrics(
         int top = clamp(Math.round(panel.y() * framebufferScaleY), 0, framebufferHeight);
         int bottom = clamp(Math.round(panel.bottom() * framebufferScaleY), top, framebufferHeight);
         return new FramebufferViewport(
-                left,
-                framebufferHeight - bottom,
-                right - left,
-                bottom - top);
+                left, framebufferHeight - bottom, right - left, bottom - top);
     }
 
     private static float finiteNonNegative(float value) {

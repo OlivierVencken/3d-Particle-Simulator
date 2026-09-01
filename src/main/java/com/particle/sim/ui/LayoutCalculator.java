@@ -3,25 +3,33 @@ package com.particle.sim.ui;
 import com.particle.sim.ui.theme.DesignTokens;
 
 final class LayoutCalculator {
-    private LayoutCalculator() {
-    }
+    private LayoutCalculator() {}
 
     static Layout calculate(float displayWidth, float displayHeight, boolean sidebarVisible) {
         return calculate(displayWidth, displayHeight, sidebarVisible, DesignTokens.unscaled());
     }
 
-    static Layout calculate(float displayWidth, float displayHeight, boolean sidebarVisible,
-            DesignTokens tokens) {
+    static Layout calculate(
+            float displayWidth, float displayHeight, boolean sidebarVisible, DesignTokens tokens) {
         return calculate(displayWidth, displayHeight, sidebarVisible, true, tokens);
     }
 
-    static Layout calculate(float displayWidth, float displayHeight, boolean sidebarVisible,
-            boolean uiVisible, DesignTokens tokens) {
-        return calculate(displayWidth, displayHeight, sidebarVisible ? 1.0f : 0.0f, uiVisible, tokens);
+    static Layout calculate(
+            float displayWidth,
+            float displayHeight,
+            boolean sidebarVisible,
+            boolean uiVisible,
+            DesignTokens tokens) {
+        return calculate(
+                displayWidth, displayHeight, sidebarVisible ? 1.0f : 0.0f, uiVisible, tokens);
     }
 
-    static Layout calculate(float displayWidth, float displayHeight, float sidebarReveal,
-            boolean uiVisible, DesignTokens tokens) {
+    static Layout calculate(
+            float displayWidth,
+            float displayHeight,
+            float sidebarReveal,
+            boolean uiVisible,
+            DesignTokens tokens) {
         float width = Math.max(0.0f, displayWidth);
         float height = Math.max(0.0f, displayHeight);
         Layout.Mode mode = modeFor(width, tokens);
@@ -39,17 +47,22 @@ final class LayoutCalculator {
         float reveal = clamp01(sidebarReveal);
         float fullSidebarWidth = sidebarWidth(mode, width, tokens);
         float revealedSidebarWidth = fullSidebarWidth * reveal;
-        boolean sidebarOverlaysSimulation = mode == Layout.Mode.COMPACT || mode == Layout.Mode.FOCUS;
+        boolean sidebarOverlaysSimulation =
+                mode == Layout.Mode.COMPACT || mode == Layout.Mode.FOCUS;
 
         Layout.Panel commandBar = new Layout.Panel(0.0f, 0.0f, width, contentY);
-        Layout.Panel sidebar = revealedSidebarWidth > 0.0f && contentHeight > 0.0f
-                ? new Layout.Panel(revealedSidebarWidth - fullSidebarWidth, contentY,
-                        fullSidebarWidth, contentHeight)
-                : Layout.Panel.hidden();
+        Layout.Panel sidebar =
+                revealedSidebarWidth > 0.0f && contentHeight > 0.0f
+                        ? new Layout.Panel(
+                                revealedSidebarWidth - fullSidebarWidth,
+                                contentY,
+                                fullSidebarWidth,
+                                contentHeight)
+                        : Layout.Panel.hidden();
         float simulationX = sidebarOverlaysSimulation ? 0.0f : revealedSidebarWidth;
         float simulationWidth = Math.max(0.0f, width - simulationX);
-        Layout.Panel simulation = new Layout.Panel(
-                simulationX, contentY, simulationWidth, contentHeight);
+        Layout.Panel simulation =
+                new Layout.Panel(simulationX, contentY, simulationWidth, contentHeight);
 
         return new Layout(mode, commandBar, sidebar, simulation);
     }
@@ -62,12 +75,13 @@ final class LayoutCalculator {
     }
 
     private static float sidebarWidth(Layout.Mode mode, float displayWidth, DesignTokens tokens) {
-        float preferredWidth = switch (mode) {
-            case WIDE -> tokens.sidebarWidth();
-            case MEDIUM -> tokens.mediumSidebarWidth();
-            case COMPACT -> tokens.sidebarWidth();
-            case FOCUS -> displayWidth;
-        };
+        float preferredWidth =
+                switch (mode) {
+                    case WIDE -> tokens.sidebarWidth();
+                    case MEDIUM -> tokens.mediumSidebarWidth();
+                    case COMPACT -> tokens.sidebarWidth();
+                    case FOCUS -> displayWidth;
+                };
         return Math.min(preferredWidth, displayWidth);
     }
 
@@ -83,5 +97,4 @@ final class LayoutCalculator {
         }
         return Layout.Mode.WIDE;
     }
-
 }

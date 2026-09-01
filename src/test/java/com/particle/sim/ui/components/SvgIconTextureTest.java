@@ -1,16 +1,15 @@
 package com.particle.sim.ui.components;
 
-import java.nio.ByteBuffer;
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.nio.ByteBuffer;
+import org.junit.jupiter.api.Test;
 
 class SvgIconTextureTest {
     @Test
     void rasterizesSidebarIconWithVisibleAndTransparentPixels() {
-        ByteBuffer pixels = SvgIconTexture.rasterizeResource(
-                "/assets/icons/sidebar-toggle.svg", 64);
+        ByteBuffer pixels =
+                SvgIconTexture.rasterizeResource("/assets/icons/sidebar-toggle.svg", 64);
         boolean hasVisiblePixel = false;
         boolean hasTransparentPixel = false;
 

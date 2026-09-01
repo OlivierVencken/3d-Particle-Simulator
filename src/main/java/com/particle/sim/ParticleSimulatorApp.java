@@ -1,5 +1,13 @@
 package com.particle.sim;
 
+import static org.lwjgl.opengl.GL43C.GL_BLEND;
+import static org.lwjgl.opengl.GL43C.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL43C.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL43C.GL_PROGRAM_POINT_SIZE;
+import static org.lwjgl.opengl.GL43C.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL43C.glBlendFunc;
+import static org.lwjgl.opengl.GL43C.glEnable;
+
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.input.AppHotkeys;
 import com.particle.sim.input.HotkeyManager;
@@ -11,25 +19,18 @@ import com.particle.sim.ui.PresetFileDialog;
 import com.particle.sim.ui.SimulationView;
 import com.particle.sim.window.WindowManager;
 
-import static org.lwjgl.opengl.GL43C.GL_BLEND;
-import static org.lwjgl.opengl.GL43C.GL_DEPTH_TEST;
-import static org.lwjgl.opengl.GL43C.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL43C.GL_PROGRAM_POINT_SIZE;
-import static org.lwjgl.opengl.GL43C.GL_SRC_ALPHA;
-import static org.lwjgl.opengl.GL43C.glBlendFunc;
-import static org.lwjgl.opengl.GL43C.glEnable;
-
 public final class ParticleSimulatorApp {
     private static final String WINDOW_TITLE = "3D Particle Simulator";
-
     private final WindowManager window = new WindowManager(WINDOW_TITLE);
-    private final ImGuiLayer imgui = new ImGuiLayer();
+    private final ImGuiLayer imGui = new ImGuiLayer();
     private final CameraController camera = new CameraController();
     private final ParticleSystem particles = new ParticleSystem();
     private final SimulationView ui = new SimulationView();
     private final HotkeyManager hotkeys = new HotkeyManager();
-    private final SettingsController settingsController = new SettingsController(particles, camera, ui);
-    private final SimulationViewAdapter uiAdapter = new SimulationViewAdapter(particles, camera, ui, settingsController);
+    private final SettingsController settingsController =
+            new SettingsController(particles, camera, ui);
+    private final SimulationViewAdapter viewAdapter =
+            new SimulationViewAdapter(particles, camera, ui, settingsController);
     private boolean windowInitialized;
     private boolean presetDialogInitialized;
     private boolean imguiInitialized;
@@ -54,7 +55,7 @@ public final class ParticleSimulatorApp {
             PresetFileDialog.init();
             presetDialogInitialized = true;
             initOpenGl();
-            imgui.init(window.handle());
+            imGui.init(window.handle());
             imguiInitialized = true;
             particles.init();
             particlesInitialized = true;
@@ -62,14 +63,15 @@ public final class ParticleSimulatorApp {
             initSettings();
 
             new ApplicationRuntime(
-                    window,
-                    imgui,
-                    hotkeys,
-                    camera,
-                    particles,
-                    ui,
-                    uiAdapter,
-                    settingsController).run();
+                            window,
+                            imGui,
+                            hotkeys,
+                            camera,
+                            particles,
+                            ui,
+                            viewAdapter,
+                            settingsController)
+                    .run();
         } finally {
             dispose();
         }
@@ -83,17 +85,26 @@ public final class ParticleSimulatorApp {
     }
 
     private void initSettings() {
-        ui.connect(uiAdapter.model(), uiAdapter.actions());
-        uiAdapter.onSavePreset(() -> runPresetAction(
-                "Could not save the preset.",
-                () -> PresetFileDialog.showSaveDialog().ifPresent(settingsController::savePresetTo)));
-        uiAdapter.onLoadPreset(() -> runPresetAction(
-                "Could not load the preset.",
-                () -> PresetFileDialog.showOpenDialog().ifPresent(settingsController::loadPresetFrom)));
-        uiAdapter.onExitApplication(() -> {
-            settingsController.flush();
-            window.requestClose();
-        });
+        ui.connect(viewAdapter.model(), viewAdapter.actions());
+        viewAdapter.onSavePreset(
+                () ->
+                        runPresetAction(
+                                "Could not save the preset.",
+                                () ->
+                                        PresetFileDialog.showSaveDialog()
+                                                .ifPresent(settingsController::savePresetTo)));
+        viewAdapter.onLoadPreset(
+                () ->
+                        runPresetAction(
+                                "Could not load the preset.",
+                                () ->
+                                        PresetFileDialog.showOpenDialog()
+                                                .ifPresent(settingsController::loadPresetFrom)));
+        viewAdapter.onExitApplication(
+                () -> {
+                    settingsController.flush();
+                    window.requestClose();
+                });
 
         settingsController.load();
     }
@@ -135,7 +146,7 @@ public final class ParticleSimulatorApp {
                 } finally {
                     try {
                         if (imguiInitialized) {
-                            imgui.dispose();
+                            imGui.dispose();
                             imguiInitialized = false;
                         }
                     } finally {

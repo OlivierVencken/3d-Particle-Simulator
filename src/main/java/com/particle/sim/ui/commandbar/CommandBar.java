@@ -1,12 +1,12 @@
 package com.particle.sim.ui.commandbar;
 
+import com.particle.sim.ui.InterfaceState;
+import com.particle.sim.ui.Layout;
 import com.particle.sim.ui.SimulationViewActions;
 import com.particle.sim.ui.SimulationViewModel;
-import com.particle.sim.ui.Layout;
-import com.particle.sim.ui.InterfaceState;
-import com.particle.sim.ui.components.SvgIconTexture;
 import com.particle.sim.ui.components.Button;
 import com.particle.sim.ui.components.Menu;
+import com.particle.sim.ui.components.SvgIconTexture;
 import com.particle.sim.ui.theme.ComponentVariant;
 import com.particle.sim.ui.theme.DesignTokens;
 import com.particle.sim.ui.theme.Fonts;
@@ -18,9 +18,14 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 
 public final class CommandBar {
-    private static final int WINDOW_FLAGS = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove
-            | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoSavedSettings
-            | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
+    private static final int WINDOW_FLAGS =
+            ImGuiWindowFlags.NoTitleBar
+                    | ImGuiWindowFlags.NoMove
+                    | ImGuiWindowFlags.NoResize
+                    | ImGuiWindowFlags.NoCollapse
+                    | ImGuiWindowFlags.NoSavedSettings
+                    | ImGuiWindowFlags.NoScrollbar
+                    | ImGuiWindowFlags.NoScrollWithMouse;
     private static final String SIMULATION_MENU = "##simulation-menu";
     private static final String VIEW_MENU = "##view-menu";
     private static final String INFO_MENU = "##info-menu";
@@ -29,8 +34,8 @@ public final class CommandBar {
     private final AboutPopup aboutPopup = new AboutPopup();
     private final ResetSettingsPopup resetSettingsPopup = new ResetSettingsPopup();
     private final ErrorPopup errorPopup = new ErrorPopup();
-    private final SvgIconTexture sidebarToggleIcon = SvgIconTexture.forUiIcon(
-            "/assets/icons/sidebar-toggle.svg");
+    private final SvgIconTexture sidebarToggleIcon =
+            SvgIconTexture.forUiIcon("/assets/icons/sidebar-toggle.svg");
     private float simulationMenuX;
     private float simulationMenuY;
     private float viewMenuX;
@@ -40,8 +45,13 @@ public final class CommandBar {
     private float compactMenuX;
     private float compactMenuY;
 
-    public void render(Layout layout, InterfaceState state, SimulationViewModel model, SimulationViewActions actions,
-            float fps, ImBoolean showDebug) {
+    public void render(
+            Layout layout,
+            InterfaceState state,
+            SimulationViewModel model,
+            SimulationViewActions actions,
+            float fps,
+            ImBoolean showDebug) {
         Layout.Panel panel = layout.commandBar();
         DesignTokens tokens = Theme.tokens();
         ImGui.setNextWindowPos(panel.x(), panel.y());
@@ -66,8 +76,8 @@ public final class CommandBar {
         errorPopup.render();
     }
 
-    private void renderMenuButtons(Layout.Mode mode, float width, InterfaceState state,
-            DesignTokens tokens) {
+    private void renderMenuButtons(
+            Layout.Mode mode, float width, InterfaceState state, DesignTokens tokens) {
         if (sidebarToggleButton(state)) {
             state.toggleSidebar();
         }
@@ -84,8 +94,12 @@ public final class CommandBar {
         }
 
         boolean compactLabels = mode == Layout.Mode.COMPACT || mode == Layout.Mode.FOCUS;
-        boolean simulationClicked = dropdownButton(compactLabels ? "Sim" : "Simulation",
-                "simulation", tokens, SIMULATION_MENU);
+        boolean simulationClicked =
+                dropdownButton(
+                        compactLabels ? "Sim" : "Simulation",
+                        "simulation",
+                        tokens,
+                        SIMULATION_MENU);
         simulationMenuX = ImGui.getItemRectMinX();
         simulationMenuY = ImGui.getItemRectMaxY();
         if (simulationClicked) {
@@ -105,19 +119,21 @@ public final class CommandBar {
         if (infoClicked) {
             ImGui.openPopup(INFO_MENU);
         }
-
     }
 
     private boolean sidebarToggleButton(InterfaceState state) {
-        return Button.icon(state.sidebarVisible() ? "Minimize settings sidebar" : "Show settings sidebar",
-                "toggle-sidebar", sidebarToggleIcon.textureId(), false, true);
+        return Button.icon(
+                state.sidebarVisible() ? "Minimize settings sidebar" : "Show settings sidebar",
+                "toggle-sidebar",
+                sidebarToggleIcon.textureId(),
+                false,
+                true);
     }
 
     private boolean dropdownButton(String label, String id, DesignTokens tokens, String popupId) {
-        ComponentVariant variant = ImGui.isPopupOpen(popupId)
-                ? ComponentVariant.SELECTED : ComponentVariant.GHOST;
-        return Button.text(label, "command-" + id, variant,
-                0.0f, tokens.compactControlHeight());
+        ComponentVariant variant =
+                ImGui.isPopupOpen(popupId) ? ComponentVariant.SELECTED : ComponentVariant.GHOST;
+        return Button.text(label, "command-" + id, variant, 0.0f, tokens.compactControlHeight());
     }
 
     static boolean usesUnifiedMenu(Layout.Mode mode, float width, DesignTokens tokens) {
@@ -140,7 +156,11 @@ public final class CommandBar {
         errorPopup.open(summary, details);
     }
 
-    private void renderStatistics(float width, float height, SimulationViewModel.Particles particles, float fps,
+    private void renderStatistics(
+            float width,
+            float height,
+            SimulationViewModel.Particles particles,
+            float fps,
             DesignTokens tokens) {
         if (width < tokens.mediumBreakpoint()) {
             return;
@@ -149,22 +169,27 @@ public final class CommandBar {
         float statisticsWidth = ImGui.calcTextSize(statistics).x;
         float statisticsX = width - statisticsWidth - tokens.spaceXl();
         float statisticsY = Math.max(0.0f, (height - ImGui.getTextLineHeight()) * 0.5f);
-        ImGui.getWindowDrawList().addText(
-                ImGui.getWindowPosX() + statisticsX,
-                ImGui.getWindowPosY() + statisticsY,
-                ImGui.getColorU32(ImGuiCol.TextDisabled),
-                statistics);
+        ImGui.getWindowDrawList()
+                .addText(
+                        ImGui.getWindowPosX() + statisticsX,
+                        ImGui.getWindowPosY() + statisticsY,
+                        ImGui.getColorU32(ImGuiCol.TextDisabled),
+                        statistics);
     }
 
-    private void renderSimulationMenu(SimulationViewModel.Application application,
+    private void renderSimulationMenu(
+            SimulationViewModel.Application application,
             SimulationViewActions.Simulation simulationActions,
             SimulationViewActions.Application applicationActions) {
         if (!Menu.beginAnchored(SIMULATION_MENU, simulationMenuX, simulationMenuY)) {
             return;
         }
 
-        if (Menu.item(application.paused() ? "Resume simulation" : "Pause simulation",
-                "toggle-pause", application.paused(), true)) {
+        if (Menu.item(
+                application.paused() ? "Resume simulation" : "Pause simulation",
+                "toggle-pause",
+                application.paused(),
+                true)) {
             simulationActions.togglePause();
         }
         if (Menu.item("Step simulation", "step", false, application.paused())) {
@@ -199,8 +224,11 @@ public final class CommandBar {
         if (Menu.item("Hide UI", "hide-ui")) {
             actions.hideUi();
         }
-        if (Menu.item(showDebug.get() ? "Hide debug menu" : "Show debug menu", "toggle-debug",
-                showDebug.get(), true)) {
+        if (Menu.item(
+                showDebug.get() ? "Hide debug menu" : "Show debug menu",
+                "toggle-debug",
+                showDebug.get(),
+                true)) {
             showDebug.set(!showDebug.get());
         }
         ImGui.endPopup();
@@ -220,12 +248,16 @@ public final class CommandBar {
         ImGui.endPopup();
     }
 
-    private void renderCompactMenu(ImBoolean showDebug, SimulationViewModel model, SimulationViewActions actions) {
+    private void renderCompactMenu(
+            ImBoolean showDebug, SimulationViewModel model, SimulationViewActions actions) {
         if (!Menu.beginAnchored(COMPACT_MENU, compactMenuX, compactMenuY)) {
             return;
         }
-        if (Menu.item(model.application().paused() ? "Resume simulation" : "Pause simulation",
-                "compact-toggle-pause", model.application().paused(), true)) {
+        if (Menu.item(
+                model.application().paused() ? "Resume simulation" : "Pause simulation",
+                "compact-toggle-pause",
+                model.application().paused(),
+                true)) {
             actions.simulation().togglePause();
         }
         if (Menu.item("Step simulation", "compact-step", false, model.application().paused())) {
@@ -248,8 +280,11 @@ public final class CommandBar {
         if (Menu.item("Hide UI", "compact-hide-ui")) {
             actions.application().hideUi();
         }
-        if (Menu.item(showDebug.get() ? "Hide debug panel" : "Show debug panel", "compact-toggle-debug",
-                showDebug.get(), true)) {
+        if (Menu.item(
+                showDebug.get() ? "Hide debug panel" : "Show debug panel",
+                "compact-toggle-debug",
+                showDebug.get(),
+                true)) {
             showDebug.set(!showDebug.get());
         }
         Menu.separator();
@@ -265,5 +300,4 @@ public final class CommandBar {
         }
         ImGui.endPopup();
     }
-
 }

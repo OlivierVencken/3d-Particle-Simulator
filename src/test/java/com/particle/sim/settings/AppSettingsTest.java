@@ -1,26 +1,23 @@
 package com.particle.sim.settings;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.particles.SpawnMode;
-import com.particle.sim.camera.CameraController;
 import com.particle.sim.ui.SimulationView;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.nio.file.Path;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class AppSettingsTest {
     private static final float EPSILON = 0.0001f;
-
-    @TempDir
-    Path tempDir;
+    @TempDir Path tempDir;
 
     @Test
     void savesAndLoadsCurrentApplicationSettings() {
@@ -29,7 +26,7 @@ class AppSettingsTest {
         SimulationView ui = new SimulationView();
         Path settingsFile = tempDir.resolve("settings.properties");
 
-        particles.setParticleCount(1234);
+        particles.particleCount(1234);
         particles.pointSize(4.5f);
         particles.fixedParticleScreenSize(true);
         particles.bounds(8.0f);
@@ -110,7 +107,7 @@ class AppSettingsTest {
         CameraController camera = new CameraController();
         SimulationView ui = new SimulationView();
 
-        particles.setParticleCount(10);
+        particles.particleCount(10);
         particles.pointSize(8.0f);
         particles.fixedParticleScreenSize(true);
         particles.colorMode(ColorMode.DENSITY);
@@ -183,7 +180,8 @@ class AppSettingsTest {
         java.nio.file.Files.writeString(settingsFile, "groupCount=99\n");
 
         ParticleSystem particles = new ParticleSystem();
-        AppSettings.load(settingsFile).applySimulationTo(particles, new CameraController(), new SimulationView());
+        AppSettings.load(settingsFile)
+                .applySimulationTo(particles, new CameraController(), new SimulationView());
 
         assertEquals(SimulationDefaults.MAX_GROUP_COUNT, particles.groupCount());
     }
@@ -194,7 +192,8 @@ class AppSettingsTest {
         java.nio.file.Files.writeString(settingsFile, "fpsCap=999\n");
 
         SimulationView ui = new SimulationView();
-        AppSettings.load(settingsFile).applySimulationTo(new ParticleSystem(), new CameraController(), ui);
+        AppSettings.load(settingsFile)
+                .applySimulationTo(new ParticleSystem(), new CameraController(), ui);
 
         assertEquals(SimulationDefaults.MAX_FPS_CAP, ui.fpsCap());
     }
@@ -205,7 +204,8 @@ class AppSettingsTest {
         java.nio.file.Files.writeString(settingsFile, "fpsCap=0\n");
 
         SimulationView ui = new SimulationView();
-        AppSettings.load(settingsFile).applySimulationTo(new ParticleSystem(), new CameraController(), ui);
+        AppSettings.load(settingsFile)
+                .applySimulationTo(new ParticleSystem(), new CameraController(), ui);
 
         assertEquals(0, ui.fpsCap());
     }

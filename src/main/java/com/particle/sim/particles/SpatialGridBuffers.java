@@ -18,13 +18,12 @@ import static org.lwjgl.opengl.GL43C.glGetBufferSubData;
 import static org.lwjgl.system.MemoryUtil.memAllocInt;
 import static org.lwjgl.system.MemoryUtil.memFree;
 
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.nio.IntBuffer;
 
 final class SpatialGridBuffers {
     static final int SCAN_ELEMENTS_PER_GROUP = 512;
-
     private int particleIdsSsbo;
     private int countsSsbo;
     private int offsetsSsbo;
@@ -49,7 +48,10 @@ final class SpatialGridBuffers {
         if (desiredParticleCapacity != particleCapacity) {
             particleCapacity = desiredParticleCapacity;
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, particleIdsSsbo);
-            glBufferData(GL_SHADER_STORAGE_BUFFER, (long) particleCapacity * Integer.BYTES, GL_DYNAMIC_DRAW);
+            glBufferData(
+                    GL_SHADER_STORAGE_BUFFER,
+                    (long) particleCapacity * Integer.BYTES,
+                    GL_DYNAMIC_DRAW);
         }
 
         int desiredCellCapacity = grownCapacity(cellCapacity, requiredCells);
@@ -64,15 +66,21 @@ final class SpatialGridBuffers {
 
     void clearCounts(int cellCount) {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, countsSsbo);
-        glClearBufferSubData(GL_SHADER_STORAGE_BUFFER, GL_R32I, 0, (long) cellCount * Integer.BYTES,
-                GL_RED_INTEGER, GL_INT, new int[] { 0 });
+        glClearBufferSubData(
+                GL_SHADER_STORAGE_BUFFER,
+                GL_R32I,
+                0,
+                (long) cellCount * Integer.BYTES,
+                GL_RED_INTEGER,
+                GL_INT,
+                new int[] {0});
     }
 
     void copyOffsetsToCursors(int cellCount) {
         glBindBuffer(GL_COPY_READ_BUFFER, offsetsSsbo);
         glBindBuffer(GL_COPY_WRITE_BUFFER, cursorsSsbo);
-        glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0,
-                (long) cellCount * Integer.BYTES);
+        glCopyBufferSubData(
+                GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, (long) cellCount * Integer.BYTES);
     }
 
     int particleIdsSsbo() {
@@ -104,7 +112,8 @@ final class SpatialGridBuffers {
     }
 
     long allocatedBytes() {
-        long bytes = (long) particleCapacity * Integer.BYTES + (long) cellCapacity * 3L * Integer.BYTES;
+        long bytes =
+                (long) particleCapacity * Integer.BYTES + (long) cellCapacity * 3L * Integer.BYTES;
         for (int elementCount : scanScratchElementCounts) {
             bytes += (long) elementCount * 2L * Integer.BYTES;
         }
@@ -151,7 +160,10 @@ final class SpatialGridBuffers {
     private int allocateIntBuffer(int elementCount) {
         int buffer = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) Math.max(elementCount, 1) * Integer.BYTES, GL_STREAM_DRAW);
+        glBufferData(
+                GL_SHADER_STORAGE_BUFFER,
+                (long) Math.max(elementCount, 1) * Integer.BYTES,
+                GL_STREAM_DRAW);
         return buffer;
     }
 

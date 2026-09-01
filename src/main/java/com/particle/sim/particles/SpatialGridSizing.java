@@ -1,8 +1,7 @@
 package com.particle.sim.particles;
 
 public final class SpatialGridSizing {
-    private SpatialGridSizing() {
-    }
+    private SpatialGridSizing() {}
 
     public static int gridSize(float bounds, float interactionRange) {
         return Math.max(1, (int) Math.floor((bounds * 2.0f) / interactionRange));

@@ -1,9 +1,7 @@
 package com.particle.sim.particles;
 
 import com.particle.sim.settings.SimulationDefaults;
-
 import imgui.ImVec4;
-
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -77,7 +75,8 @@ public final class ParticleSimulationConfig {
     }
 
     public void particleCount(int particleCount) {
-        this.particleCount = Math.max(0, Math.min(SimulationDefaults.MAX_PARTICLE_COUNT, particleCount));
+        this.particleCount =
+                Math.max(0, Math.min(SimulationDefaults.MAX_PARTICLE_COUNT, particleCount));
     }
 
     public float pointSize() {
@@ -98,7 +97,9 @@ public final class ParticleSimulationConfig {
     }
 
     public Set<EffectMode> effectModes() {
-        return effectModes.isEmpty() ? EnumSet.noneOf(EffectMode.class) : EnumSet.copyOf(effectModes);
+        return effectModes.isEmpty()
+                ? EnumSet.noneOf(EffectMode.class)
+                : EnumSet.copyOf(effectModes);
     }
 
     public void effectModes(Set<EffectMode> effectModes) {
@@ -140,8 +141,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void glowBlurPasses(int glowBlurPasses) {
-        this.glowBlurPasses = Math.max(1,
-                Math.min(64, glowBlurPasses));
+        this.glowBlurPasses = Math.max(1, Math.min(64, glowBlurPasses));
     }
 
     public float glowStrength() {
@@ -177,8 +177,10 @@ public final class ParticleSimulationConfig {
     }
 
     public void trailLength(int trailLength) {
-        this.trailLength = Math.max(SimulationDefaults.MIN_TRAIL_LENGTH,
-                Math.min(SimulationDefaults.MAX_TRAIL_LENGTH, trailLength));
+        this.trailLength =
+                Math.max(
+                        SimulationDefaults.MIN_TRAIL_LENGTH,
+                        Math.min(SimulationDefaults.MAX_TRAIL_LENGTH, trailLength));
     }
 
     public float trailThickness() {
@@ -186,7 +188,8 @@ public final class ParticleSimulationConfig {
     }
 
     public void trailThickness(float trailThickness) {
-        this.trailThickness = clamp(trailThickness, SimulationDefaults.MIN_TRAIL_THICKNESS, pointSize);
+        this.trailThickness =
+                clamp(trailThickness, SimulationDefaults.MIN_TRAIL_THICKNESS, pointSize);
     }
 
     public float bounds() {
@@ -274,7 +277,8 @@ public final class ParticleSimulationConfig {
     }
 
     public void distanceMetric(DistanceMetric distanceMetric) {
-        this.distanceMetric = distanceMetric == null ? SimulationDefaults.DISTANCE_METRIC : distanceMetric;
+        this.distanceMetric =
+                distanceMetric == null ? SimulationDefaults.DISTANCE_METRIC : distanceMetric;
     }
 
     public int groupCount() {

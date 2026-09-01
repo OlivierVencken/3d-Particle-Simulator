@@ -6,16 +6,30 @@ import imgui.type.ImInt;
 
 /** Labelled integer entry with native stepping, keyboard entry, and clamping. */
 public final class IntegerInput {
-    private IntegerInput() {
-    }
+    private IntegerInput() {}
 
-    public static boolean render(String label, String id, ImInt value, int step, int fastStep,
-            int minimum, int maximum, float width) {
+    public static boolean render(
+            String label,
+            String id,
+            ImInt value,
+            int step,
+            int fastStep,
+            int minimum,
+            int maximum,
+            float width) {
         return render(label, id, value, step, fastStep, minimum, maximum, width, true);
     }
 
-    public static boolean render(String label, String id, ImInt value, int step, int fastStep,
-            int minimum, int maximum, float width, boolean enabled) {
+    public static boolean render(
+            String label,
+            String id,
+            ImInt value,
+            int step,
+            int fastStep,
+            int minimum,
+            int maximum,
+            float width,
+            boolean enabled) {
         ImGui.pushFont(Fonts.medium());
         try {
             if (label != null && !label.isBlank()) {
@@ -25,7 +39,9 @@ public final class IntegerInput {
             ImGui.beginDisabled(!enabled);
             boolean changed;
             try {
-                changed = ImGui.inputInt(Button.itemLabel("", "integer-input-" + id), value, step, fastStep);
+                changed =
+                        ImGui.inputInt(
+                                Button.itemLabel("", "integer-input-" + id), value, step, fastStep);
             } finally {
                 ImGui.endDisabled();
             }

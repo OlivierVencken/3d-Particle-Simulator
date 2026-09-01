@@ -1,7 +1,7 @@
 package com.particle.sim.ui.commandbar;
 
-import com.particle.sim.ui.components.PopupWindow;
 import com.particle.sim.ui.components.Button;
+import com.particle.sim.ui.components.PopupWindow;
 import com.particle.sim.ui.components.Text;
 import com.particle.sim.ui.theme.ComponentVariant;
 import com.particle.sim.ui.theme.DesignTokens;
@@ -14,7 +14,9 @@ final class ErrorPopup extends PopupWindow {
     private String details = "";
 
     ErrorPopup() {
-        super("Action failed", "action-error-popup",
+        super(
+                "Action failed",
+                "action-error-popup",
                 DesignTokens.unscaled().popupWidth(),
                 DesignTokens.unscaled().errorPopupHeight(),
                 "##command-bar");
@@ -35,8 +37,12 @@ final class ErrorPopup extends PopupWindow {
             ImGui.spacing();
             ImGui.textWrapped(details);
             ImGui.spacing();
-            if (Button.text("Close", "close-action-error", ComponentVariant.PRIMARY,
-                    tokens.buttonWidthMd(), tokens.controlHeight())) {
+            if (Button.text(
+                    "Close",
+                    "close-action-error",
+                    ComponentVariant.PRIMARY,
+                    tokens.buttonWidthMd(),
+                    tokens.controlHeight())) {
                 close();
             }
         } finally {

@@ -9,8 +9,7 @@ import imgui.flag.ImGuiCol;
 
 /** Shared non-interactive typography and separators. */
 public final class Text {
-    private Text() {
-    }
+    private Text() {}
 
     public static void sectionHeading(String label) {
         ImGui.pushFont(Fonts.section());
@@ -41,11 +40,15 @@ public final class Text {
 
     public static void emptyState(String text) {
         float y = ImGui.getCursorPosY();
-        float offset = Math.max(0.0f,
-                (Theme.tokens().emptyStateMinimumHeight() - ImGui.getTextLineHeight()) * 0.5f);
+        float offset =
+                Math.max(
+                        0.0f,
+                        (Theme.tokens().emptyStateMinimumHeight() - ImGui.getTextLineHeight())
+                                * 0.5f);
         ImGui.setCursorPosY(y + offset);
         ImGui.textDisabled(text);
-        ImGui.setCursorPosY(Math.max(ImGui.getCursorPosY(), y + Theme.tokens().emptyStateMinimumHeight()));
+        ImGui.setCursorPosY(
+                Math.max(ImGui.getCursorPosY(), y + Theme.tokens().emptyStateMinimumHeight()));
     }
 
     private static void coloredWrapped(Color color, String text) {

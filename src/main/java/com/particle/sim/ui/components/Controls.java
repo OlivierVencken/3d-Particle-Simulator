@@ -9,22 +9,28 @@ public final class Controls {
     private final float[] floatRef = new float[1];
     private final int[] intRef = new int[1];
 
-    public void settingSlider(String label, float value, float min, float max, int decimals,
-            FloatSetter setter) {
+    public void settingSlider(
+            String label, float value, float min, float max, int decimals, FloatSetter setter) {
         slider(label, label, value, min, max, decimals, setter);
     }
 
-    public void settingSlider(String label, String id, float value, float min, float max, int decimals,
+    public void settingSlider(
+            String label,
+            String id,
+            float value,
+            float min,
+            float max,
+            int decimals,
             FloatSetter setter) {
         slider(label, id, value, min, max, decimals, setter);
     }
 
-    public void settingIntSlider(String label, int value, int min, int max, int decimals, IntSetter setter) {
+    public void settingIntSlider(String label, int value, int min, int max, IntSetter setter) {
         slider(label, label, value, min, max, setter);
     }
 
-    public void settingIntSlider(String label, String id, int value, int min, int max, int decimals,
-            IntSetter setter) {
+    public void settingIntSlider(
+            String label, String id, int value, int min, int max, IntSetter setter) {
         slider(label, id, value, min, max, setter);
     }
 
@@ -39,7 +45,8 @@ public final class Controls {
         return Checkbox.render(label, id, valueRef);
     }
 
-    public void settingCombo(String label, String id, int value, String[] values, IntSetter setter) {
+    public void settingCombo(
+            String label, String id, int value, String[] values, IntSetter setter) {
         integerRef.set(value);
         if (Combo.render(label, id, integerRef, values)) {
             setter.set(integerRef.get());
@@ -59,7 +66,13 @@ public final class Controls {
         return labels;
     }
 
-    private boolean slider(String label, String id, float value, float min, float max, int decimals,
+    private boolean slider(
+            String label,
+            String id,
+            float value,
+            float min,
+            float max,
+            int decimals,
             FloatSetter setter) {
         floatRef[0] = value;
         if (Slider.render(label, id, floatRef, min, max, decimals)) {

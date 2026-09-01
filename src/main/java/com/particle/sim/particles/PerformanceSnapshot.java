@@ -12,5 +12,4 @@ public record PerformanceSnapshot(
         long allocatedGpuBytes,
         int particleCount,
         int maximumParticleCount,
-        int gridCellCount) {
-}
+        int gridCellCount) {}

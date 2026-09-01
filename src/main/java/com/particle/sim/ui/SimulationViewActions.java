@@ -1,7 +1,7 @@
 package com.particle.sim.ui;
 
-import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.AttractionPattern;
+import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;

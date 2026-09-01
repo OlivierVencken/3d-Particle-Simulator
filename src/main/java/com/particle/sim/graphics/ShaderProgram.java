@@ -1,7 +1,5 @@
 package com.particle.sim.graphics;
 
-import com.particle.sim.util.ResourceLoader;
-
 import static org.lwjgl.opengl.GL43C.GL_COMPILE_STATUS;
 import static org.lwjgl.opengl.GL43C.GL_COMPUTE_SHADER;
 import static org.lwjgl.opengl.GL43C.GL_FALSE;
@@ -22,9 +20,10 @@ import static org.lwjgl.opengl.GL43C.glGetShaderi;
 import static org.lwjgl.opengl.GL43C.glLinkProgram;
 import static org.lwjgl.opengl.GL43C.glShaderSource;
 
+import com.particle.sim.util.ResourceLoader;
+
 public final class ShaderProgram {
-    private ShaderProgram() {
-    }
+    private ShaderProgram() {}
 
     public static int compute(String shaderResource) {
         int shader = compile(GL_COMPUTE_SHADER, ResourceLoader.loadString(shaderResource));
@@ -33,14 +32,18 @@ public final class ShaderProgram {
 
     public static int render(String vertexResource, String fragmentResource) {
         int vertexShader = compile(GL_VERTEX_SHADER, ResourceLoader.loadString(vertexResource));
-        int fragmentShader = compile(GL_FRAGMENT_SHADER, ResourceLoader.loadString(fragmentResource));
+        int fragmentShader =
+                compile(GL_FRAGMENT_SHADER, ResourceLoader.loadString(fragmentResource));
         return link(vertexShader, fragmentShader);
     }
 
-    public static int render(String vertexResource, String geometryResource, String fragmentResource) {
+    public static int render(
+            String vertexResource, String geometryResource, String fragmentResource) {
         int vertexShader = compile(GL_VERTEX_SHADER, ResourceLoader.loadString(vertexResource));
-        int geometryShader = compile(GL_GEOMETRY_SHADER, ResourceLoader.loadString(geometryResource));
-        int fragmentShader = compile(GL_FRAGMENT_SHADER, ResourceLoader.loadString(fragmentResource));
+        int geometryShader =
+                compile(GL_GEOMETRY_SHADER, ResourceLoader.loadString(geometryResource));
+        int fragmentShader =
+                compile(GL_FRAGMENT_SHADER, ResourceLoader.loadString(fragmentResource));
         return link(vertexShader, geometryShader, fragmentShader);
     }
 

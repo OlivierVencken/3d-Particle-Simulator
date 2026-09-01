@@ -1,10 +1,10 @@
 package com.particle.sim.ui.sidebar.sections;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.particle.sim.ui.testing.FakeSimulationViewModel;
 import com.particle.sim.ui.theme.DesignTokens;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ParticlesSectionTest {
     @Test

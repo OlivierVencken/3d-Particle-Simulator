@@ -5,7 +5,6 @@ import com.particle.sim.ui.sidebar.SidebarSection;
 public final class InterfaceState {
     private static final float SIDEBAR_TRANSITION_SECONDS = 0.24f;
     private static final float SECTION_TRANSITION_SECONDS = 0.16f;
-
     private SidebarSection activeSection = SidebarSection.SIMULATION;
     private boolean sidebarVisible = true;
     private Layout.Mode layoutMode = Layout.Mode.WIDE;

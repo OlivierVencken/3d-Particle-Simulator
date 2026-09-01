@@ -1,9 +1,9 @@
 package com.particle.sim.input;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 class HotkeyRoutingContextTest {
     private static final HotkeyBinding SIMULATION = binding(HotkeyContext.SIMULATION, false);
@@ -54,7 +54,7 @@ class HotkeyRoutingContextTest {
     }
 
     private static HotkeyBinding binding(HotkeyContext context, boolean activeWhileUiOwnsKeyboard) {
-        return new HotkeyBinding(1, HotkeyAction.TOGGLE_UI, context,
-                activeWhileUiOwnsKeyboard, () -> true);
+        return new HotkeyBinding(
+                1, HotkeyAction.TOGGLE_UI, context, activeWhileUiOwnsKeyboard, () -> true);
     }
 }

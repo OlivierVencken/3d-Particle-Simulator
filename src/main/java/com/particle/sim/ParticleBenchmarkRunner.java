@@ -1,17 +1,5 @@
 package com.particle.sim;
 
-import com.particle.sim.particles.ParticleSystem;
-import com.particle.sim.particles.PerformanceSnapshot;
-import org.lwjgl.opengl.GL;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
@@ -31,14 +19,24 @@ import static org.lwjgl.opengl.GL43C.glFinish;
 import static org.lwjgl.opengl.GL43C.glGetString;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import com.particle.sim.particles.ParticleSystem;
+import com.particle.sim.particles.PerformanceSnapshot;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import org.lwjgl.opengl.GL;
+
 public final class ParticleBenchmarkRunner {
     private static final double TARGET_MEDIAN_MILLISECONDS = 16.0;
     private static final double TARGET_P95_MILLISECONDS = 1000.0 / 60.0;
     private static final int SEARCH_ALIGNMENT = 1_024;
     private static final long BENCHMARK_SEED = 0x5EED_1234_ABCDL;
 
-    private ParticleBenchmarkRunner() {
-    }
+    private ParticleBenchmarkRunner() {}
 
     public static boolean requested(String[] args) {
         for (String argument : args) {
@@ -70,19 +68,23 @@ public final class ParticleBenchmarkRunner {
             glfwMakeContextCurrent(window);
             GL.createCapabilities();
             system = new ParticleSystem();
-            system.setParticleCount(Math.min(options.particleCount() == null ? 65_536 : options.particleCount(),
-                    system.maxParticleCount()));
+            system.particleCount(
+                    Math.min(
+                            options.particleCount() == null ? 65_536 : options.particleCount(),
+                            system.maxParticleCount()));
             system.init();
             configureDeterministicScene(system);
 
-            List<Measurement> measurements = options.particleCount() == null
-                    ? searchCapacity(system, options)
-                    : List.of(measure(system, options.particleCount(), options));
-            int sustainedParticleCount = measurements.stream()
-                    .filter(Measurement::meetsTarget)
-                    .map(Measurement::particleCount)
-                    .max(Comparator.naturalOrder())
-                    .orElse(0);
+            List<Measurement> measurements =
+                    options.particleCount() == null
+                            ? searchCapacity(system, options)
+                            : List.of(measure(system, options.particleCount(), options));
+            int sustainedParticleCount =
+                    measurements.stream()
+                            .filter(Measurement::meetsTarget)
+                            .map(Measurement::particleCount)
+                            .max(Comparator.naturalOrder())
+                            .orElse(0);
 
             String json = toJson(system, measurements, sustainedParticleCount);
             System.out.println(json);
@@ -101,7 +103,8 @@ public final class ParticleBenchmarkRunner {
         }
     }
 
-    private static List<Measurement> searchCapacity(ParticleSystem system, ParticleBenchmarkOptions options) {
+    private static List<Measurement> searchCapacity(
+            ParticleSystem system, ParticleBenchmarkOptions options) {
         List<Measurement> measurements = new ArrayList<>();
         int hardwareMaximum = system.maxParticleCount();
         int lower = Math.min(65_536, hardwareMaximum);
@@ -145,11 +148,11 @@ public final class ParticleBenchmarkRunner {
         return measurements;
     }
 
-    private static Measurement measure(ParticleSystem system, int requestedCount,
-            ParticleBenchmarkOptions options) {
+    private static Measurement measure(
+            ParticleSystem system, int requestedCount, ParticleBenchmarkOptions options) {
         int count = Math.max(1, Math.min(requestedCount, system.maxParticleCount()));
         system.randomSeed(BENCHMARK_SEED);
-        system.setParticleCount(count);
+        system.particleCount(count);
 
         for (int step = 0; step < options.warmupSteps(); step++) {
             system.step();
@@ -167,8 +170,12 @@ public final class ParticleBenchmarkRunner {
             gpuMilliseconds[step] = snapshot.simulationMilliseconds();
         }
 
-        return new Measurement(count, median(wallMilliseconds), percentile(wallMilliseconds, 0.95),
-                median(gpuMilliseconds), percentile(gpuMilliseconds, 0.95));
+        return new Measurement(
+                count,
+                median(wallMilliseconds),
+                percentile(wallMilliseconds, 0.95),
+                median(gpuMilliseconds),
+                percentile(gpuMilliseconds, 0.95));
     }
 
     private static void configureDeterministicScene(ParticleSystem system) {
@@ -190,7 +197,10 @@ public final class ParticleBenchmarkRunner {
     private static double percentile(double[] values, double percentile) {
         double[] sorted = values.clone();
         java.util.Arrays.sort(sorted);
-        int index = Math.min(sorted.length - 1, Math.max(0, (int) Math.ceil(percentile * sorted.length) - 1));
+        int index =
+                Math.min(
+                        sorted.length - 1,
+                        Math.max(0, (int) Math.ceil(percentile * sorted.length) - 1));
         return sorted[index];
     }
 
@@ -198,8 +208,8 @@ public final class ParticleBenchmarkRunner {
         return Math.max(SEARCH_ALIGNMENT, value / SEARCH_ALIGNMENT * SEARCH_ALIGNMENT);
     }
 
-    private static String toJson(ParticleSystem system, List<Measurement> measurements,
-            int sustainedParticleCount) {
+    private static String toJson(
+            ParticleSystem system, List<Measurement> measurements, int sustainedParticleCount) {
         StringBuilder json = new StringBuilder(1024);
         json.append("{\n");
         appendJsonString(json, "vendor", glGetString(GL_VENDOR), true);
@@ -207,25 +217,35 @@ public final class ParticleBenchmarkRunner {
         appendJsonString(json, "openGlVersion", glGetString(GL_VERSION), true);
         json.append("  \"runtimeParticleLimit\": ").append(system.maxParticleCount()).append(",\n");
         json.append("  \"targetP95Milliseconds\": ")
-                .append(format(TARGET_P95_MILLISECONDS)).append(",\n");
+                .append(format(TARGET_P95_MILLISECONDS))
+                .append(",\n");
         json.append("  \"maxSustainedParticles\": ").append(sustainedParticleCount).append(",\n");
         json.append("  \"measurements\": [\n");
         for (int i = 0; i < measurements.size(); i++) {
             Measurement measurement = measurements.get(i);
-            json.append("    {\"particles\": ").append(measurement.particleCount())
-                    .append(", \"wallMedianMs\": ").append(format(measurement.wallMedianMilliseconds()))
-                    .append(", \"wallP95Ms\": ").append(format(measurement.wallP95Milliseconds()))
-                    .append(", \"gpuMedianMs\": ").append(format(measurement.gpuMedianMilliseconds()))
-                    .append(", \"gpuP95Ms\": ").append(format(measurement.gpuP95Milliseconds()))
-                    .append(", \"meets60Hz\": ").append(measurement.meetsTarget()).append('}');
+            json.append("    {\"particles\": ")
+                    .append(measurement.particleCount())
+                    .append(", \"wallMedianMs\": ")
+                    .append(format(measurement.wallMedianMilliseconds()))
+                    .append(", \"wallP95Ms\": ")
+                    .append(format(measurement.wallP95Milliseconds()))
+                    .append(", \"gpuMedianMs\": ")
+                    .append(format(measurement.gpuMedianMilliseconds()))
+                    .append(", \"gpuP95Ms\": ")
+                    .append(format(measurement.gpuP95Milliseconds()))
+                    .append(", \"meets60Hz\": ")
+                    .append(measurement.meetsTarget())
+                    .append('}');
             json.append(i + 1 < measurements.size() ? ",\n" : "\n");
         }
         json.append("  ]\n}");
         return json.toString();
     }
 
-    private static void appendJsonString(StringBuilder json, String name, String value, boolean comma) {
-        String escaped = value == null ? "unknown" : value.replace("\\", "\\\\").replace("\"", "\\\"");
+    private static void appendJsonString(
+            StringBuilder json, String name, String value, boolean comma) {
+        String escaped =
+                value == null ? "unknown" : value.replace("\\", "\\\\").replace("\"", "\\\"");
         json.append("  \"").append(name).append("\": \"").append(escaped).append('"');
         json.append(comma ? ",\n" : "\n");
     }
@@ -243,26 +263,38 @@ public final class ParticleBenchmarkRunner {
             String fileName = outputPath.getFileName().toString().toLowerCase(Locale.ROOT);
             Files.writeString(outputPath, fileName.endsWith(".csv") ? toCsv(measurements) : json);
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not write benchmark result to " + outputPath, exception);
+            throw new IllegalStateException(
+                    "Could not write benchmark result to " + outputPath, exception);
         }
     }
 
     private static String toCsv(List<Measurement> measurements) {
-        StringBuilder csv = new StringBuilder(
-                "particles,wall_median_ms,wall_p95_ms,gpu_median_ms,gpu_p95_ms,meets_60hz\n");
+        StringBuilder csv =
+                new StringBuilder(
+                        "particles,wall_median_ms,wall_p95_ms,gpu_median_ms,gpu_p95_ms,meets_60hz\n");
         for (Measurement measurement : measurements) {
-            csv.append(measurement.particleCount()).append(',')
-                    .append(format(measurement.wallMedianMilliseconds())).append(',')
-                    .append(format(measurement.wallP95Milliseconds())).append(',')
-                    .append(format(measurement.gpuMedianMilliseconds())).append(',')
-                    .append(format(measurement.gpuP95Milliseconds())).append(',')
-                    .append(measurement.meetsTarget()).append('\n');
+            csv.append(measurement.particleCount())
+                    .append(',')
+                    .append(format(measurement.wallMedianMilliseconds()))
+                    .append(',')
+                    .append(format(measurement.wallP95Milliseconds()))
+                    .append(',')
+                    .append(format(measurement.gpuMedianMilliseconds()))
+                    .append(',')
+                    .append(format(measurement.gpuP95Milliseconds()))
+                    .append(',')
+                    .append(measurement.meetsTarget())
+                    .append('\n');
         }
         return csv.toString();
     }
 
-    private record Measurement(int particleCount, double wallMedianMilliseconds, double wallP95Milliseconds,
-            double gpuMedianMilliseconds, double gpuP95Milliseconds) {
+    private record Measurement(
+            int particleCount,
+            double wallMedianMilliseconds,
+            double wallP95Milliseconds,
+            double gpuMedianMilliseconds,
+            double gpuP95Milliseconds) {
         boolean meetsTarget() {
             return wallMedianMilliseconds <= TARGET_MEDIAN_MILLISECONDS
                     && wallP95Milliseconds <= TARGET_P95_MILLISECONDS;

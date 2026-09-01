@@ -1,14 +1,5 @@
 package com.particle.sim.ui;
 
-import com.particle.sim.settings.AppSettings;
-import org.lwjgl.util.nfd.NFDFilterItem;
-import org.lwjgl.util.nfd.NFDSaveDialogArgs;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
-
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.util.nfd.NativeFileDialog.NFD_CANCEL;
 import static org.lwjgl.util.nfd.NativeFileDialog.NFD_FreePath;
@@ -19,13 +10,19 @@ import static org.lwjgl.util.nfd.NativeFileDialog.NFD_OpenDialog;
 import static org.lwjgl.util.nfd.NativeFileDialog.NFD_Quit;
 import static org.lwjgl.util.nfd.NativeFileDialog.NFD_SaveDialog_With;
 
+import com.particle.sim.settings.AppSettings;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import org.lwjgl.util.nfd.NFDFilterItem;
+import org.lwjgl.util.nfd.NFDSaveDialogArgs;
+
 public final class PresetFileDialog {
     private static final String DEFAULT_SAVE_NAME = "preset" + AppSettings.PRESET_EXTENSION;
-
     private static boolean initialized;
 
-    private PresetFileDialog() {
-    }
+    private PresetFileDialog() {}
 
     public static void init() {
         if (initialized) {
@@ -64,7 +61,8 @@ public final class PresetFileDialog {
 
     private static void ensureInitialized() {
         if (!initialized) {
-            throw new IllegalStateException("PresetFileDialog.init() must be called before showing dialogs.");
+            throw new IllegalStateException(
+                    "PresetFileDialog.init() must be called before showing dialogs.");
         }
     }
 
@@ -78,27 +76,32 @@ public final class PresetFileDialog {
                     .spec(stack.UTF8(AppSettings.PRESET_EXTENSION.substring(1)));
 
             var outPath = stack.mallocPointer(1);
-            int result = save
-                    ? NFD_SaveDialog_With(outPath, NFDSaveDialogArgs.calloc(stack)
-                            .filterList(filters)
-                            .defaultPath(stack.UTF8(defaultDirectory.toString()))
-                            .defaultName(stack.UTF8(DEFAULT_SAVE_NAME)))
-                    : NFD_OpenDialog(outPath, filters, defaultDirectory.toString());
+            int result =
+                    save
+                            ? NFD_SaveDialog_With(
+                                    outPath,
+                                    NFDSaveDialogArgs.calloc(stack)
+                                            .filterList(filters)
+                                            .defaultPath(stack.UTF8(defaultDirectory.toString()))
+                                            .defaultName(stack.UTF8(DEFAULT_SAVE_NAME)))
+                            : NFD_OpenDialog(outPath, filters, defaultDirectory.toString());
 
             if (result == NFD_CANCEL) {
                 return Optional.empty();
             }
             if (result != NFD_OKAY) {
                 String details = NFD_GetError();
-                throw new IllegalStateException(details == null || details.isBlank()
-                        ? "The native file dialog could not be opened."
-                        : details);
+                throw new IllegalStateException(
+                        details == null || details.isBlank()
+                                ? "The native file dialog could not be opened."
+                                : details);
             }
 
             long nativePath = outPath.get(0);
             try {
                 Path selectedPath = Path.of(outPath.getStringUTF8(0));
-                return Optional.of(save ? AppSettings.ensurePresetExtension(selectedPath) : selectedPath);
+                return Optional.of(
+                        save ? AppSettings.ensurePresetExtension(selectedPath) : selectedPath);
             } finally {
                 NFD_FreePath(nativePath);
             }

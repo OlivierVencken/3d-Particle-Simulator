@@ -1,13 +1,12 @@
 package com.particle.sim.settings;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.Test;
 
 class DebouncedSettingsSaverTest {
     @Test
@@ -58,7 +57,7 @@ class DebouncedSettingsSaverTest {
 
     @Test
     void rejectsNegativeDebounceDuration() {
-        assertThrows(IllegalArgumentException.class, () -> new DebouncedSettingsSaver(-0.1, () -> {
-        }));
+        assertThrows(
+                IllegalArgumentException.class, () -> new DebouncedSettingsSaver(-0.1, () -> {}));
     }
 }

@@ -1,19 +1,19 @@
 package com.particle.sim.ui.theme;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class DesignTokensTest {
     @ParameterizedTest
     @CsvSource({
-            "1.0, 378, 36, 14.4",
-            "1.25, 472.5, 45, 18",
-            "1.5, 567, 54, 21.6",
-            "2.0, 756, 72, 28.8"
+        "1.0, 378, 36, 14.4",
+        "1.25, 472.5, 45, 18",
+        "1.5, 567, 54, 21.6",
+        "2.0, 756, 72, 28.8"
     })
     void scalesSemanticMeasurementsFromTheCleanBase(
             float scale, float sidebarWidth, float commandBarHeight, float bodyFontSize) {

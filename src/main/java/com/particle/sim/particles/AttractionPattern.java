@@ -14,7 +14,6 @@ public enum AttractionPattern {
     HIERARCHY("Hierarchy"),
     RING("Ring attraction"),
     CHAIN("Chain attraction");
-
     private final String label;
 
     AttractionPattern(String label) {

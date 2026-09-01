@@ -1,8 +1,8 @@
 package com.particle.sim.ui.sidebar.sections;
 
 import com.particle.sim.ui.SimulationViewActions;
-import com.particle.sim.ui.components.ModalPopup;
 import com.particle.sim.ui.components.Button;
+import com.particle.sim.ui.components.ModalPopup;
 import com.particle.sim.ui.components.PopupActions;
 import com.particle.sim.ui.theme.ComponentVariant;
 import com.particle.sim.ui.theme.DesignTokens;
@@ -39,8 +39,10 @@ final class ClearParticlesPopup extends ModalPopup {
         DesignTokens tokens = Theme.tokens();
         ImGui.pushFont(Fonts.medium());
         try {
-            ImGui.textUnformatted("Remove %,d particles from the simulation?".formatted(particleCount));
-            ImGui.textDisabled("This cannot be undone, but new particles can be spawned afterwards.");
+            ImGui.textUnformatted(
+                    "Remove %,d particles from the simulation?".formatted(particleCount));
+            ImGui.textDisabled(
+                    "This cannot be undone, but new particles can be spawned afterwards.");
             PopupActions.row(() -> renderActions(tokens));
         } finally {
             ImGui.popFont();
@@ -48,14 +50,22 @@ final class ClearParticlesPopup extends ModalPopup {
     }
 
     private void renderActions(DesignTokens tokens) {
-        if (Button.text("Clear particles", "confirm-clear-particles", ComponentVariant.DESTRUCTIVE,
-                tokens.buttonWidthXxl(), tokens.controlHeight())) {
+        if (Button.text(
+                "Clear particles",
+                "confirm-clear-particles",
+                ComponentVariant.DESTRUCTIVE,
+                tokens.buttonWidthXxl(),
+                tokens.controlHeight())) {
             actions.clear();
             close();
         }
         ImGui.sameLine();
-        if (Button.text("Cancel", "cancel-clear-particles", ComponentVariant.SECONDARY,
-                tokens.buttonWidthMd(), tokens.controlHeight())) {
+        if (Button.text(
+                "Cancel",
+                "cancel-clear-particles",
+                ComponentVariant.SECONDARY,
+                tokens.buttonWidthMd(),
+                tokens.controlHeight())) {
             close();
         }
     }

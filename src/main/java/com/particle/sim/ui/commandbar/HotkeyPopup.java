@@ -1,29 +1,31 @@
 package com.particle.sim.ui.commandbar;
 
-import com.particle.sim.input.AppHotkeys;
-import com.particle.sim.input.HotkeyDefinition;
-import com.particle.sim.input.HotkeyContext;
-import com.particle.sim.ui.components.PopupWindow;
-import com.particle.sim.ui.components.Text;
-import com.particle.sim.ui.theme.Fonts;
-import com.particle.sim.ui.theme.DesignTokens;
-
-import imgui.ImGui;
-import imgui.flag.ImGuiTableFlags;
-
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_F;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_F3;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_F11;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_F3;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_R;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 
+import com.particle.sim.input.AppHotkeys;
+import com.particle.sim.input.HotkeyContext;
+import com.particle.sim.input.HotkeyDefinition;
+import com.particle.sim.ui.components.PopupWindow;
+import com.particle.sim.ui.components.Text;
+import com.particle.sim.ui.theme.DesignTokens;
+import com.particle.sim.ui.theme.Fonts;
+import imgui.ImGui;
+import imgui.flag.ImGuiTableFlags;
+
 final class HotkeyPopup extends PopupWindow {
     HotkeyPopup() {
-        super("Hotkeys", "hotkeys-popup",
-                DesignTokens.unscaled().popupWidth(), DesignTokens.unscaled().hotkeysPopupHeight(),
+        super(
+                "Hotkeys",
+                "hotkeys-popup",
+                DesignTokens.unscaled().popupWidth(),
+                DesignTokens.unscaled().hotkeysPopupHeight(),
                 "##command-bar");
     }
 
@@ -38,7 +40,10 @@ final class HotkeyPopup extends PopupWindow {
     }
 
     private void renderHotkeys() {
-        int flags = ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchProp;
+        int flags =
+                ImGuiTableFlags.BordersInnerV
+                        | ImGuiTableFlags.RowBg
+                        | ImGuiTableFlags.SizingStretchProp;
         if (!ImGui.beginTable("hotkey-list", 3, flags)) {
             return;
         }
@@ -55,8 +60,8 @@ final class HotkeyPopup extends PopupWindow {
             ImGui.tableNextColumn();
             ImGui.textUnformatted(hotkey.action().displayName());
             ImGui.tableNextColumn();
-            ImGui.textUnformatted(hotkey.context() == HotkeyContext.GLOBAL
-                    ? "Global" : "Simulation");
+            ImGui.textUnformatted(
+                    hotkey.context() == HotkeyContext.GLOBAL ? "Global" : "Simulation");
         }
 
         ImGui.endTable();

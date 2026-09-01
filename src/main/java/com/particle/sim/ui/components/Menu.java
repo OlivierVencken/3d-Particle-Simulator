@@ -7,8 +7,7 @@ import imgui.flag.ImGuiCol;
 
 /** Shared popup menu items and separators with stable identifiers. */
 public final class Menu {
-    private Menu() {
-    }
+    private Menu() {}
 
     public static boolean beginAnchored(String id, float x, float y) {
         if (ImGui.isPopupOpen(id)) {
@@ -22,12 +21,14 @@ public final class Menu {
     }
 
     public static boolean item(String label, String id, boolean selected, boolean enabled) {
-        var palette = Theme.palette(selected ? ComponentVariant.SELECTED : ComponentVariant.SECONDARY);
+        var palette =
+                Theme.palette(selected ? ComponentVariant.SELECTED : ComponentVariant.SECONDARY);
         ImGui.pushStyleColor(ImGuiCol.Header, palette.background().vec4());
         ImGui.pushStyleColor(ImGuiCol.HeaderHovered, palette.hovered().vec4());
         ImGui.pushStyleColor(ImGuiCol.HeaderActive, palette.active().vec4());
         try {
-            return ImGui.menuItem(Button.itemLabel(label, "menu-item-" + id), "", selected, enabled);
+            return ImGui.menuItem(
+                    Button.itemLabel(label, "menu-item-" + id), "", selected, enabled);
         } finally {
             ImGui.popStyleColor(3);
         }

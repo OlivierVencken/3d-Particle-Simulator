@@ -4,9 +4,7 @@ import imgui.ImGui;
 import imgui.flag.ImGuiFocusedFlags;
 import imgui.flag.ImGuiKey;
 
-/**
- * Base for modal popups that require a decision before the user can continue.
- */
+/** Base for modal popups that require a decision before the user can continue. */
 public abstract class ModalPopup extends PopupBase {
     private boolean openRequested;
     private boolean open;
@@ -23,7 +21,11 @@ public abstract class ModalPopup extends PopupBase {
         super(title, id, 0.0f, 0.0f, returnFocusWindow);
     }
 
-    protected ModalPopup(String title, String id, float defaultWidth, float defaultHeight,
+    protected ModalPopup(
+            String title,
+            String id,
+            float defaultWidth,
+            float defaultHeight,
             String returnFocusWindow) {
         super(title, id, defaultWidth, defaultHeight, returnFocusWindow);
     }

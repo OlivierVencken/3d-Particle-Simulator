@@ -15,7 +15,10 @@ class AttractionMatrixEditorTest {
             float cellSize = AttractionMatrixEditor.fittedCellSize(availableWidth, groupCount);
             float matrixWidth = (groupCount + 1) * cellSize + groupCount * 3.6f;
 
-            assertEquals(availableWidth, matrixWidth, EPSILON,
+            assertEquals(
+                    availableWidth,
+                    matrixWidth,
+                    EPSILON,
                     "Matrix width for " + groupCount + " groups");
         }
     }
@@ -32,10 +35,9 @@ class AttractionMatrixEditorTest {
         float scaledGap = 8.0f;
         int groupCount = 16;
 
-        float cellSize = AttractionMatrixEditor.fittedCellSize(availableWidth, groupCount, scaledGap);
+        float cellSize =
+                AttractionMatrixEditor.fittedCellSize(availableWidth, groupCount, scaledGap);
 
-        assertEquals(availableWidth,
-                (groupCount + 1) * cellSize + groupCount * scaledGap,
-                EPSILON);
+        assertEquals(availableWidth, (groupCount + 1) * cellSize + groupCount * scaledGap, EPSILON);
     }
 }

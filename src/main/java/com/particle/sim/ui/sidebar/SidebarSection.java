@@ -6,7 +6,6 @@ public enum SidebarSection {
     VISUALS("Visuals"),
     CAMERA("Camera"),
     MATRIX("Attraction Matrix");
-
     private final String label;
 
     SidebarSection(String label) {

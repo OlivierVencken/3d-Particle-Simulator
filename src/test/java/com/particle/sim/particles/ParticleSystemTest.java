@@ -1,13 +1,13 @@
 package com.particle.sim.particles;
 
-import com.particle.sim.settings.SimulationDefaults;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.particle.sim.settings.SimulationDefaults;
+import org.junit.jupiter.api.Test;
 
 class ParticleSystemTest {
     private static final float EPSILON = 0.0001f;
@@ -157,9 +157,10 @@ class ParticleSystemTest {
     void stepMethodIsSafeBeforeInitialization() {
         ParticleSystem system = new ParticleSystem();
 
-        assertDoesNotThrow(() -> {
-            system.step();
-        });
+        assertDoesNotThrow(
+                () -> {
+                    system.step();
+                });
         assertEquals(65_536, system.particleCount());
     }
 
@@ -178,6 +179,6 @@ class ParticleSystemTest {
         system.invertAttractionMatrix();
 
         assertEquals(-0.2f, system.attraction(1, 2), EPSILON);
-        assertSame(system.getAttractionMatrix(), system.getAttractionMatrix());
+        assertSame(system.attractionMatrix(), system.attractionMatrix());
     }
 }

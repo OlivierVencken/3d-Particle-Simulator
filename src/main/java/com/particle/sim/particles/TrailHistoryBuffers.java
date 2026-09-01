@@ -1,7 +1,5 @@
 package com.particle.sim.particles;
 
-import com.particle.sim.settings.SimulationDefaults;
-
 import static org.lwjgl.opengl.GL43C.GL_DYNAMIC_DRAW;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
 import static org.lwjgl.opengl.GL43C.glBindBuffer;
@@ -9,10 +7,11 @@ import static org.lwjgl.opengl.GL43C.glBufferData;
 import static org.lwjgl.opengl.GL43C.glDeleteBuffers;
 import static org.lwjgl.opengl.GL43C.glGenBuffers;
 
+import com.particle.sim.settings.SimulationDefaults;
+
 final class TrailHistoryBuffers {
     private static final int COMPONENTS_PER_PARTICLE = 4;
     private static final int BYTES_PER_PARTICLE = COMPONENTS_PER_PARTICLE * Float.BYTES;
-
     private int historySsbo;
     private int particleCapacity;
     private int sampleCapacity;
@@ -53,8 +52,11 @@ final class TrailHistoryBuffers {
         }
 
         long bytesPerSample = (long) particleCount * BYTES_PER_PARTICLE;
-        int budgetedSamples = (int) Math.min(Integer.MAX_VALUE,
-                SimulationDefaults.TRAIL_MEMORY_BUDGET_BYTES / bytesPerSample);
+        int budgetedSamples =
+                (int)
+                        Math.min(
+                                Integer.MAX_VALUE,
+                                SimulationDefaults.TRAIL_MEMORY_BUDGET_BYTES / bytesPerSample);
         int effectiveSamples = Math.min(desiredSamples, budgetedSamples);
         if (effectiveSamples < 2) {
             dispose();
@@ -88,7 +90,9 @@ final class TrailHistoryBuffers {
     }
 
     private void ensureCapacity(int particleCount, int desiredSamples) {
-        if (historySsbo != 0 && particleCapacity == particleCount && sampleCapacity == desiredSamples) {
+        if (historySsbo != 0
+                && particleCapacity == particleCount
+                && sampleCapacity == desiredSamples) {
             return;
         }
 

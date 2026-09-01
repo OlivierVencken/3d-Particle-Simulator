@@ -1,12 +1,11 @@
 package com.particle.sim.particles;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.FloatBuffer;
 import java.util.Random;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 class ParticleSpawnerTest {
     private static final float EPSILON = 0.0001f;
@@ -19,7 +18,8 @@ class ParticleSpawnerTest {
             FloatBuffer positions = FloatBuffer.allocate(16);
             FloatBuffer velocities = FloatBuffer.allocate(16);
 
-            ParticleSpawner.spawnParticles(positions, velocities, 4, BOUNDS, GROUP_COUNT, mode, new Random(12));
+            ParticleSpawner.spawnParticles(
+                    positions, velocities, 4, BOUNDS, GROUP_COUNT, mode, new Random(12));
 
             assertEquals(16, positions.position(), mode + " did not write all positions");
             assertEquals(16, velocities.position(), mode + " did not write all velocities");
@@ -33,7 +33,8 @@ class ParticleSpawnerTest {
 
             for (int i = 0; i < 64; i++) {
                 float group = particles.positions.get(i * 4 + 3);
-                assertTrue(group >= 0.0f && group < GROUP_COUNT && group == (int) group,
+                assertTrue(
+                        group >= 0.0f && group < GROUP_COUNT && group == (int) group,
                         mode + " assigned invalid group " + group);
 
                 assertTrue(Math.abs(particles.velocities.get(i * 4)) <= 0.1f + EPSILON);
@@ -124,9 +125,18 @@ class ParticleSpawnerTest {
             float centerY = (group % 2 == 0 ? 1.0f : -1.0f) * BOUNDS * 0.3f;
             float centerZ = BOUNDS * 0.5f * (float) Math.sin(clusterTheta);
 
-            assertWithin(centerX - BOUNDS * 0.1f, centerX + BOUNDS * 0.1f, particles.positions.get(i * 4));
-            assertWithin(centerY - BOUNDS * 0.1f, centerY + BOUNDS * 0.1f, particles.positions.get(i * 4 + 1));
-            assertWithin(centerZ - BOUNDS * 0.1f, centerZ + BOUNDS * 0.1f, particles.positions.get(i * 4 + 2));
+            assertWithin(
+                    centerX - BOUNDS * 0.1f,
+                    centerX + BOUNDS * 0.1f,
+                    particles.positions.get(i * 4));
+            assertWithin(
+                    centerY - BOUNDS * 0.1f,
+                    centerY + BOUNDS * 0.1f,
+                    particles.positions.get(i * 4 + 1));
+            assertWithin(
+                    centerZ - BOUNDS * 0.1f,
+                    centerZ + BOUNDS * 0.1f,
+                    particles.positions.get(i * 4 + 2));
         }
     }
 
@@ -144,7 +154,8 @@ class ParticleSpawnerTest {
     private static SpawnedParticles spawn(SpawnMode mode, int count, long seed) {
         FloatBuffer positions = FloatBuffer.allocate(count * 4);
         FloatBuffer velocities = FloatBuffer.allocate(count * 4);
-        ParticleSpawner.spawnParticles(positions, velocities, count, BOUNDS, GROUP_COUNT, mode, new Random(seed));
+        ParticleSpawner.spawnParticles(
+                positions, velocities, count, BOUNDS, GROUP_COUNT, mode, new Random(seed));
         positions.flip();
         velocities.flip();
         return new SpawnedParticles(positions, velocities);
@@ -158,10 +169,10 @@ class ParticleSpawnerTest {
     }
 
     private static void assertWithin(float min, float max, float value) {
-        assertTrue(value >= min - EPSILON && value <= max + EPSILON,
+        assertTrue(
+                value >= min - EPSILON && value <= max + EPSILON,
                 value + " was not within [" + min + ", " + max + "]");
     }
 
-    private record SpawnedParticles(FloatBuffer positions, FloatBuffer velocities) {
-    }
+    private record SpawnedParticles(FloatBuffer positions, FloatBuffer velocities) {}
 }

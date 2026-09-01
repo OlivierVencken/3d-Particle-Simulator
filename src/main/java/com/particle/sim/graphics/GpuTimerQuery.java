@@ -13,7 +13,6 @@ import static org.lwjgl.opengl.GL43C.glGetQueryObjectui64;
 public final class GpuTimerQuery {
     private static final int QUERY_RING_SIZE = 4;
     private static final double NANOSECONDS_PER_MILLISECOND = 1_000_000.0;
-
     private final int[] queries = new int[QUERY_RING_SIZE];
     private final boolean[] pending = new boolean[QUERY_RING_SIZE];
     private int writeIndex;
@@ -63,8 +62,9 @@ public final class GpuTimerQuery {
     private void poll() {
         while (pending[readIndex]
                 && glGetQueryObjecti(queries[readIndex], GL_QUERY_RESULT_AVAILABLE) != 0) {
-            latestMilliseconds = glGetQueryObjectui64(queries[readIndex], GL_QUERY_RESULT)
-                    / NANOSECONDS_PER_MILLISECOND;
+            latestMilliseconds =
+                    glGetQueryObjectui64(queries[readIndex], GL_QUERY_RESULT)
+                            / NANOSECONDS_PER_MILLISECOND;
             pending[readIndex] = false;
             readIndex = (readIndex + 1) % queries.length;
         }

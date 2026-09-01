@@ -2,8 +2,8 @@ package com.particle.sim.ui.sidebar.sections;
 
 import com.particle.sim.ui.SimulationViewActions;
 import com.particle.sim.ui.SimulationViewModel;
-import com.particle.sim.ui.components.Controls;
 import com.particle.sim.ui.components.Button;
+import com.particle.sim.ui.components.Controls;
 import com.particle.sim.ui.components.Text;
 import com.particle.sim.ui.theme.ComponentVariant;
 import imgui.ImGui;
@@ -13,9 +13,21 @@ final class CameraSection {
 
     void render(SimulationViewModel.Camera camera, SimulationViewActions.Camera actions) {
         Controls.sectionHeading("Movement");
-        controls.settingSlider("Sensitivity", "camera-sensitivity", camera.sensitivity(), 0.0001f, 0.01f, 4,
+        controls.settingSlider(
+                "Sensitivity",
+                "camera-sensitivity",
+                camera.sensitivity(),
+                0.0001f,
+                0.01f,
+                4,
                 actions::setSensitivity);
-        controls.settingSlider("Fly speed", "camera-speed", camera.flySpeed(), 0.1f, 30.0f, 1,
+        controls.settingSlider(
+                "Fly speed",
+                "camera-speed",
+                camera.flySpeed(),
+                0.1f,
+                30.0f,
+                1,
                 actions::setFlySpeed);
         ImGui.spacing();
         if (Button.text("Reset camera", "camera-reset", ComponentVariant.SECONDARY)) {

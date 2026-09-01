@@ -4,9 +4,14 @@ import java.nio.FloatBuffer;
 import java.util.Random;
 
 public final class ParticleSpawner {
-
-    public static void spawnParticles(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, SpawnMode mode, Random random) {
+    public static void spawnParticles(
+            FloatBuffer positions,
+            FloatBuffer velocities,
+            int count,
+            float bounds,
+            int groupCount,
+            SpawnMode mode,
+            Random random) {
         switch (mode) {
             case POINT:
                 spawnPoint(positions, velocities, count, groupCount, random);
@@ -44,7 +49,11 @@ public final class ParticleSpawner {
                 .put(0.0f);
     }
 
-    private static void spawnPoint(FloatBuffer positions, FloatBuffer velocities, int count, int groupCount,
+    private static void spawnPoint(
+            FloatBuffer positions,
+            FloatBuffer velocities,
+            int count,
+            int groupCount,
             Random random) {
         for (int i = 0; i < count; i++) {
             positions.put(0.0f).put(0.0f).put(0.0f).put(random.nextInt(groupCount));
@@ -52,8 +61,13 @@ public final class ParticleSpawner {
         }
     }
 
-    private static void spawnShell(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnShell(
+            FloatBuffer positions,
+            FloatBuffer velocities,
+            int count,
+            float bounds,
+            int groupCount,
+            Random random) {
         float r = bounds * 0.6f;
         for (int i = 0; i < count; i++) {
             float theta = random.nextFloat() * (float) Math.PI * 2.0f;
@@ -67,8 +81,13 @@ public final class ParticleSpawner {
         }
     }
 
-    private static void spawnSpherical(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnSpherical(
+            FloatBuffer positions,
+            FloatBuffer velocities,
+            int count,
+            float bounds,
+            int groupCount,
+            Random random) {
         for (int i = 0; i < count; i++) {
             float r = random.nextFloat() * bounds * 0.6f;
             float theta = random.nextFloat() * (float) Math.PI * 2.0f;
@@ -82,8 +101,13 @@ public final class ParticleSpawner {
         }
     }
 
-    private static void spawnDisc(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnDisc(
+            FloatBuffer positions,
+            FloatBuffer velocities,
+            int count,
+            float bounds,
+            int groupCount,
+            Random random) {
         for (int i = 0; i < count; i++) {
             float r = (float) Math.sqrt(random.nextFloat()) * bounds * 0.8f;
             float theta = random.nextFloat() * (float) Math.PI * 2.0f;
@@ -96,14 +120,20 @@ public final class ParticleSpawner {
         }
     }
 
-    private static void spawnSpiral(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnSpiral(
+            FloatBuffer positions,
+            FloatBuffer velocities,
+            int count,
+            float bounds,
+            int groupCount,
+            Random random) {
         int arms = 3;
         for (int i = 0; i < count; i++) {
             int group = random.nextInt(groupCount);
             float t = (float) i / count;
             float r = bounds * 0.8f * t;
-            float theta = t * (float) Math.PI * 8.0f + (group % arms) * ((float) Math.PI * 2.0f / arms);
+            float theta =
+                    t * (float) Math.PI * 8.0f + (group % arms) * ((float) Math.PI * 2.0f / arms);
             float x = r * (float) Math.cos(theta);
             float y = (random.nextFloat() - 0.5f) * bounds * 0.2f * (1.0f - t);
             float z = r * (float) Math.sin(theta);
@@ -113,8 +143,13 @@ public final class ParticleSpawner {
         }
     }
 
-    private static void spawnClusters(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnClusters(
+            FloatBuffer positions,
+            FloatBuffer velocities,
+            int count,
+            float bounds,
+            int groupCount,
+            Random random) {
         float clusterRadius = bounds * 0.5f;
         for (int i = 0; i < count; i++) {
             int group = random.nextInt(groupCount);
@@ -132,11 +167,17 @@ public final class ParticleSpawner {
         }
     }
 
-    private static void spawnGrid(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnGrid(
+            FloatBuffer positions,
+            FloatBuffer velocities,
+            int count,
+            float bounds,
+            int groupCount,
+            Random random) {
         int gridSize = (int) Math.ceil(Math.pow(count, 1.0 / 3.0));
-        if (gridSize == 0)
+        if (gridSize == 0) {
             gridSize = 1;
+        }
         float gridSpacing = (bounds * 2.0f) / gridSize;
 
         for (int i = 0; i < count; i++) {
@@ -152,8 +193,13 @@ public final class ParticleSpawner {
         }
     }
 
-    private static void spawnRandom(FloatBuffer positions, FloatBuffer velocities, int count, float bounds,
-            int groupCount, Random random) {
+    private static void spawnRandom(
+            FloatBuffer positions,
+            FloatBuffer velocities,
+            int count,
+            float bounds,
+            int groupCount,
+            Random random) {
         for (int i = 0; i < count; i++) {
             float x = (random.nextFloat() - 0.5f) * 2.0f * bounds;
             float y = (random.nextFloat() - 0.5f) * 2.0f * bounds;
