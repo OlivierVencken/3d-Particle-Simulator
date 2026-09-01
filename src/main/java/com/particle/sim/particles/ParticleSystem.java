@@ -77,23 +77,14 @@ public final class ParticleSystem {
 
     public void render(FramebufferViewport viewport, float[] viewMatrix) {
         renderer.render(
-                viewport,
-                viewMatrix,
-                particleBuffers,
-                spatialGridBuffers,
-                particleCount(),
-                pointSize(),
-                fixedParticleScreenSize(),
-                effectEnabled(EffectMode.GLOW),
-                effectEnabled(EffectMode.TRAILS),
-                colorMode().ordinal(),
-                groupCount(),
-                maxVelocity(),
-                bounds(),
-                interactionRange(),
-                glowSettings(),
-                trailSettings(),
-                trailHistoryBuffers);
+                new RenderFrame(
+                        viewport,
+                        viewMatrix,
+                        particleBuffers,
+                        spatialGridBuffers,
+                        trailHistoryBuffers,
+                        particleCount(),
+                        config));
     }
 
     public void dispose() {
