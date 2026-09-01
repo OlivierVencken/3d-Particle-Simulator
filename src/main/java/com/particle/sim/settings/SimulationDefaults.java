@@ -1,8 +1,8 @@
 package com.particle.sim.settings;
 
-import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
-import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.particles.rendering.ColorMode;
+import com.particle.sim.particles.spawning.SpawnMode;
 import imgui.ImVec4;
 
 public final class SimulationDefaults {

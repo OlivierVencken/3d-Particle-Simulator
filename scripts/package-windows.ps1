@@ -32,7 +32,7 @@ $artifactId = [string]$pom.project.artifactId
 $version = [string]$pom.project.version
 $appName = "3D Particle Simulator"
 $safeName = "3d-particle-simulator"
-$mainClass = "com.particle.sim.ParticleSimulatorApp"
+$mainClass = "com.particle.sim.Main"
 $vendor = "OlivierVencken"
 
 $targetDir = Join-Path $root "target"

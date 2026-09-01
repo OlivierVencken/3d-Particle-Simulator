@@ -8,7 +8,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_R;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 
-import com.particle.sim.ParticleSimulatorApp;
+import com.particle.sim.app.ParticleSimulatorApp;
 import java.util.List;
 
 public final class AppHotkeys {

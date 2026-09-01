@@ -193,7 +193,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.particle.sim.ParticleSimulatorApp</mainClass>
+                            <mainClass>com.particle.sim.Main</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
@@ -223,7 +223,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.5.0</version>
                 <configuration>
-                    <mainClass>com.particle.sim.ParticleSimulatorApp</mainClass>
+                    <mainClass>com.particle.sim.Main</mainClass>
                 </configuration>
             </plugin>
             <plugin>

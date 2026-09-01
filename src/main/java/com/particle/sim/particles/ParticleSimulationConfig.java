@@ -1,5 +1,10 @@
 package com.particle.sim.particles;
 
+import com.particle.sim.particles.rendering.ColorMode;
+import com.particle.sim.particles.rendering.EffectMode;
+import com.particle.sim.particles.rendering.GlowSettings;
+import com.particle.sim.particles.rendering.TrailSettings;
+import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.settings.SimulationDefaults;
 import imgui.ImVec4;
 import java.util.EnumSet;

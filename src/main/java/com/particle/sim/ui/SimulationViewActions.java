@@ -1,10 +1,10 @@
 package com.particle.sim.ui;
 
-import com.particle.sim.particles.AttractionPattern;
-import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
-import com.particle.sim.particles.EffectMode;
-import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.particles.attraction.AttractionPattern;
+import com.particle.sim.particles.rendering.ColorMode;
+import com.particle.sim.particles.rendering.EffectMode;
+import com.particle.sim.particles.spawning.SpawnMode;
 
 /** Commands available to the presentation layer. Setting commands also schedule persistence. */
 public interface SimulationViewActions {

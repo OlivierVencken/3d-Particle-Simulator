@@ -37,9 +37,9 @@ import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-import com.particle.sim.system.StartupFailureException;
-import com.particle.sim.system.StartupValidationResult;
-import com.particle.sim.system.StartupValidator;
+import com.particle.sim.startup.StartupFailureException;
+import com.particle.sim.startup.StartupValidationResult;
+import com.particle.sim.startup.StartupValidator;
 import com.particle.sim.util.ResourceLoader;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;

@@ -1,7 +1,7 @@
 package com.particle.sim.ui.sidebar.sections;
 
-import com.particle.sim.particles.ColorMode;
-import com.particle.sim.particles.EffectMode;
+import com.particle.sim.particles.rendering.ColorMode;
+import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.SimulationViewActions;
 import com.particle.sim.ui.SimulationViewModel;

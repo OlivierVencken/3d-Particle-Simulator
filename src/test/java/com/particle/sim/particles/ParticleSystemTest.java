@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.particle.sim.particles.rendering.ColorMode;
+import com.particle.sim.particles.rendering.EffectMode;
+import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.settings.SimulationDefaults;
 import org.junit.jupiter.api.Test;
 

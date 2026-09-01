@@ -1,9 +1,9 @@
 package com.particle.sim.ui.testing;
 
-import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
-import com.particle.sim.particles.EffectMode;
-import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.particles.rendering.ColorMode;
+import com.particle.sim.particles.rendering.EffectMode;
+import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.ui.SimulationViewDiagnostics;
 import com.particle.sim.ui.SimulationViewModel;
 import imgui.ImVec4;

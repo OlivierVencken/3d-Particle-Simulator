@@ -1,6 +1,6 @@
 package com.particle.sim.ui.commandbar;
 
-import com.particle.sim.AppInfo;
+import com.particle.sim.app.AppInfo;
 import com.particle.sim.ui.components.Button;
 import com.particle.sim.ui.components.PopupWindow;
 import com.particle.sim.ui.components.Text;

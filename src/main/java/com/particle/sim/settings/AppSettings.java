@@ -1,12 +1,12 @@
 package com.particle.sim.settings;
 
 import com.particle.sim.camera.CameraController;
-import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
-import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.ParticleSimulationConfig;
 import com.particle.sim.particles.ParticleSystem;
-import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.particles.rendering.ColorMode;
+import com.particle.sim.particles.rendering.EffectMode;
+import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.ui.SimulationView;
 import java.io.IOException;
 import java.io.InputStream;

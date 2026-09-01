@@ -5,11 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.particle.sim.camera.CameraController;
-import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
-import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.ParticleSystem;
-import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.particles.rendering.ColorMode;
+import com.particle.sim.particles.rendering.EffectMode;
+import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.ui.SimulationView;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;

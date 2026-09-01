@@ -1,9 +1,9 @@
 package com.particle.sim.ui;
 
-import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
-import com.particle.sim.particles.EffectMode;
-import com.particle.sim.particles.SpawnMode;
+import com.particle.sim.particles.rendering.ColorMode;
+import com.particle.sim.particles.rendering.EffectMode;
+import com.particle.sim.particles.spawning.SpawnMode;
 import imgui.ImVec4;
 
 /** Read-only application data exposed to the presentation layer. */

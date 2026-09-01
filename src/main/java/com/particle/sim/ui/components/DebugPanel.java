@@ -6,10 +6,10 @@ import static org.lwjgl.opengl.GL43C.GL_VENDOR;
 import static org.lwjgl.opengl.GL43C.GL_VERSION;
 import static org.lwjgl.opengl.GL43C.glGetString;
 
-import com.particle.sim.AppInfo;
+import com.particle.sim.app.AppInfo;
+import com.particle.sim.diagnostics.SystemLoadMonitor;
+import com.particle.sim.diagnostics.SystemLoadSnapshot;
 import com.particle.sim.settings.SimulationDefaults;
-import com.particle.sim.system.SystemLoadMonitor;
-import com.particle.sim.system.SystemLoadSnapshot;
 import com.particle.sim.ui.SimulationViewActions;
 import com.particle.sim.ui.SimulationViewDiagnostics;
 import com.particle.sim.ui.SimulationViewModel;
