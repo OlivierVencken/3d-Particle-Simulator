@@ -1,6 +1,6 @@
 package com.particle.sim.ui.sidebar.sections;
 
-import com.particle.sim.ui.theme.UIDesignTokens;
+import com.particle.sim.ui.theme.DesignTokens;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SimulationSectionTest {
     @Test
     void playbackActionsStackWhenTwoUsableButtonsCannotFit() {
-        UIDesignTokens tokens = UIDesignTokens.unscaled();
+        DesignTokens tokens = DesignTokens.unscaled();
         float threshold = tokens.pairedControlMinimumWidth() * 2.0f + tokens.spaceMd();
 
         assertFalse(SimulationSection.playbackControlsFitInline(threshold - 0.01f, tokens));

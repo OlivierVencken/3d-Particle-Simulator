@@ -1,6 +1,6 @@
 package com.particle.sim.camera;
 
-import com.particle.sim.ui.UiInputOwnership;
+import com.particle.sim.ui.InputOwnership;
 
 /** Pure state machine for initiating and releasing relative-mouse camera capture. */
 final class CameraCaptureState {
@@ -15,7 +15,7 @@ final class CameraCaptureState {
     private boolean pointerPressArmed = true;
 
     Transition update(boolean leftDown, boolean rightDown, boolean escapeDown,
-            boolean windowFocused, UiInputOwnership ownership) {
+            boolean windowFocused, InputOwnership ownership) {
         boolean leftPressed = leftDown && !previousLeftDown;
         Transition transition = Transition.NONE;
 

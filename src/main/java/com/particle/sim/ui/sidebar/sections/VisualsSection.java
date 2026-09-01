@@ -3,17 +3,17 @@ package com.particle.sim.ui.sidebar.sections;
 import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.settings.SimulationDefaults;
-import com.particle.sim.ui.SimulationUiActions;
-import com.particle.sim.ui.SimulationUiModel;
-import com.particle.sim.ui.components.UIControls;
-import com.particle.sim.ui.components.UIText;
+import com.particle.sim.ui.SimulationViewActions;
+import com.particle.sim.ui.SimulationViewModel;
+import com.particle.sim.ui.components.Controls;
+import com.particle.sim.ui.components.Text;
 
 final class VisualsSection {
-    private static final String[] COLOR_MODES = UIControls.enumLabels(ColorMode.values());
-    private final UIControls controls = new UIControls();
+    private static final String[] COLOR_MODES = Controls.enumLabels(ColorMode.values());
+    private final Controls controls = new Controls();
 
-    void render(SimulationUiModel.Visuals visuals, SimulationUiActions.Visuals actions) {
-        UIControls.sectionHeading("Particle rendering");
+    void render(SimulationViewModel.Visuals visuals, SimulationViewActions.Visuals actions) {
+        Controls.sectionHeading("Particle rendering");
         controls.settingSlider("Particle size", "visuals-size", visuals.pointSize(), 1.0f, 8.0f, 1,
                 actions::setPointSize);
         controls.settingCheckbox("Fixed screen size", "visuals-fixed-size", visuals.fixedParticleScreenSize(),
@@ -21,7 +21,7 @@ final class VisualsSection {
         controls.settingCombo("Color mode", "visuals-color", visuals.colorMode().ordinal(), COLOR_MODES,
                 value -> actions.setColorMode(ColorMode.values()[value]));
 
-        UIText.divider();
+        Text.divider();
 
         effectHeader("Glow", EffectMode.GLOW, visuals, actions);
         if (visuals.effectEnabled(EffectMode.GLOW)) {
@@ -33,10 +33,10 @@ final class VisualsSection {
                     actions::setGlowRadius);
             controls.settingSlider("Falloff", "glow-falloff", visuals.glowFalloff(), 0.05f, 3.0f, 2,
                     actions::setGlowFalloff);
-            UIText.helper("Bloom resolution: 1/%d per axis".formatted(visuals.effectiveBloomDivisor()));
+            Text.helper("Bloom resolution: 1/%d per axis".formatted(visuals.effectiveBloomDivisor()));
         }
 
-        UIText.divider();
+        Text.divider();
 
         effectHeader("Trails", EffectMode.TRAILS, visuals, actions);
         if (visuals.effectEnabled(EffectMode.TRAILS)) {
@@ -49,20 +49,20 @@ final class VisualsSection {
 
         String quality = qualityMessage(visuals);
         if (!quality.isEmpty()) {
-            UIText.divider();
-            UIControls.sectionHeading("Adaptive quality");
-            UIText.helper(quality);
+            Text.divider();
+            Controls.sectionHeading("Adaptive quality");
+            Text.helper(quality);
         }
     }
 
-    private void effectHeader(String label, EffectMode mode, SimulationUiModel.Visuals visuals,
-            SimulationUiActions.Visuals actions) {
-        UIControls.sectionHeading(label);
+    private void effectHeader(String label, EffectMode mode, SimulationViewModel.Visuals visuals,
+            SimulationViewActions.Visuals actions) {
+        Controls.sectionHeading(label);
         controls.settingCheckbox("Enabled", "effect-" + mode.name(), visuals.effectEnabled(mode),
                 value -> actions.setEffectEnabled(mode, value));
     }
 
-    private static String qualityMessage(SimulationUiModel.Visuals visuals) {
+    private static String qualityMessage(SimulationViewModel.Visuals visuals) {
         if (visuals.effectiveTrailParticleStride() > 1) {
             return "Adaptive quality: trails sample 1/%d particles"
                     .formatted(visuals.effectiveTrailParticleStride());

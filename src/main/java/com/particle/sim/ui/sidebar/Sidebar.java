@@ -1,16 +1,16 @@
 package com.particle.sim.ui.sidebar;
 
-import com.particle.sim.ui.UILayout;
-import com.particle.sim.ui.UIState;
-import com.particle.sim.ui.SimulationUiActions;
-import com.particle.sim.ui.SimulationUiModel;
+import com.particle.sim.ui.Layout;
+import com.particle.sim.ui.InterfaceState;
+import com.particle.sim.ui.SimulationViewActions;
+import com.particle.sim.ui.SimulationViewModel;
 import com.particle.sim.ui.sidebar.sections.SidebarContent;
-import com.particle.sim.ui.components.UINavigation;
-import com.particle.sim.ui.components.UIButton;
-import com.particle.sim.ui.components.UIScrollRegion;
-import com.particle.sim.ui.theme.UIDesignTokens;
-import com.particle.sim.ui.theme.UITheme;
-import com.particle.sim.ui.theme.UIComponentVariant;
+import com.particle.sim.ui.components.Navigation;
+import com.particle.sim.ui.components.Button;
+import com.particle.sim.ui.components.ScrollRegion;
+import com.particle.sim.ui.theme.DesignTokens;
+import com.particle.sim.ui.theme.Theme;
+import com.particle.sim.ui.theme.ComponentVariant;
 import imgui.ImGui;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
@@ -21,7 +21,7 @@ public final class Sidebar {
             | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
     private final SidebarContent content = new SidebarContent();
 
-    public void render(UILayout.Panel panel, UIState state, SimulationUiModel model, SimulationUiActions actions) {
+    public void render(Layout.Panel panel, InterfaceState state, SimulationViewModel model, SimulationViewActions actions) {
         if (panel.visible()) {
             ImGui.setNextWindowPos(panel.x(), panel.y());
             ImGui.setNextWindowSize(panel.width(), panel.height());
@@ -35,25 +35,25 @@ public final class Sidebar {
         content.renderPopups(actions);
     }
 
-    private void renderOverlayHeader(UIState state) {
-        if (state.layoutMode() != UILayout.Mode.COMPACT && state.layoutMode() != UILayout.Mode.FOCUS) {
+    private void renderOverlayHeader(InterfaceState state) {
+        if (state.layoutMode() != Layout.Mode.COMPACT && state.layoutMode() != Layout.Mode.FOCUS) {
             return;
         }
-        UIDesignTokens tokens = UITheme.tokens();
+        DesignTokens tokens = Theme.tokens();
         ImGui.alignTextToFramePadding();
         ImGui.textDisabled("SETTINGS");
         float closeWidth = ImGui.calcTextSize("Close").x + tokens.frameInsetHorizontal() * 2.0f;
         ImGui.sameLine(Math.max(ImGui.getCursorPosX() + tokens.spaceMd(),
                 ImGui.getWindowContentRegionMaxX() - closeWidth));
-        if (UIButton.text("Close", "close-overlay-sidebar", UIComponentVariant.GHOST,
+        if (Button.text("Close", "close-overlay-sidebar", ComponentVariant.GHOST,
                 closeWidth, tokens.compactControlHeight())) {
             state.setSidebarVisible(false);
         }
         ImGui.spacing();
     }
 
-    private void renderSectionButtons(UIState state) {
-        UIDesignTokens tokens = UITheme.tokens();
+    private void renderSectionButtons(InterfaceState state) {
+        DesignTokens tokens = Theme.tokens();
         SidebarSection[] availableSections = SidebarSection.values();
         float totalTextWidth = 0.0f;
         for (SidebarSection section : availableSections) {
@@ -91,20 +91,20 @@ public final class Sidebar {
         ImGui.spacing();
     }
 
-    private boolean sectionButton(SidebarSection section, boolean active, UIDesignTokens tokens) {
-        return UINavigation.item(section.label(), section.name(), active, tokens.navigationControlHeight());
+    private boolean sectionButton(SidebarSection section, boolean active, DesignTokens tokens) {
+        return Navigation.item(section.label(), section.name(), active, tokens.navigationControlHeight());
     }
 
-    private void renderSectionContent(SidebarSection section, SimulationUiModel model, SimulationUiActions actions) {
+    private void renderSectionContent(SidebarSection section, SimulationViewModel model, SimulationViewActions actions) {
         content.render(section, model, actions);
     }
 
-    private void renderAnimatedSectionContent(UIState state, SimulationUiModel model,
-            SimulationUiActions actions) {
+    private void renderAnimatedSectionContent(InterfaceState state, SimulationViewModel model,
+            SimulationViewActions actions) {
         float reveal = state.sectionReveal();
         float alpha = 0.4f + reveal * 0.6f;
-        float offset = UITheme.tokens().spaceSm() * (1.0f - reveal);
-        UIScrollRegion.render("sidebar-content", () -> {
+        float offset = Theme.tokens().spaceSm() * (1.0f - reveal);
+        ScrollRegion.render("sidebar-content", () -> {
             ImGui.pushStyleVar(ImGuiStyleVar.Alpha, alpha);
             ImGui.setCursorPosY(ImGui.getCursorPosY() + offset);
             try {

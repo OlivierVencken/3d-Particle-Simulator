@@ -1,7 +1,7 @@
 package com.particle.sim.ui.sidebar.sections;
 
-import com.particle.sim.ui.SimulationUiActions;
-import com.particle.sim.ui.SimulationUiModel;
+import com.particle.sim.ui.SimulationViewActions;
+import com.particle.sim.ui.SimulationViewModel;
 import com.particle.sim.ui.sidebar.SidebarSection;
 
 public final class SidebarContent {
@@ -11,7 +11,7 @@ public final class SidebarContent {
     private final CameraSection cameraSection = new CameraSection();
     private final AttractionMatrixEditor matrixEditor = new AttractionMatrixEditor();
 
-    public void render(SidebarSection section, SimulationUiModel model, SimulationUiActions actions) {
+    public void render(SidebarSection section, SimulationViewModel model, SimulationViewActions actions) {
         switch (section) {
             case SIMULATION -> simulationSection.render(
                     model.simulation(), model.application(), actions.simulation());
@@ -22,7 +22,7 @@ public final class SidebarContent {
         }
     }
 
-    public void renderPopups(SimulationUiActions actions) {
+    public void renderPopups(SimulationViewActions actions) {
         particlesSection.renderPopups(actions.particles());
     }
 

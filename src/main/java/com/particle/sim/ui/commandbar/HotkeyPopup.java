@@ -4,9 +4,9 @@ import com.particle.sim.input.AppHotkeys;
 import com.particle.sim.input.HotkeyDefinition;
 import com.particle.sim.input.HotkeyContext;
 import com.particle.sim.ui.components.PopupWindow;
-import com.particle.sim.ui.components.UIText;
-import com.particle.sim.ui.theme.UIFonts;
-import com.particle.sim.ui.theme.UIDesignTokens;
+import com.particle.sim.ui.components.Text;
+import com.particle.sim.ui.theme.Fonts;
+import com.particle.sim.ui.theme.DesignTokens;
 
 import imgui.ImGui;
 import imgui.flag.ImGuiTableFlags;
@@ -23,16 +23,16 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 final class HotkeyPopup extends PopupWindow {
     HotkeyPopup() {
         super("Hotkeys", "hotkeys-popup",
-                UIDesignTokens.unscaled().popupWidth(), UIDesignTokens.unscaled().hotkeysPopupHeight(),
+                DesignTokens.unscaled().popupWidth(), DesignTokens.unscaled().hotkeysPopupHeight(),
                 "##command-bar");
     }
 
     @Override
     protected void renderContent() {
-        ImGui.pushFont(UIFonts.medium());
+        ImGui.pushFont(Fonts.medium());
         ImGui.textUnformatted("Keyboard shortcuts");
         ImGui.textDisabled("F11, Esc, and F3 remain active while editing or using a popup.");
-        UIText.divider();
+        Text.divider();
         renderHotkeys();
         ImGui.popFont();
     }

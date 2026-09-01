@@ -3,12 +3,12 @@ package com.particle.sim;
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.input.AppHotkeys;
 import com.particle.sim.input.HotkeyManager;
-import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.settings.SettingsController;
 import com.particle.sim.system.StartupFailureException;
 import com.particle.sim.ui.ImGuiLayer;
 import com.particle.sim.ui.PresetFileDialog;
-import com.particle.sim.ui.SimulationUI;
+import com.particle.sim.ui.SimulationView;
 import com.particle.sim.window.WindowManager;
 
 import static org.lwjgl.opengl.GL43C.GL_BLEND;
@@ -25,11 +25,11 @@ public final class ParticleSimulatorApp {
     private final WindowManager window = new WindowManager(WINDOW_TITLE);
     private final ImGuiLayer imgui = new ImGuiLayer();
     private final CameraController camera = new CameraController();
-    private final GpuParticleSystem particles = new GpuParticleSystem();
-    private final SimulationUI ui = new SimulationUI();
+    private final ParticleSystem particles = new ParticleSystem();
+    private final SimulationView ui = new SimulationView();
     private final HotkeyManager hotkeys = new HotkeyManager();
     private final SettingsController settingsController = new SettingsController(particles, camera, ui);
-    private final SimulationUiAdapter uiAdapter = new SimulationUiAdapter(particles, camera, ui, settingsController);
+    private final SimulationViewAdapter uiAdapter = new SimulationViewAdapter(particles, camera, ui, settingsController);
     private boolean windowInitialized;
     private boolean presetDialogInitialized;
     private boolean imguiInitialized;
@@ -110,11 +110,11 @@ public final class ParticleSimulatorApp {
         return window;
     }
 
-    public GpuParticleSystem getParticles() {
+    public ParticleSystem getParticles() {
         return particles;
     }
 
-    public SimulationUI getUi() {
+    public SimulationView getUi() {
         return ui;
     }
 

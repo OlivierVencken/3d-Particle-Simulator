@@ -59,5 +59,5 @@ The normal test suite does not require a display or GPU context:
 An opt-in hidden OpenGL test compiles every shader, renders glow and trails, verifies compact-grid membership, and compares GPU simulation output with an all-pairs CPU reference for every distance and boundary mode:
 
 ```powershell
-.\mvnw.cmd -DgpuTests=true -Dtest=GpuParticleSystemOpenGlTest test
+.\mvnw.cmd -DgpuTests=true -Dtest=ParticleSystemOpenGlTest test
 ```

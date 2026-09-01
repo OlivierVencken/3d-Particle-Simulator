@@ -2,7 +2,7 @@ package com.particle.sim.camera;
 
 import com.particle.sim.math.Math3d;
 import com.particle.sim.settings.SimulationDefaults;
-import com.particle.sim.ui.UiInputOwnership;
+import com.particle.sim.ui.InputOwnership;
 import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
 
@@ -45,7 +45,7 @@ public final class CameraController {
         reset();
     }
 
-    public void update(long window, float deltaTime, UiInputOwnership ownership) {
+    public void update(long window, float deltaTime, InputOwnership ownership) {
         var io = ImGui.getIO();
 
         float cosPitch = (float) Math.cos(pitch);

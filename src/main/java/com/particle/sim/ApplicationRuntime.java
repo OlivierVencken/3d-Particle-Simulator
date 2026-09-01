@@ -3,12 +3,12 @@ package com.particle.sim;
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.input.HotkeyManager;
 import com.particle.sim.input.HotkeyRoutingContext;
-import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.settings.SettingsController;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.ImGuiLayer;
-import com.particle.sim.ui.PreparedUiFrame;
-import com.particle.sim.ui.SimulationUI;
+import com.particle.sim.ui.PreparedFrame;
+import com.particle.sim.ui.SimulationView;
 import com.particle.sim.window.WindowManager;
 
 import java.util.concurrent.locks.LockSupport;
@@ -37,9 +37,9 @@ public final class ApplicationRuntime {
     private final ImGuiLayer imgui;
     private final HotkeyManager hotkeys;
     private final CameraController camera;
-    private final GpuParticleSystem particles;
-    private final SimulationUI ui;
-    private final SimulationUiAdapter uiAdapter;
+    private final ParticleSystem particles;
+    private final SimulationView ui;
+    private final SimulationViewAdapter uiAdapter;
     private final SettingsController settingsController;
     private final FixedSimulationClock simulationClock = new FixedSimulationClock(
             SimulationDefaults.SIMULATION_STEP_SECONDS);
@@ -48,7 +48,7 @@ public final class ApplicationRuntime {
 
     ApplicationRuntime(WindowManager window, ImGuiLayer imgui, HotkeyManager hotkeys,
             CameraController camera,
-            GpuParticleSystem particles, SimulationUI ui, SimulationUiAdapter uiAdapter,
+            ParticleSystem particles, SimulationView ui, SimulationViewAdapter uiAdapter,
             SettingsController settingsController) {
         this.window = window;
         this.imgui = imgui;
@@ -73,7 +73,7 @@ public final class ApplicationRuntime {
 
             window.updateFramebufferSize();
             imgui.beginFrame();
-            PreparedUiFrame uiFrame = ui.prepareFrame(window.width(), window.height(), deltaTime);
+            PreparedFrame uiFrame = ui.prepareFrame(window.width(), window.height(), deltaTime);
             var inputOwnership = uiFrame.inputOwnership();
             hotkeys.update(window.handle(), new HotkeyRoutingContext(
                     inputOwnership.allowsSimulationKeyboard(),
@@ -126,7 +126,7 @@ public final class ApplicationRuntime {
         }
     }
 
-    private void renderScene(PreparedUiFrame uiFrame) {
+    private void renderScene(PreparedFrame uiFrame) {
         if (window.width() <= 0 || window.height() <= 0) {
             return;
         }

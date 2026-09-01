@@ -1,12 +1,12 @@
 package com.particle.sim.ui.commandbar;
 
 import com.particle.sim.ui.components.PopupWindow;
-import com.particle.sim.ui.components.UIButton;
-import com.particle.sim.ui.components.UIText;
-import com.particle.sim.ui.theme.UIComponentVariant;
-import com.particle.sim.ui.theme.UIDesignTokens;
-import com.particle.sim.ui.theme.UIFonts;
-import com.particle.sim.ui.theme.UITheme;
+import com.particle.sim.ui.components.Button;
+import com.particle.sim.ui.components.Text;
+import com.particle.sim.ui.theme.ComponentVariant;
+import com.particle.sim.ui.theme.DesignTokens;
+import com.particle.sim.ui.theme.Fonts;
+import com.particle.sim.ui.theme.Theme;
 import imgui.ImGui;
 
 final class ErrorPopup extends PopupWindow {
@@ -15,8 +15,8 @@ final class ErrorPopup extends PopupWindow {
 
     ErrorPopup() {
         super("Action failed", "action-error-popup",
-                UIDesignTokens.unscaled().popupWidth(),
-                UIDesignTokens.unscaled().errorPopupHeight(),
+                DesignTokens.unscaled().popupWidth(),
+                DesignTokens.unscaled().errorPopupHeight(),
                 "##command-bar");
     }
 
@@ -28,14 +28,14 @@ final class ErrorPopup extends PopupWindow {
 
     @Override
     protected void renderContent() {
-        UIDesignTokens tokens = UITheme.tokens();
-        ImGui.pushFont(UIFonts.medium());
+        DesignTokens tokens = Theme.tokens();
+        ImGui.pushFont(Fonts.medium());
         try {
-            UIText.error(summary);
+            Text.error(summary);
             ImGui.spacing();
             ImGui.textWrapped(details);
             ImGui.spacing();
-            if (UIButton.text("Close", "close-action-error", UIComponentVariant.PRIMARY,
+            if (Button.text("Close", "close-action-error", ComponentVariant.PRIMARY,
                     tokens.buttonWidthMd(), tokens.controlHeight())) {
                 close();
             }

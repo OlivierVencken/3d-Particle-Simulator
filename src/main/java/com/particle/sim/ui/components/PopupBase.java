@@ -1,9 +1,9 @@
 package com.particle.sim.ui.components;
 
-import com.particle.sim.ui.theme.UIColor;
-import com.particle.sim.ui.theme.UIColors;
-import com.particle.sim.ui.theme.UIDesignTokens;
-import com.particle.sim.ui.theme.UITheme;
+import com.particle.sim.ui.theme.Color;
+import com.particle.sim.ui.theme.Colors;
+import com.particle.sim.ui.theme.DesignTokens;
+import com.particle.sim.ui.theme.Theme;
 import imgui.ImGui;
 import imgui.ImGuiViewport;
 import imgui.flag.ImGuiCol;
@@ -15,7 +15,7 @@ import imgui.flag.ImGuiWindowFlags;
  * Shared placement and styling for modal and non-modal popup windows.
  */
 public abstract class PopupBase {
-    private static final UIColor OPAQUE_BACKGROUND = UIColors.BACKGROUND_WINDOW.withAlpha(1.0f);
+    private static final Color OPAQUE_BACKGROUND = Colors.BACKGROUND_WINDOW.withAlpha(1.0f);
 
     private final String label;
     private final float defaultWidth;
@@ -58,7 +58,7 @@ public abstract class PopupBase {
     }
 
     protected float windowRounding() {
-        return UITheme.tokens().radiusLg();
+        return Theme.tokens().radiusLg();
     }
 
     protected int windowFlags() {
@@ -70,7 +70,7 @@ public abstract class PopupBase {
     }
 
     protected final void prepareWindow() {
-        UIDesignTokens tokens = UITheme.tokens();
+        DesignTokens tokens = Theme.tokens();
         ImGuiViewport viewport = ImGui.getMainViewport();
         ImGui.setNextWindowPos(
                 viewport.getWorkCenterX(), viewport.getWorkCenterY(),
@@ -87,7 +87,7 @@ public abstract class PopupBase {
         }
     }
 
-    private float scaledMaximum(UIDesignTokens tokens, float maximum) {
+    private float scaledMaximum(DesignTokens tokens, float maximum) {
         return maximum == Float.MAX_VALUE ? Float.MAX_VALUE : tokens.dp(maximum);
     }
 

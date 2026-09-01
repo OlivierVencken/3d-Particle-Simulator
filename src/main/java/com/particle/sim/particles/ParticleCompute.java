@@ -80,7 +80,7 @@ public final class ParticleCompute {
         uTrailWriteOffsetLoc = glGetUniformLocation(integrateProgram, "uTrailWriteOffset");
     }
 
-    public void buildGrid(GpuParticleSystem system, ParticleBuffers particles, SpatialGridBuffers grid) {
+    public void buildGrid(ParticleSystem system, ParticleBuffers particles, SpatialGridBuffers grid) {
         int particleCount = system.particleCount();
         int cellCount = system.gridCellCount();
         grid.clearCounts(cellCount);
@@ -119,7 +119,7 @@ public final class ParticleCompute {
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 
-    public void integrate(GpuParticleSystem system, ParticleBuffers particles, SpatialGridBuffers grid,
+    public void integrate(ParticleSystem system, ParticleBuffers particles, SpatialGridBuffers grid,
             TrailHistoryBuffers trailHistory, boolean captureTrail, float deltaTime) {
         integrationTimer.begin();
         glUseProgram(integrateProgram);

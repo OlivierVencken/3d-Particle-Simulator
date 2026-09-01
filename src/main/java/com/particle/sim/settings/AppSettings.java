@@ -4,10 +4,10 @@ import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ColorMode;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
-import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.particles.ParticleSimulationConfig;
 import com.particle.sim.particles.SpawnMode;
-import com.particle.sim.ui.SimulationUI;
+import com.particle.sim.ui.SimulationView;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -186,12 +186,12 @@ public final class AppSettings {
         }
     }
 
-    public void applyTo(GpuParticleSystem particles, CameraController camera, SimulationUI ui) {
+    public void applyTo(ParticleSystem particles, CameraController camera, SimulationView ui) {
         applySimulationTo(particles, camera, ui);
         particles.setAttractionMatrix(attractionMatrix);
     }
 
-    public void applySimulationTo(GpuParticleSystem particles, CameraController camera, SimulationUI ui) {
+    public void applySimulationTo(ParticleSystem particles, CameraController camera, SimulationView ui) {
         sanitize();
         particles.applyConfig(particleConfig);
 
@@ -203,7 +203,7 @@ public final class AppSettings {
         ui.setCustomSpawnAmount(customSpawnAmount);
     }
 
-    public static AppSettings capture(GpuParticleSystem particles, CameraController camera, SimulationUI ui) {
+    public static AppSettings capture(ParticleSystem particles, CameraController camera, SimulationView ui) {
         AppSettings settings = defaults();
         settings.particleConfig.applyFrom(particles.config());
         int attractionIndex = 0;

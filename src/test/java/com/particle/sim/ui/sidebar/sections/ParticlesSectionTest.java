@@ -1,7 +1,7 @@
 package com.particle.sim.ui.sidebar.sections;
 
-import com.particle.sim.ui.testing.FakeSimulationUiModel;
-import com.particle.sim.ui.theme.UIDesignTokens;
+import com.particle.sim.ui.testing.FakeSimulationViewModel;
+import com.particle.sim.ui.theme.DesignTokens;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ParticlesSectionTest {
     @Test
     void capacityRulesNeverRequestMoreThanTheRuntimeCanAccept() {
-        FakeSimulationUiModel model = new FakeSimulationUiModel();
+        FakeSimulationViewModel model = new FakeSimulationViewModel();
         model.particles.particleCount = 950;
         model.particles.maximumParticleCount = 1_000;
 
@@ -20,7 +20,7 @@ class ParticlesSectionTest {
 
     @Test
     void fullAndInconsistentCountsResolveToZeroCapacity() {
-        FakeSimulationUiModel model = new FakeSimulationUiModel();
+        FakeSimulationViewModel model = new FakeSimulationViewModel();
         model.particles.maximumParticleCount = 1_000;
 
         model.particles.particleCount = 1_000;
@@ -33,7 +33,7 @@ class ParticlesSectionTest {
 
     @Test
     void metricCardsStackWhenTheSidebarIsTooNarrow() {
-        UIDesignTokens tokens = UIDesignTokens.unscaled();
+        DesignTokens tokens = DesignTokens.unscaled();
 
         assertEquals(false, ParticlesSection.metricsFitSideBySide(212.0f, tokens));
         assertEquals(true, ParticlesSection.metricsFitSideBySide(212.4f, tokens));

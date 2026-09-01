@@ -3,9 +3,9 @@ package com.particle.sim.ui;
 import static imgui.ImGui.getIO;
 
 import com.particle.sim.util.ResourceLoader;
-import com.particle.sim.ui.theme.UIDesignTokens;
-import com.particle.sim.ui.theme.UIFonts;
-import com.particle.sim.ui.theme.UITheme;
+import com.particle.sim.ui.theme.DesignTokens;
+import com.particle.sim.ui.theme.Fonts;
+import com.particle.sim.ui.theme.Theme;
 
 import imgui.ImFont;
 import imgui.ImFontAtlas;
@@ -39,7 +39,7 @@ public final class ImGuiLayer {
         io.addConfigFlags(ImGuiConfigFlags.NavEnableKeyboard);
         uiScale = readWindowScale();
         rebuildFonts(io, uiScale);
-        UITheme.applyDarkTheme(uiScale);
+        Theme.applyDarkTheme(uiScale);
         imGuiGlfw.init(window, true);
         imGuiGl3.init("#version 430");
         rendererInitialized = true;
@@ -51,24 +51,24 @@ public final class ImGuiLayer {
         }
 
         ImFontAtlas fontAtlas = io.getFonts();
-        UIFonts.clear();
+        Fonts.clear();
         fontAtlas.clear();
         ImFontConfig fontConfig = new ImFontConfig();
         fontConfig.setOversampleH(2);
         fontConfig.setOversampleV(2);
         fontConfig.setPixelSnapH(false);
         try {
-            UIDesignTokens tokens = UIDesignTokens.atScale(scale);
+            DesignTokens tokens = DesignTokens.atScale(scale);
             ImFont body = fontAtlas.addFontFromMemoryTTF(
                     regularFontBytes, tokens.bodyFontSize(), fontConfig);
-            UIFonts.setBody(body);
-            UIFonts.setMedium(fontAtlas.addFontFromMemoryTTF(
+            Fonts.setBody(body);
+            Fonts.setMedium(fontAtlas.addFontFromMemoryTTF(
                     mediumFontBytes, tokens.mediumFontSize(), fontConfig));
-            UIFonts.setCommandBar(fontAtlas.addFontFromMemoryTTF(
+            Fonts.setCommandBar(fontAtlas.addFontFromMemoryTTF(
                     mediumFontBytes, tokens.commandBarFontSize(), fontConfig));
-            UIFonts.setSection(fontAtlas.addFontFromMemoryTTF(
+            Fonts.setSection(fontAtlas.addFontFromMemoryTTF(
                     mediumFontBytes, tokens.sectionFontSize(), fontConfig));
-            UIFonts.setTitle(fontAtlas.addFontFromMemoryTTF(
+            Fonts.setTitle(fontAtlas.addFontFromMemoryTTF(
                     mediumFontBytes, tokens.titleFontSize(), fontConfig));
             io.setFontDefault(body);
 
@@ -95,12 +95,12 @@ public final class ImGuiLayer {
 
         uiScale = observedScale;
         rebuildFonts(getIO(), uiScale);
-        UITheme.applyDarkTheme(uiScale);
+        Theme.applyDarkTheme(uiScale);
     }
 
     private float readWindowScale() {
         glfwGetWindowContentScale(window, contentScaleX, contentScaleY);
-        return UIDesignTokens.sanitizeScale(Math.max(contentScaleX[0], contentScaleY[0]));
+        return DesignTokens.sanitizeScale(Math.max(contentScaleX[0], contentScaleY[0]));
     }
 
     static boolean materiallyDifferent(float currentScale, float observedScale) {
@@ -120,7 +120,7 @@ public final class ImGuiLayer {
         imGuiGl3.shutdown();
         rendererInitialized = false;
         imGuiGlfw.shutdown();
-        UIFonts.clear();
+        Fonts.clear();
         ImGui.destroyContext();
         window = 0L;
     }

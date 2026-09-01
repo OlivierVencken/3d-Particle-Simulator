@@ -4,11 +4,11 @@ import com.particle.sim.AppInfo;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.system.SystemLoadMonitor;
 import com.particle.sim.system.SystemLoadSnapshot;
-import com.particle.sim.ui.SimulationUiActions;
-import com.particle.sim.ui.SimulationUiDiagnostics;
-import com.particle.sim.ui.SimulationUiModel;
-import com.particle.sim.ui.theme.UITheme;
-import com.particle.sim.ui.theme.UIFonts;
+import com.particle.sim.ui.SimulationViewActions;
+import com.particle.sim.ui.SimulationViewDiagnostics;
+import com.particle.sim.ui.SimulationViewModel;
+import com.particle.sim.ui.theme.Theme;
+import com.particle.sim.ui.theme.Fonts;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
@@ -40,12 +40,12 @@ public final class DebugPanel {
     private String gpuRendering = "";
     private String gpuBuffers = "";
 
-    public void render(float deltaTime, float currentFps, SimulationUiModel model,
-            SimulationUiActions actions, ImBoolean open) {
+    public void render(float deltaTime, float currentFps, SimulationViewModel model,
+            SimulationViewActions actions, ImBoolean open) {
         cacheOpenGlInfo();
 
         if (ImGui.begin("Debug", open)) {
-            ImGui.pushFont(UIFonts.medium());
+            ImGui.pushFont(Fonts.medium());
             try {
                 renderPerformance(deltaTime, currentFps, model.application().fpsCap(), actions.application());
                 renderSimulationInternals(deltaTime, model.performance().diagnostics());
@@ -59,22 +59,22 @@ public final class DebugPanel {
     }
 
     private void renderPerformance(float deltaTime, float currentFps, int fpsCap,
-            SimulationUiActions.Application actions) {
-        UIText.sectionHeading("Performance");
-        UIMetric.row("FPS", "%.0f".formatted(currentFps));
-        UIMetric.row("Frame time", "%.2f ms".formatted(deltaTime * 1000.0f));
+            SimulationViewActions.Application actions) {
+        Text.sectionHeading("Performance");
+        Metric.row("FPS", "%.0f".formatted(currentFps));
+        Metric.row("Frame time", "%.2f ms".formatted(deltaTime * 1000.0f));
         renderSystemLoad();
 
         unlimitedFps.set(fpsCap <= 0);
-        if (UIControls.checkbox("Unlimited FPS", "debug-unlimited-fps", unlimitedFps)) {
+        if (Controls.checkbox("Unlimited FPS", "debug-unlimited-fps", unlimitedFps)) {
             actions.setFpsCap(unlimitedFps.get() ? 0 : SimulationDefaults.FPS_CAP);
         }
 
         if (!unlimitedFps.get()) {
             fpsCapRef.set(fpsCap);
-            if (UIIntegerInput.render("FPS cap", "debug-fps-cap", fpsCapRef, 5, 15,
+            if (IntegerInput.render("FPS cap", "debug-fps-cap", fpsCapRef, 5, 15,
                     SimulationDefaults.MIN_FPS_CAP, SimulationDefaults.MAX_FPS_CAP,
-                    UITheme.tokens().debugInputWidth())) {
+                    Theme.tokens().debugInputWidth())) {
                 actions.setFpsCap(fpsCapRef.get());
             }
         }
@@ -83,35 +83,35 @@ public final class DebugPanel {
     private void renderSystemLoad() {
         SystemLoadSnapshot load = systemLoadMonitor.snapshot();
 
-        UIMetric.row("CPU load", formatLoad(load.cpuLoad()));
-        UIMetric.row("GPU load", formatLoad(load.gpuLoad()));
-        UIMetric.row("RAM usage", formatMemoryUsage(load.usedMemoryBytes(), load.totalMemoryBytes()));
+        Metric.row("CPU load", formatLoad(load.cpuLoad()));
+        Metric.row("GPU load", formatLoad(load.gpuLoad()));
+        Metric.row("RAM usage", formatMemoryUsage(load.usedMemoryBytes(), load.totalMemoryBytes()));
     }
 
-    private void renderSimulationInternals(float deltaTime, SimulationUiDiagnostics diagnostics) {
+    private void renderSimulationInternals(float deltaTime, SimulationViewDiagnostics diagnostics) {
         diagnosticRefreshAccumulator += Math.max(0.0f, deltaTime);
         if (diagnosticRefreshAccumulator >= DIAGNOSTIC_REFRESH_SECONDS) {
             updateDiagnosticStrings(diagnostics);
             diagnosticRefreshAccumulator = 0.0f;
         }
 
-        UIText.divider();
-        UIText.sectionHeading("Simulation internals");
-        UIMetric.row("Particles", particleDiagnostics);
-        UIMetric.row("Grid", gridDimensions);
-        UIMetric.row("Grid cells", gridCells);
-        UIMetric.row("Cell storage", "Exact compact ranges");
-        UIMetric.row("GPU simulation", gpuSimulation);
-        UIMetric.row("Count / scan / scatter", gpuStages);
-        UIMetric.row("Force integration", gpuIntegration);
-        UIMetric.row("Particles / trails / bloom", gpuRendering);
-        UIMetric.row("Estimated GPU buffers", gpuBuffers);
-        UIMetric.row("Simulation step", "%.2f ms (%.0f Hz)".formatted(
+        Text.divider();
+        Text.sectionHeading("Simulation internals");
+        Metric.row("Particles", particleDiagnostics);
+        Metric.row("Grid", gridDimensions);
+        Metric.row("Grid cells", gridCells);
+        Metric.row("Cell storage", "Exact compact ranges");
+        Metric.row("GPU simulation", gpuSimulation);
+        Metric.row("Count / scan / scatter", gpuStages);
+        Metric.row("Force integration", gpuIntegration);
+        Metric.row("Particles / trails / bloom", gpuRendering);
+        Metric.row("Estimated GPU buffers", gpuBuffers);
+        Metric.row("Simulation step", "%.2f ms (%.0f Hz)".formatted(
                 SimulationDefaults.SIMULATION_STEP_SECONDS * 1000.0,
                 1.0 / SimulationDefaults.SIMULATION_STEP_SECONDS));
     }
 
-    private void updateDiagnosticStrings(SimulationUiDiagnostics diagnostics) {
+    private void updateDiagnosticStrings(SimulationViewDiagnostics diagnostics) {
         particleDiagnostics = "%,d / %,d".formatted(
                 diagnostics.particleCount(), diagnostics.maximumParticleCount());
         gridDimensions = "%d × %d × %d".formatted(
@@ -131,25 +131,25 @@ public final class DebugPanel {
     }
 
     private void renderRuntime() {
-        UIText.divider();
-        UIText.sectionHeading("Runtime");
-        UIMetric.row("App version", AppInfo.version());
-        UIMetric.row("Java version", System.getProperty("java.version", "unknown"));
-        UIMetric.row("JVM", System.getProperty("java.vm.name", "unknown"));
-        UIMetric.row("OS", "%s %s".formatted(
+        Text.divider();
+        Text.sectionHeading("Runtime");
+        Metric.row("App version", AppInfo.version());
+        Metric.row("Java version", System.getProperty("java.version", "unknown"));
+        Metric.row("JVM", System.getProperty("java.vm.name", "unknown"));
+        Metric.row("OS", "%s %s".formatted(
                 System.getProperty("os.name", "unknown"),
                 System.getProperty("os.version", "unknown")));
     }
 
     private void renderGraphics() {
-        UIText.divider();
-        UIText.sectionHeading("Graphics");
-        UIMetric.row("ImGui version", ImGui.getVersion());
-        UIMetric.row("LWJGL version", Version.getVersion());
-        UIMetric.row("OpenGL version", glVersion);
-        UIMetric.row("GLSL version", glslVersion);
-        UIMetric.row("OpenGL vendor", glVendor);
-        UIMetric.row("OpenGL renderer", glRenderer);
+        Text.divider();
+        Text.sectionHeading("Graphics");
+        Metric.row("ImGui version", ImGui.getVersion());
+        Metric.row("LWJGL version", Version.getVersion());
+        Metric.row("OpenGL version", glVersion);
+        Metric.row("GLSL version", glslVersion);
+        Metric.row("OpenGL vendor", glVendor);
+        Metric.row("OpenGL renderer", glRenderer);
     }
 
     private void cacheOpenGlInfo() {

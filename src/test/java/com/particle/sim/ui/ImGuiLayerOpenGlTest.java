@@ -1,16 +1,16 @@
 package com.particle.sim.ui;
 
-import com.particle.sim.ui.components.UIAttractionMatrix;
-import com.particle.sim.ui.components.UIButton;
-import com.particle.sim.ui.components.UICheckbox;
-import com.particle.sim.ui.components.UICombo;
-import com.particle.sim.ui.components.UIIntegerInput;
-import com.particle.sim.ui.components.UIMetric;
-import com.particle.sim.ui.components.UISlider;
-import com.particle.sim.ui.components.UIText;
-import com.particle.sim.ui.testing.FakeSimulationUiModel;
-import com.particle.sim.ui.testing.RecordingSimulationUiActions;
-import com.particle.sim.ui.theme.UIComponentVariant;
+import com.particle.sim.ui.components.AttractionMatrixControl;
+import com.particle.sim.ui.components.Button;
+import com.particle.sim.ui.components.Checkbox;
+import com.particle.sim.ui.components.Combo;
+import com.particle.sim.ui.components.IntegerInput;
+import com.particle.sim.ui.components.Metric;
+import com.particle.sim.ui.components.Slider;
+import com.particle.sim.ui.components.Text;
+import com.particle.sim.ui.testing.FakeSimulationViewModel;
+import com.particle.sim.ui.testing.RecordingSimulationViewActions;
+import com.particle.sim.ui.theme.ComponentVariant;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
@@ -60,20 +60,20 @@ class ImGuiLayerOpenGlTest {
             ImGui.setNextWindowSize(700.0f, 800.0f);
             ImGui.begin("Component library smoke test");
             ImGui.textUnformatted("IBM Plex Sans");
-            UIButton.text("Primary", "smoke-primary", UIComponentVariant.PRIMARY);
+            Button.text("Primary", "smoke-primary", ComponentVariant.PRIMARY);
             ImGui.sameLine();
-            UIButton.text("Disabled", "smoke-disabled", UIComponentVariant.DISABLED,
+            Button.text("Disabled", "smoke-disabled", ComponentVariant.DISABLED,
                     0.0f, 32.0f, false);
-            UISlider.render("Float", "smoke-float", new float[] {0.5f}, 0.0f, 1.0f, 2);
-            UISlider.render("Integer", "smoke-integer", new int[] {4}, 0, 10);
-            UICheckbox.render("Checkbox", "smoke-checkbox", new ImBoolean(true));
-            UICombo.render("Combo", "smoke-combo", new ImInt(0), new String[] {"One", "Two"});
-            UIIntegerInput.render("Stepper", "smoke-stepper", new ImInt(4), 1, 2, 1, 16, 120.0f);
-            UIMetric.card("smoke-metric", "PARTICLES", "1,000", 140.0f);
-            UIText.helper("Shared helper text");
-            FakeSimulationUiModel model = new FakeSimulationUiModel();
-            RecordingSimulationUiActions actions = new RecordingSimulationUiActions();
-            UIAttractionMatrix.render(model.particles(), actions.particles());
+            Slider.render("Float", "smoke-float", new float[] {0.5f}, 0.0f, 1.0f, 2);
+            Slider.render("Integer", "smoke-integer", new int[] {4}, 0, 10);
+            Checkbox.render("Checkbox", "smoke-checkbox", new ImBoolean(true));
+            Combo.render("Combo", "smoke-combo", new ImInt(0), new String[] {"One", "Two"});
+            IntegerInput.render("Stepper", "smoke-stepper", new ImInt(4), 1, 2, 1, 16, 120.0f);
+            Metric.card("smoke-metric", "PARTICLES", "1,000", 140.0f);
+            Text.helper("Shared helper text");
+            FakeSimulationViewModel model = new FakeSimulationViewModel();
+            RecordingSimulationViewActions actions = new RecordingSimulationViewActions();
+            AttractionMatrixControl.render(model.particles(), actions.particles());
             ImGui.end();
             layer.render();
 

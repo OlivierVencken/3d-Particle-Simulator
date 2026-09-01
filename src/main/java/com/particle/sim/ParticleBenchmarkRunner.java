@@ -1,6 +1,6 @@
 package com.particle.sim;
 
-import com.particle.sim.particles.GpuParticleSystem;
+import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.particles.PerformanceSnapshot;
 import org.lwjgl.opengl.GL;
 
@@ -56,7 +56,7 @@ public final class ParticleBenchmarkRunner {
         }
 
         long window = NULL;
-        GpuParticleSystem system = null;
+        ParticleSystem system = null;
         try {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -69,7 +69,7 @@ public final class ParticleBenchmarkRunner {
 
             glfwMakeContextCurrent(window);
             GL.createCapabilities();
-            system = new GpuParticleSystem();
+            system = new ParticleSystem();
             system.setParticleCount(Math.min(options.particleCount() == null ? 65_536 : options.particleCount(),
                     system.maxParticleCount()));
             system.init();
@@ -101,7 +101,7 @@ public final class ParticleBenchmarkRunner {
         }
     }
 
-    private static List<Measurement> searchCapacity(GpuParticleSystem system, ParticleBenchmarkOptions options) {
+    private static List<Measurement> searchCapacity(ParticleSystem system, ParticleBenchmarkOptions options) {
         List<Measurement> measurements = new ArrayList<>();
         int hardwareMaximum = system.maxParticleCount();
         int lower = Math.min(65_536, hardwareMaximum);
@@ -145,7 +145,7 @@ public final class ParticleBenchmarkRunner {
         return measurements;
     }
 
-    private static Measurement measure(GpuParticleSystem system, int requestedCount,
+    private static Measurement measure(ParticleSystem system, int requestedCount,
             ParticleBenchmarkOptions options) {
         int count = Math.max(1, Math.min(requestedCount, system.maxParticleCount()));
         system.randomSeed(BENCHMARK_SEED);
@@ -171,7 +171,7 @@ public final class ParticleBenchmarkRunner {
                 median(gpuMilliseconds), percentile(gpuMilliseconds, 0.95));
     }
 
-    private static void configureDeterministicScene(GpuParticleSystem system) {
+    private static void configureDeterministicScene(ParticleSystem system) {
         system.randomSeed(BENCHMARK_SEED);
         system.zeroAttractionMatrix();
         for (int row = 0; row < system.groupCount(); row++) {
@@ -198,7 +198,7 @@ public final class ParticleBenchmarkRunner {
         return Math.max(SEARCH_ALIGNMENT, value / SEARCH_ALIGNMENT * SEARCH_ALIGNMENT);
     }
 
-    private static String toJson(GpuParticleSystem system, List<Measurement> measurements,
+    private static String toJson(ParticleSystem system, List<Measurement> measurements,
             int sustainedParticleCount) {
         StringBuilder json = new StringBuilder(1024);
         json.append("{\n");
