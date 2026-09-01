@@ -1,6 +1,7 @@
 package com.particle.sim.ui;
 
 import com.particle.sim.particles.ColorMode;
+import com.particle.sim.particles.AttractionPattern;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
@@ -71,6 +72,18 @@ public interface SimulationUiActions {
         void symmetrizeAttractionMatrix();
 
         void invertAttractionMatrix();
+
+        void generateAttractionMatrix(AttractionPattern pattern, float variation);
+
+        void mutateAttractionMatrix(float amount);
+
+        void normalizeAttractionMatrix();
+
+        void undoAttractionMatrix();
+
+        void redoAttractionMatrix();
+
+        void setAttractionMutationAnimated(boolean enabled);
     }
 
     interface Visuals {

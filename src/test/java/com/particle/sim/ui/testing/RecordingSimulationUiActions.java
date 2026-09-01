@@ -1,6 +1,7 @@
 package com.particle.sim.ui.testing;
 
 import com.particle.sim.particles.ColorMode;
+import com.particle.sim.particles.AttractionPattern;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.SpawnMode;
@@ -58,6 +59,12 @@ public final class RecordingSimulationUiActions implements SimulationUiActions {
         @Override public void zeroAttractionMatrix() { record("particles.matrix.zero"); }
         @Override public void symmetrizeAttractionMatrix() { record("particles.matrix.symmetrize"); }
         @Override public void invertAttractionMatrix() { record("particles.matrix.invert"); }
+        @Override public void generateAttractionMatrix(AttractionPattern pattern, float variation) { record("particles.matrix.generate"); }
+        @Override public void mutateAttractionMatrix(float amount) { record("particles.matrix.mutate"); }
+        @Override public void normalizeAttractionMatrix() { record("particles.matrix.normalize"); }
+        @Override public void undoAttractionMatrix() { record("particles.matrix.undo"); }
+        @Override public void redoAttractionMatrix() { record("particles.matrix.redo"); }
+        @Override public void setAttractionMutationAnimated(boolean enabled) { record("particles.matrix.animate"); }
     }
 
     public final class VisualActions implements SimulationUiActions.Visuals {

@@ -2,6 +2,7 @@ package com.particle.sim;
 
 import com.particle.sim.camera.CameraController;
 import com.particle.sim.particles.ColorMode;
+import com.particle.sim.particles.AttractionPattern;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.EffectMode;
 import com.particle.sim.particles.GpuParticleSystem;
@@ -319,6 +320,21 @@ final class SimulationUiAdapter {
         }
 
         @Override
+        public boolean canUndoAttractionMatrix() {
+            return particles.canUndoAttractionMatrix();
+        }
+
+        @Override
+        public boolean canRedoAttractionMatrix() {
+            return particles.canRedoAttractionMatrix();
+        }
+
+        @Override
+        public boolean attractionMutationAnimated() {
+            return particles.attractionMutationAnimated();
+        }
+
+        @Override
         public ImVec4 groupColor(int group) {
             ImVec4[] colors = particles.groupColors();
             return colors[Math.floorMod(group, colors.length)];
@@ -382,6 +398,36 @@ final class SimulationUiAdapter {
         @Override
         public void invertAttractionMatrix() {
             settingChanged(particles::invertAttractionMatrix);
+        }
+
+        @Override
+        public void generateAttractionMatrix(AttractionPattern pattern, float variation) {
+            settingChanged(() -> particles.generateAttractionMatrix(pattern, variation));
+        }
+
+        @Override
+        public void mutateAttractionMatrix(float amount) {
+            settingChanged(() -> particles.mutateAttractionMatrix(amount));
+        }
+
+        @Override
+        public void normalizeAttractionMatrix() {
+            settingChanged(particles::normalizeAttractionMatrix);
+        }
+
+        @Override
+        public void undoAttractionMatrix() {
+            settingChanged(particles::undoAttractionMatrix);
+        }
+
+        @Override
+        public void redoAttractionMatrix() {
+            settingChanged(particles::redoAttractionMatrix);
+        }
+
+        @Override
+        public void setAttractionMutationAnimated(boolean enabled) {
+            settingChanged(() -> particles.attractionMutationAnimated(enabled));
         }
     }
 

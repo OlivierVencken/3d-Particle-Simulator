@@ -61,6 +61,12 @@ public interface SimulationUiModel {
 
         float attraction(int row, int column);
 
+        boolean canUndoAttractionMatrix();
+
+        boolean canRedoAttractionMatrix();
+
+        boolean attractionMutationAnimated();
+
         ImVec4 groupColor(int group);
     }
 

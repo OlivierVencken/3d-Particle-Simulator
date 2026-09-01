@@ -38,6 +38,7 @@ public final class GpuParticleSystem {
         config.particleCount(Math.min(config.particleCount(), maximumParticleCount));
         spatialGridBuffers.init(particleCount(), gridCellCount());
         attractionMatrix.randomize();
+        attractionMatrix.clearHistory();
         initialized = true;
         reset();
     }
@@ -405,6 +406,46 @@ public final class GpuParticleSystem {
 
     public void invertAttractionMatrix() {
         attractionMatrix.invert();
+    }
+
+    public void generateAttractionMatrix(AttractionPattern pattern, float variation) {
+        attractionMatrix.generate(pattern, variation);
+    }
+
+    public void mutateAttractionMatrix(float amount) {
+        attractionMatrix.mutate(amount);
+    }
+
+    public void normalizeAttractionMatrix() {
+        attractionMatrix.normalize();
+    }
+
+    public void undoAttractionMatrix() {
+        attractionMatrix.undo();
+    }
+
+    public void redoAttractionMatrix() {
+        attractionMatrix.redo();
+    }
+
+    public boolean canUndoAttractionMatrix() {
+        return attractionMatrix.canUndo();
+    }
+
+    public boolean canRedoAttractionMatrix() {
+        return attractionMatrix.canRedo();
+    }
+
+    public boolean attractionMutationAnimated() {
+        return attractionMatrix.animatedMutation();
+    }
+
+    public void attractionMutationAnimated(boolean enabled) {
+        attractionMatrix.animatedMutation(enabled);
+    }
+
+    public void advanceAttractionMatrixAnimation(float deltaTime) {
+        attractionMatrix.advanceAnimation(deltaTime);
     }
 
     public int groupCount() {

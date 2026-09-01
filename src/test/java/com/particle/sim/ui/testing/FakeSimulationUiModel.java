@@ -84,6 +84,9 @@ public final class FakeSimulationUiModel implements SimulationUiModel {
         public int customSpawnAmount = 1_000;
         public float matrixEditStep = 0.1f;
         public float[][] attraction = new float[16][16];
+        public boolean canUndoAttractionMatrix;
+        public boolean canRedoAttractionMatrix;
+        public boolean attractionMutationAnimated;
         public ImVec4[] groupColors = { new ImVec4(1.0f, 1.0f, 1.0f, 1.0f) };
 
         @Override public int particleCount() { return particleCount; }
@@ -94,6 +97,9 @@ public final class FakeSimulationUiModel implements SimulationUiModel {
         @Override public int customSpawnAmount() { return customSpawnAmount; }
         @Override public float matrixEditStep() { return matrixEditStep; }
         @Override public float attraction(int row, int column) { return attraction[row][column]; }
+        @Override public boolean canUndoAttractionMatrix() { return canUndoAttractionMatrix; }
+        @Override public boolean canRedoAttractionMatrix() { return canRedoAttractionMatrix; }
+        @Override public boolean attractionMutationAnimated() { return attractionMutationAnimated; }
         @Override public ImVec4 groupColor(int group) {
             return groupColors[Math.floorMod(group, groupColors.length)];
         }

@@ -3,6 +3,7 @@ package com.particle.sim.particles;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -124,5 +125,76 @@ class AttractionMatrixTest {
         matrix.groupCount(8);
 
         assertEquals(0.7f, matrix.attraction(5, 5), EPSILON);
+    }
+
+    @Test
+    void structuredGeneratorsProduceTheirDefiningRelationships() {
+        AttractionMatrix matrix = new AttractionMatrix(6, 16);
+
+        matrix.generate(AttractionPattern.STABLE, 0.0f);
+        assertEquals(0.55f, matrix.attraction(2, 2), EPSILON);
+        assertEquals(-0.04f, matrix.attraction(2, 4), EPSILON);
+
+        matrix.generate(AttractionPattern.PREDATOR_PREY, 0.0f);
+        assertEquals(0.8f, matrix.attraction(0, 1), EPSILON);
+        assertEquals(-0.7f, matrix.attraction(1, 0), EPSILON);
+        assertEquals(0.8f, matrix.attraction(5, 0), EPSILON);
+
+        matrix.generate(AttractionPattern.ROCK_PAPER_SCISSORS, 0.0f);
+        assertEquals(0.75f, matrix.attraction(0, 1), EPSILON);
+        assertEquals(-0.65f, matrix.attraction(1, 0), EPSILON);
+        assertEquals(0.35f, matrix.attraction(0, 3), EPSILON);
+    }
+
+    @Test
+    void symmetricAndMutualismGeneratorsMirrorPairs() {
+        AttractionMatrix matrix = new AttractionMatrix(5, 16);
+        matrix.randomSeed(42L);
+
+        matrix.generate(AttractionPattern.SYMMETRIC, 0.2f);
+        for (int row = 0; row < 5; row++) {
+            for (int column = 0; column < 5; column++) {
+                assertEquals(matrix.attraction(row, column), matrix.attraction(column, row), EPSILON);
+            }
+        }
+
+        matrix.generate(AttractionPattern.MUTUALISM, 0.1f);
+        for (int row = 0; row < 5; row++) {
+            for (int column = 0; column < 5; column++) {
+                assertTrue(matrix.attraction(row, column) > 0.0f);
+                assertEquals(matrix.attraction(row, column), matrix.attraction(column, row), EPSILON);
+            }
+        }
+    }
+
+    @Test
+    void undoAndRedoRestoreValues() {
+        AttractionMatrix matrix = new AttractionMatrix(2, 4);
+        matrix.zero();
+        matrix.attraction(0, 1, 0.4f);
+        matrix.invert();
+
+        matrix.undo();
+        assertEquals(0.4f, matrix.attraction(0, 1), EPSILON);
+        matrix.redo();
+        assertEquals(-0.4f, matrix.attraction(0, 1), EPSILON);
+    }
+
+    @Test
+    void normalizeScalesStrengthAndAnimatedMutationMovesGradually() {
+        AttractionMatrix matrix = new AttractionMatrix(2, 4);
+        matrix.zero();
+        matrix.attraction(0, 0, 0.2f);
+        matrix.attraction(0, 1, -0.5f);
+
+        matrix.normalize();
+        assertEquals(0.4f, matrix.attraction(0, 0), EPSILON);
+        assertEquals(-1.0f, matrix.attraction(0, 1), EPSILON);
+
+        matrix.randomSeed(7L);
+        matrix.animatedMutation(true);
+        float before = matrix.attraction(1, 1);
+        matrix.advanceAnimation(0.1f);
+        assertNotEquals(before, matrix.attraction(1, 1));
     }
 }

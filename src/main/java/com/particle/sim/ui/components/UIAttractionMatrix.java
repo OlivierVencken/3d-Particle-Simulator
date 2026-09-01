@@ -14,6 +14,7 @@ import imgui.ImVec4;
 import imgui.flag.ImGuiButtonFlags;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;
+import imgui.type.ImBoolean;
 
 /** Focusable attraction matrix and its shared action controls. */
 public final class UIAttractionMatrix {
@@ -25,7 +26,7 @@ public final class UIAttractionMatrix {
     }
 
     public static void render(SimulationUiModel.Particles particles, SimulationUiActions.Particles actions) {
-        renderActions(actions);
+        renderActions(particles, actions);
         ImGui.pushStyleColor(ImGuiCol.ChildBg, UIColors.TRANSPARENT.vec4());
         try {
             renderGrid(particles, actions);
@@ -35,26 +36,44 @@ public final class UIAttractionMatrix {
         renderLegend();
     }
 
-    private static void renderActions(SimulationUiActions.Particles actions) {
+    private static void renderActions(SimulationUiModel.Particles particles, SimulationUiActions.Particles actions) {
         UIDesignTokens tokens = UITheme.tokens();
-        if (UIButton.text("Randomize", "matrix-randomize", UIComponentVariant.SECONDARY,
+        if (UIButton.text("Mutate 5%", "matrix-mutate-5", UIComponentVariant.SECONDARY,
                 0.0f, tokens.controlHeight())) {
-            actions.randomizeAttractionMatrix();
+            actions.mutateAttractionMatrix(0.05f);
         }
-        continueActionRow("Zero", tokens);
+        continueActionRow("10%", tokens);
+        if (UIButton.text("10%", "matrix-mutate-10", UIComponentVariant.SECONDARY,
+                0.0f, tokens.controlHeight())) {
+            actions.mutateAttractionMatrix(0.10f);
+        }
+        continueActionRow("25%", tokens);
+        if (UIButton.text("25%", "matrix-mutate-25", UIComponentVariant.SECONDARY,
+                0.0f, tokens.controlHeight())) {
+            actions.mutateAttractionMatrix(0.25f);
+        }
+
         if (UIButton.text("Zero", "matrix-zero", UIComponentVariant.SECONDARY,
-                0.0f, tokens.controlHeight())) {
-            actions.zeroAttractionMatrix();
-        }
+                0.0f, tokens.controlHeight())) actions.zeroAttractionMatrix();
         continueActionRow("Symmetrize", tokens);
         if (UIButton.text("Symmetrize", "matrix-symmetrize", UIComponentVariant.SECONDARY,
-                0.0f, tokens.controlHeight())) {
-            actions.symmetrizeAttractionMatrix();
-        }
+                0.0f, tokens.controlHeight())) actions.symmetrizeAttractionMatrix();
         continueActionRow("Invert", tokens);
         if (UIButton.text("Invert", "matrix-invert", UIComponentVariant.SECONDARY,
-                0.0f, tokens.controlHeight())) {
-            actions.invertAttractionMatrix();
+                0.0f, tokens.controlHeight())) actions.invertAttractionMatrix();
+        continueActionRow("Normalize", tokens);
+        if (UIButton.text("Normalize", "matrix-normalize", UIComponentVariant.SECONDARY,
+                0.0f, tokens.controlHeight())) actions.normalizeAttractionMatrix();
+
+        if (UIButton.text("Undo", "matrix-undo", UIComponentVariant.SECONDARY,
+                0.0f, tokens.controlHeight(), particles.canUndoAttractionMatrix())) actions.undoAttractionMatrix();
+        continueActionRow("Redo", tokens);
+        if (UIButton.text("Redo", "matrix-redo", UIComponentVariant.SECONDARY,
+                0.0f, tokens.controlHeight(), particles.canRedoAttractionMatrix())) actions.redoAttractionMatrix();
+
+        ImBoolean animated = new ImBoolean(particles.attractionMutationAnimated());
+        if (UICheckbox.renderToggle("Gradual mutation", "matrix-animate-mutation", animated, true)) {
+            actions.setAttractionMutationAnimated(animated.get());
         }
     }
 
