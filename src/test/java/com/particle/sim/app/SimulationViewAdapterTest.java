@@ -12,6 +12,7 @@ import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.SimulationView;
 import com.particle.sim.ui.SimulationViewActions;
 import com.particle.sim.ui.SimulationViewDiagnostics;
+import imgui.ImVec4;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,6 +55,17 @@ class SimulationViewAdapterTest {
                 3,
                 settings.saveRequests,
                 "Each changed slider frame refreshes the SettingsController debounce deadline");
+    }
+
+    @Test
+    void groupColorActionUpdatesTheSharedPaletteAndSchedulesPersistence() {
+        actions.visuals().setGroupColor(3, new ImVec4(0.2f, 0.4f, 0.6f, 1.0f));
+
+        ImVec4 color = adapter.model().particles().groupColor(3);
+        assertEquals(0.2f, color.x, 0.0001f);
+        assertEquals(0.4f, color.y, 0.0001f);
+        assertEquals(0.6f, color.z, 0.0001f);
+        assertEquals(1, settings.saveRequests);
     }
 
     @Test

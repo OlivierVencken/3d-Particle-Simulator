@@ -32,6 +32,7 @@ uniform int uRenderedParticleCount;
 uniform int uParticleStride;
 uniform int uColorMode;
 uniform int uGroupCount;
+uniform vec3 uGroupColors[16];
 uniform float uMaxVelocity;
 uniform float uBounds;
 uniform float uInteractionRange;
@@ -52,17 +53,7 @@ int getGridIndex(ivec3 coord) {
 
 vec3 particleColor(int particleId, vec3 position, int group) {
     if (uColorMode == 0) {
-        vec3 palette[16] = vec3[](
-            vec3(0.18, 0.65, 1.0), vec3(1.0, 0.35, 0.16),
-            vec3(0.45, 1.0, 0.42), vec3(1.0, 0.86, 0.25),
-            vec3(0.78, 0.42, 1.0), vec3(0.15, 0.95, 0.86),
-            vec3(1.0, 0.45, 0.72), vec3(0.5, 0.95, 0.2),
-            vec3(0.95, 0.62, 0.15), vec3(0.35, 0.55, 1.0),
-            vec3(0.9, 0.95, 0.35), vec3(0.55, 0.25, 1.0),
-            vec3(0.1, 0.8, 0.45), vec3(1.0, 0.2, 0.35),
-            vec3(0.35, 1.0, 0.95), vec3(0.85, 0.85, 0.9)
-        );
-        return palette[group];
+        return uGroupColors[group];
     }
     if (uColorMode == 2) {
         return clamp((position + vec3(uBounds)) / (2.0 * uBounds), 0.0, 1.0);

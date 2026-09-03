@@ -12,6 +12,7 @@ import static org.lwjgl.opengl.GL43C.glGetUniformLocation;
 import static org.lwjgl.opengl.GL43C.glUniform1f;
 import static org.lwjgl.opengl.GL43C.glUniform1i;
 import static org.lwjgl.opengl.GL43C.glUniform2f;
+import static org.lwjgl.opengl.GL43C.glUniform3fv;
 import static org.lwjgl.opengl.GL43C.glUniformMatrix4fv;
 import static org.lwjgl.opengl.GL43C.glUseProgram;
 
@@ -40,6 +41,7 @@ final class TrailRenderPass {
     private int particleStrideLocation;
     private int colorModeLocation;
     private int groupCountLocation;
+    private int groupColorsLocation;
     private int maximumVelocityLocation;
     private int boundsLocation;
     private int interactionRangeLocation;
@@ -69,6 +71,7 @@ final class TrailRenderPass {
         particleStrideLocation = glGetUniformLocation(program, "uParticleStride");
         colorModeLocation = glGetUniformLocation(program, "uColorMode");
         groupCountLocation = glGetUniformLocation(program, "uGroupCount");
+        groupColorsLocation = glGetUniformLocation(program, "uGroupColors[0]");
         maximumVelocityLocation = glGetUniformLocation(program, "uMaxVelocity");
         boundsLocation = glGetUniformLocation(program, "uBounds");
         interactionRangeLocation = glGetUniformLocation(program, "uInteractionRange");
@@ -115,6 +118,7 @@ final class TrailRenderPass {
         glUniform1i(particleStrideLocation, effectiveParticleStride);
         glUniform1i(colorModeLocation, frame.colorMode());
         glUniform1i(groupCountLocation, frame.groupCount());
+        glUniform3fv(groupColorsLocation, frame.groupColorRgbComponents());
         glUniform1f(maximumVelocityLocation, frame.maximumVelocity());
         glUniform1f(boundsLocation, frame.bounds());
         glUniform1f(interactionRangeLocation, frame.interactionRange());

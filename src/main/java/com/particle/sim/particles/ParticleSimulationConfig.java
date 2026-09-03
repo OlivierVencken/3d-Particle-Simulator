@@ -35,7 +35,7 @@ public final class ParticleSimulationConfig {
     private int groupCount = SimulationDefaults.GROUP_COUNT;
     private ColorMode colorMode = SimulationDefaults.COLOR_MODE;
     private SpawnMode spawnMode = SimulationDefaults.SPAWN_MODE;
-    private ImVec4[] groupColors = SimulationDefaults.GROUP_COLORS;
+    private ImVec4[] groupColors = SimulationDefaults.defaultGroupColors();
 
     public static ParticleSimulationConfig defaults() {
         return new ParticleSimulationConfig();
@@ -311,15 +311,42 @@ public final class ParticleSimulationConfig {
     }
 
     public ImVec4[] groupColors() {
-        return groupColors;
+        return copyColors(groupColors);
     }
 
     public void groupColors(ImVec4[] groupColors) {
-        if (groupColors == null || groupColors.length == 0) {
-            this.groupColors = SimulationDefaults.GROUP_COLORS;
-        } else {
-            this.groupColors = groupColors;
+        ImVec4[] defaults = SimulationDefaults.defaultGroupColors();
+        if (groupColors != null) {
+            int colorCount = Math.min(groupColors.length, defaults.length);
+            for (int index = 0; index < colorCount; index++) {
+                defaults[index] = sanitizeColor(groupColors[index], defaults[index]);
+            }
         }
+        this.groupColors = defaults;
+    }
+
+    public ImVec4 groupColor(int group) {
+        ImVec4 color = groupColors[Math.floorMod(group, groupColors.length)];
+        return copyColor(color);
+    }
+
+    public void groupColor(int group, ImVec4 color) {
+        if (group < 0 || group >= groupColors.length || color == null) {
+            return;
+        }
+        groupColors[group] = sanitizeColor(color, groupColors[group]);
+    }
+
+    public float[] groupColorRgbComponents() {
+        float[] components = new float[groupColors.length * 3];
+        for (int index = 0; index < groupColors.length; index++) {
+            ImVec4 color = groupColors[index];
+            int componentIndex = index * 3;
+            components[componentIndex] = color.x;
+            components[componentIndex + 1] = color.y;
+            components[componentIndex + 2] = color.z;
+        }
+        return components;
     }
 
     public void sanitize() {
@@ -346,5 +373,32 @@ public final class ParticleSimulationConfig {
 
     private static float clamp(float value, float min, float max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    private static ImVec4[] copyColors(ImVec4[] colors) {
+        ImVec4[] copy = new ImVec4[colors.length];
+        for (int index = 0; index < colors.length; index++) {
+            copy[index] = copyColor(colors[index]);
+        }
+        return copy;
+    }
+
+    private static ImVec4 copyColor(ImVec4 color) {
+        return new ImVec4(color.x, color.y, color.z, color.w);
+    }
+
+    private static ImVec4 sanitizeColor(ImVec4 color, ImVec4 fallback) {
+        if (color == null) {
+            return copyColor(fallback);
+        }
+        return new ImVec4(
+                colorComponent(color.x, fallback.x),
+                colorComponent(color.y, fallback.y),
+                colorComponent(color.z, fallback.z),
+                colorComponent(color.w, fallback.w));
+    }
+
+    private static float colorComponent(float value, float fallback) {
+        return Float.isFinite(value) ? clamp(value, 0.0f, 1.0f) : fallback;
     }
 }

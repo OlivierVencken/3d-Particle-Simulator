@@ -17,7 +17,7 @@ This application takes that idea into 3D. This allows for more complex and inter
 ## Features
 
 - Real-time 3D particle simulation
-- Color-coded particle groups
+- Customizable colors for every particle group
 - Free-look camera
 - Live UI controls
 - Wrap-around bounds

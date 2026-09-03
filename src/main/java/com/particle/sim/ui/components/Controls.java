@@ -1,5 +1,9 @@
 package com.particle.sim.ui.components;
 
+import com.particle.sim.ui.theme.Fonts;
+import imgui.ImGui;
+import imgui.ImVec4;
+import imgui.flag.ImGuiColorEditFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
 
@@ -8,6 +12,7 @@ public final class Controls {
     private final ImInt integerRef = new ImInt();
     private final float[] floatRef = new float[1];
     private final int[] intRef = new int[1];
+    private final float[] colorRef = new float[3];
 
     public void settingSlider(
             String label, float value, float min, float max, int decimals, FloatSetter setter) {
@@ -50,6 +55,28 @@ public final class Controls {
         integerRef.set(value);
         if (Combo.render(label, id, integerRef, values)) {
             setter.set(integerRef.get());
+        }
+    }
+
+    public void settingColor(String label, String id, ImVec4 value, ColorSetter setter) {
+        colorRef[0] = value.x;
+        colorRef[1] = value.y;
+        colorRef[2] = value.z;
+
+        ImGui.pushFont(Fonts.medium());
+        try {
+            ImGui.textUnformatted(label);
+            ImGui.setNextItemWidth(-1.0f);
+            int flags =
+                    ImGuiColorEditFlags.NoAlpha
+                            | ImGuiColorEditFlags.DisplayHex
+                            | ImGuiColorEditFlags.Uint8
+                            | ImGuiColorEditFlags.InputRGB;
+            if (ImGui.colorEdit3("###color-" + id, colorRef, flags)) {
+                setter.set(new ImVec4(colorRef[0], colorRef[1], colorRef[2], 1.0f));
+            }
+        } finally {
+            ImGui.popFont();
         }
     }
 
@@ -104,5 +131,10 @@ public final class Controls {
     @FunctionalInterface
     public interface BooleanSetter {
         void set(boolean value);
+    }
+
+    @FunctionalInterface
+    public interface ColorSetter {
+        void set(ImVec4 value);
     }
 }

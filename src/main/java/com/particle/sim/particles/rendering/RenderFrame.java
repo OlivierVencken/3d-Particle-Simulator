@@ -50,6 +50,10 @@ public record RenderFrame(
         return config.groupCount();
     }
 
+    float[] groupColorRgbComponents() {
+        return config.groupColorRgbComponents();
+    }
+
     float maximumVelocity() {
         return config.maxVelocity();
     }

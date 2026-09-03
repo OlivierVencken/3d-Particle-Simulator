@@ -337,8 +337,7 @@ final class SimulationViewAdapter {
 
         @Override
         public ImVec4 groupColor(int group) {
-            ImVec4[] colors = particles.groupColors();
-            return colors[Math.floorMod(group, colors.length)];
+            return particles.groupColor(group);
         }
 
         @Override
@@ -512,6 +511,11 @@ final class SimulationViewAdapter {
         @Override
         public void setColorMode(ColorMode value) {
             settingChanged(() -> particles.colorMode(value));
+        }
+
+        @Override
+        public void setGroupColor(int group, ImVec4 color) {
+            settingChanged(() -> particles.groupColor(group, color));
         }
 
         @Override

@@ -502,6 +502,14 @@ public final class ParticleSystem {
         config.groupColors(groupColors);
     }
 
+    public ImVec4 groupColor(int group) {
+        return config.groupColor(group);
+    }
+
+    public void groupColor(int group, ImVec4 color) {
+        config.groupColor(group, color);
+    }
+
     public int gridSize() {
         return SpatialGridSizing.gridSize(bounds(), interactionRange());
     }

@@ -6,6 +6,7 @@ import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.ui.SimulationViewActions;
+import imgui.ImVec4;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -225,6 +226,11 @@ public final class RecordingSimulationViewActions implements SimulationViewActio
         @Override
         public void setColorMode(ColorMode value) {
             record("visuals.colorMode");
+        }
+
+        @Override
+        public void setGroupColor(int group, ImVec4 color) {
+            record("visuals.groupColor");
         }
 
         @Override

@@ -12,7 +12,10 @@ final class VisualsSection {
     private static final String[] COLOR_MODES = Controls.enumLabels(ColorMode.values());
     private final Controls controls = new Controls();
 
-    void render(SimulationViewModel.Visuals visuals, SimulationViewActions.Visuals actions) {
+    void render(
+            SimulationViewModel.Visuals visuals,
+            SimulationViewModel.Particles particles,
+            SimulationViewActions.Visuals actions) {
         Controls.sectionHeading("Particle rendering");
         controls.settingSlider(
                 "Particle size",
@@ -33,6 +36,19 @@ final class VisualsSection {
                 visuals.colorMode().ordinal(),
                 COLOR_MODES,
                 value -> actions.setColorMode(ColorMode.values()[value]));
+
+        if (visuals.colorMode() == ColorMode.GROUP) {
+            Text.divider();
+            Controls.sectionHeading("Group colors");
+            for (int group = 0; group < particles.groupCount(); group++) {
+                int selectedGroup = group;
+                controls.settingColor(
+                        "Group " + (group + 1),
+                        "group-" + group,
+                        particles.groupColor(group),
+                        color -> actions.setGroupColor(selectedGroup, color));
+            }
+        }
 
         Text.divider();
 

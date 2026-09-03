@@ -8,6 +8,7 @@ import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.ui.SimulationView;
+import imgui.ImVec4;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -113,6 +114,9 @@ public final class AppSettings {
                 intProperty(properties, "groupCount", particleConfig.groupCount()));
         particleConfig.colorMode(
                 enumProperty(properties, "colorMode", ColorMode.class, particleConfig.colorMode()));
+        particleConfig.groupColors(
+                groupColorsProperty(
+                        properties.getProperty("groupColors"), particleConfig.groupColors()));
         particleConfig.spawnMode(
                 enumProperty(properties, "spawnMode", SpawnMode.class, particleConfig.spawnMode()));
         settings.cameraSensitivity =
@@ -198,6 +202,7 @@ public final class AppSettings {
         properties.setProperty("distanceMetric", particleConfig.distanceMetric().name());
         properties.setProperty("groupCount", Integer.toString(particleConfig.groupCount()));
         properties.setProperty("colorMode", particleConfig.colorMode().name());
+        properties.setProperty("groupColors", groupColorsString(particleConfig.groupColors()));
         properties.setProperty("spawnMode", particleConfig.spawnMode().name());
         properties.setProperty("cameraSensitivity", Float.toString(cameraSensitivity));
         properties.setProperty("cameraFlySpeed", Float.toString(cameraFlySpeed));
@@ -333,6 +338,60 @@ public final class AppSettings {
 
     private static String effectModesString(Set<EffectMode> effectModes) {
         return effectModes.stream().map(EffectMode::name).collect(Collectors.joining(","));
+    }
+
+    private static ImVec4[] groupColorsProperty(String value, ImVec4[] fallback) {
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+
+        ImVec4[] colors = copyColors(fallback);
+        String[] encodedColors = value.split(";", -1);
+        int colorCount = Math.min(colors.length, encodedColors.length);
+        for (int index = 0; index < colorCount; index++) {
+            String[] components = encodedColors[index].split(",", -1);
+            if (components.length != 4) {
+                continue;
+            }
+            try {
+                colors[index] =
+                        new ImVec4(
+                                Float.parseFloat(components[0]),
+                                Float.parseFloat(components[1]),
+                                Float.parseFloat(components[2]),
+                                Float.parseFloat(components[3]));
+            } catch (NumberFormatException ignored) {
+                // Keep this entry's default while still loading the remaining valid colors.
+            }
+        }
+        return colors;
+    }
+
+    private static String groupColorsString(ImVec4[] colors) {
+        StringBuilder value = new StringBuilder();
+        for (int index = 0; index < colors.length; index++) {
+            if (index > 0) {
+                value.append(';');
+            }
+            ImVec4 color = colors[index];
+            value.append(color.x)
+                    .append(',')
+                    .append(color.y)
+                    .append(',')
+                    .append(color.z)
+                    .append(',')
+                    .append(color.w);
+        }
+        return value.toString();
+    }
+
+    private static ImVec4[] copyColors(ImVec4[] colors) {
+        ImVec4[] copy = new ImVec4[colors.length];
+        for (int index = 0; index < colors.length; index++) {
+            ImVec4 color = colors[index];
+            copy[index] = new ImVec4(color.x, color.y, color.z, color.w);
+        }
+        return copy;
     }
 
     private static float clamp(float value, float min, float max) {

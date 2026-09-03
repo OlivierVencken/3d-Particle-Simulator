@@ -19,7 +19,11 @@ class ShaderResourceTest {
         assertShaderContains(
                 "/shaders/grid_scatter.comp", "particle_ids[destination]", "void main()");
         assertShaderContains(
-                "/shaders/particle.vert", "uniform mat4 uViewProjection;", "void main()");
+                "/shaders/particle.vert",
+                "uniform mat4 uViewProjection;",
+                "uniform vec3 uGroupColors[16];",
+                "uGroupColors[group]",
+                "void main()");
         assertShaderContains("/shaders/particle.frag", "out vec4 fragColor;", "void main()");
         assertShaderContains("/shaders/fullscreen.vert", "out vec2 vUv;", "void main()");
         assertShaderContains(
@@ -32,6 +36,8 @@ class ShaderResourceTest {
                 "/shaders/trail.vert",
                 "layout(std430, binding = 4) readonly buffer TrailHistory",
                 "uniform float uTrailThickness;",
+                "uniform vec3 uGroupColors[16];",
+                "uGroupColors[group]",
                 "gl_InstanceID",
                 "void main()");
         assertShaderContains("/shaders/trail.frag", "out vec4 fragColor;", "void main()");

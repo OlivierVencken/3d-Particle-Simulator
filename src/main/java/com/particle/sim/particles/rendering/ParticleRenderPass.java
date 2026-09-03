@@ -11,6 +11,7 @@ import static org.lwjgl.opengl.GL43C.glGenVertexArrays;
 import static org.lwjgl.opengl.GL43C.glGetUniformLocation;
 import static org.lwjgl.opengl.GL43C.glUniform1f;
 import static org.lwjgl.opengl.GL43C.glUniform1i;
+import static org.lwjgl.opengl.GL43C.glUniform3fv;
 import static org.lwjgl.opengl.GL43C.glUniformMatrix4fv;
 import static org.lwjgl.opengl.GL43C.glUseProgram;
 
@@ -28,6 +29,7 @@ final class ParticleRenderPass {
     private int pointSizeReferenceDistanceLocation;
     private int colorModeLocation;
     private int groupCountLocation;
+    private int groupColorsLocation;
     private int maximumVelocityLocation;
     private int boundsLocation;
     private int interactionRangeLocation;
@@ -47,6 +49,7 @@ final class ParticleRenderPass {
                 glGetUniformLocation(program, "uPointSizeReferenceDistance");
         colorModeLocation = glGetUniformLocation(program, "uColorMode");
         groupCountLocation = glGetUniformLocation(program, "uGroupCount");
+        groupColorsLocation = glGetUniformLocation(program, "uGroupColors[0]");
         maximumVelocityLocation = glGetUniformLocation(program, "uMaxVelocity");
         boundsLocation = glGetUniformLocation(program, "uBounds");
         interactionRangeLocation = glGetUniformLocation(program, "uInteractionRange");
@@ -69,6 +72,7 @@ final class ParticleRenderPass {
                 SimulationDefaults.POINT_SIZE_REFERENCE_DISTANCE);
         setInteger(colorModeLocation, frame.colorMode());
         setInteger(groupCountLocation, frame.groupCount());
+        glUniform3fv(groupColorsLocation, frame.groupColorRgbComponents());
         setFloat(maximumVelocityLocation, frame.maximumVelocity());
         setFloat(boundsLocation, frame.bounds());
         setFloat(interactionRangeLocation, frame.interactionRange());

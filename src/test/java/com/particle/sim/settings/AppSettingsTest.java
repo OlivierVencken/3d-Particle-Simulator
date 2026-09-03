@@ -11,6 +11,7 @@ import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.ui.SimulationView;
+import imgui.ImVec4;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -42,6 +43,7 @@ class AppSettingsTest {
         particles.distanceMetric(DistanceMetric.MANHATTAN);
         particles.groupCount(8);
         particles.colorMode(ColorMode.DENSITY);
+        particles.groupColor(2, new ImVec4(0.12f, 0.34f, 0.56f, 1.0f));
         particles.effectEnabled(EffectMode.GLOW, true);
         particles.effectEnabled(EffectMode.TRAILS, true);
         particles.glowBlurPasses(24);
@@ -83,6 +85,7 @@ class AppSettingsTest {
         assertEquals(DistanceMetric.MANHATTAN, loadedParticles.distanceMetric());
         assertEquals(8, loadedParticles.groupCount());
         assertEquals(ColorMode.DENSITY, loadedParticles.colorMode());
+        assertColorEquals(new ImVec4(0.12f, 0.34f, 0.56f, 1.0f), loadedParticles.groupColor(2));
         assertTrue(loadedParticles.effectEnabled(EffectMode.GLOW));
         assertTrue(loadedParticles.effectEnabled(EffectMode.TRAILS));
         assertEquals(24, loadedParticles.glowBlurPasses());
@@ -111,6 +114,7 @@ class AppSettingsTest {
         particles.pointSize(8.0f);
         particles.fixedParticleScreenSize(true);
         particles.colorMode(ColorMode.DENSITY);
+        particles.groupColor(0, new ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
         particles.effectEnabled(EffectMode.GLOW, true);
         particles.glowBlurPasses(24);
         particles.glowStrength(3.5f);
@@ -137,6 +141,7 @@ class AppSettingsTest {
         assertEquals(SimulationDefaults.POINT_SIZE, particles.pointSize(), EPSILON);
         assertFalse(particles.fixedParticleScreenSize());
         assertEquals(SimulationDefaults.COLOR_MODE, particles.colorMode());
+        assertColorEquals(SimulationDefaults.defaultGroupColors()[0], particles.groupColor(0));
         assertTrue(particles.effectModes().isEmpty());
         assertFalse(particles.effectEnabled(EffectMode.GLOW));
         assertFalse(particles.effectEnabled(EffectMode.TRAILS));
@@ -208,5 +213,25 @@ class AppSettingsTest {
                 .applySimulationTo(new ParticleSystem(), new CameraController(), ui);
 
         assertEquals(0, ui.fpsCap());
+    }
+
+    @Test
+    void malformedSavedColorKeepsItsDefaultWithoutDiscardingOtherColors() throws Exception {
+        Path settingsFile = tempDir.resolve("settings.properties");
+        java.nio.file.Files.writeString(settingsFile, "groupColors=invalid;0.1,0.2,0.3,1.0\n");
+
+        ParticleSystem particles = new ParticleSystem();
+        AppSettings.load(settingsFile)
+                .applySimulationTo(particles, new CameraController(), new SimulationView());
+
+        assertColorEquals(SimulationDefaults.defaultGroupColors()[0], particles.groupColor(0));
+        assertColorEquals(new ImVec4(0.1f, 0.2f, 0.3f, 1.0f), particles.groupColor(1));
+    }
+
+    private static void assertColorEquals(ImVec4 expected, ImVec4 actual) {
+        assertEquals(expected.x, actual.x, EPSILON);
+        assertEquals(expected.y, actual.y, EPSILON);
+        assertEquals(expected.z, actual.z, EPSILON);
+        assertEquals(expected.w, actual.w, EPSILON);
     }
 }

@@ -48,7 +48,7 @@ public final class SimulationDefaults {
     public static final int MAX_FPS_CAP = 360;
     public static final float MATRIX_EDIT_STEP = 0.1f;
     public static final int CUSTOM_SPAWN_AMOUNT = 5_000;
-    public static final ImVec4[] GROUP_COLORS =
+    private static final ImVec4[] GROUP_COLORS =
             new ImVec4[] {
                 new ImVec4(0.18f, 0.65f, 1.0f, 1.0f),
                 new ImVec4(1.0f, 0.35f, 0.16f, 1.0f),
@@ -67,4 +67,13 @@ public final class SimulationDefaults {
                 new ImVec4(0.35f, 1.0f, 0.95f, 1.0f),
                 new ImVec4(0.85f, 0.85f, 0.9f, 1.0f)
             };
+
+    public static ImVec4[] defaultGroupColors() {
+        ImVec4[] colors = new ImVec4[GROUP_COLORS.length];
+        for (int index = 0; index < GROUP_COLORS.length; index++) {
+            ImVec4 color = GROUP_COLORS[index];
+            colors[index] = new ImVec4(color.x, color.y, color.z, color.w);
+        }
+        return colors;
+    }
 }

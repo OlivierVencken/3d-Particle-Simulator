@@ -18,7 +18,8 @@ public final class SidebarContent {
                     simulationSection.render(
                             model.simulation(), model.application(), actions.simulation());
             case PARTICLES -> particlesSection.render(model.particles(), actions.particles());
-            case VISUALS -> visualsSection.render(model.visuals(), actions.visuals());
+            case VISUALS ->
+                    visualsSection.render(model.visuals(), model.particles(), actions.visuals());
             case CAMERA -> cameraSection.render(model.camera(), actions.camera());
             case MATRIX -> matrixEditor.renderSettings(model.particles(), actions.particles());
         }
