@@ -150,7 +150,7 @@ public final class AppSettings {
     }
 
     public static Path ensurePresetExtension(Path path) {
-        String fileName = path.getFileName().toString();
+        String fileName = presetFileName(path);
         if (fileName.toLowerCase(Locale.ROOT).endsWith(PRESET_EXTENSION)) {
             return path;
         }
@@ -158,7 +158,7 @@ public final class AppSettings {
     }
 
     public static String presetNameFromPath(Path path) {
-        String fileName = path.getFileName().toString();
+        String fileName = presetFileName(path);
         if (fileName.toLowerCase(Locale.ROOT).endsWith(PRESET_EXTENSION)) {
             fileName = fileName.substring(0, fileName.length() - PRESET_EXTENSION.length());
         }
@@ -166,6 +166,14 @@ public final class AppSettings {
             return "Untitled preset";
         }
         return fileName;
+    }
+
+    private static String presetFileName(Path path) {
+        Path fileName = path.getFileName();
+        if (fileName == null) {
+            throw new IllegalArgumentException("Preset path must name a file");
+        }
+        return fileName.toString();
     }
 
     private void save(Path path, String comment, String presetName) {

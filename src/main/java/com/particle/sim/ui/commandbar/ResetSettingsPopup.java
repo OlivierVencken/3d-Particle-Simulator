@@ -10,6 +10,7 @@ import com.particle.sim.ui.theme.Fonts;
 import com.particle.sim.ui.theme.Theme;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
+import java.util.Objects;
 
 final class ResetSettingsPopup extends ModalPopup {
     private SimulationViewActions.Application actions;
@@ -45,7 +46,7 @@ final class ResetSettingsPopup extends ModalPopup {
                 ComponentVariant.DESTRUCTIVE,
                 tokens.buttonWidthXxl(),
                 tokens.controlHeight())) {
-            actions.resetSettings();
+            Objects.requireNonNull(actions, "actions").resetSettings();
             close();
         }
         ImGui.sameLine();

@@ -341,7 +341,8 @@ public final class AttractionMatrixControl {
             }
             if (hovered || focused) {
                 Tooltip.forLastItem(
-                        "Group %d toward group %d: %+.2f\n".formatted(row + 1, column + 1, value)
+                        "Group %d toward group %d: %+.2f".formatted(row + 1, column + 1, value)
+                                + '\n'
                                 + "Activate to increase; right-click to decrease.");
             }
         } finally {

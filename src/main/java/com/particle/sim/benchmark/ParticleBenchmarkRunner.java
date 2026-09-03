@@ -258,11 +258,16 @@ public final class ParticleBenchmarkRunner {
 
     private static void writeOutput(Path outputPath, String json, List<Measurement> measurements) {
         try {
-            Path parent = outputPath.toAbsolutePath().getParent();
+            Path absoluteOutputPath = outputPath.toAbsolutePath();
+            Path parent = absoluteOutputPath.getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
             }
-            String fileName = outputPath.getFileName().toString().toLowerCase(Locale.ROOT);
+            Path fileNamePath = absoluteOutputPath.getFileName();
+            if (fileNamePath == null) {
+                throw new IllegalArgumentException("Benchmark output path must name a file");
+            }
+            String fileName = fileNamePath.toString().toLowerCase(Locale.ROOT);
             Files.writeString(outputPath, fileName.endsWith(".csv") ? toCsv(measurements) : json);
         } catch (IOException exception) {
             throw new IllegalStateException(

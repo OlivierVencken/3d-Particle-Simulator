@@ -6,6 +6,7 @@ import imgui.ImVec4;
 import imgui.flag.ImGuiColorEditFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
+import java.util.Locale;
 
 public final class Controls {
     private final ImBoolean booleanRef = new ImBoolean();
@@ -87,7 +88,7 @@ public final class Controls {
     public static String[] enumLabels(Enum<?>[] values) {
         String[] labels = new String[values.length];
         for (int index = 0; index < values.length; index++) {
-            String raw = values[index].name().toLowerCase().replace('_', ' ');
+            String raw = values[index].name().toLowerCase(Locale.ROOT).replace('_', ' ');
             labels[index] = Character.toUpperCase(raw.charAt(0)) + raw.substring(1);
         }
         return labels;

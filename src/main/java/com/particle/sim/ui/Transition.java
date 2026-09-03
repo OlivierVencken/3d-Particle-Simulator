@@ -19,7 +19,7 @@ final class Transition {
 
     void setTarget(float target) {
         float clampedTarget = clamp01(target);
-        if (clampedTarget == targetValue) {
+        if (Float.compare(clampedTarget, targetValue) == 0) {
             return;
         }
         startValue = value;
@@ -28,7 +28,9 @@ final class Transition {
     }
 
     void advance(float deltaTime) {
-        if (value == targetValue || !Float.isFinite(deltaTime) || deltaTime <= 0.0f) {
+        if (Float.compare(value, targetValue) == 0
+                || !Float.isFinite(deltaTime)
+                || deltaTime <= 0.0f) {
             return;
         }
 

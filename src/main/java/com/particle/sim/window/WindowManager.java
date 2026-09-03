@@ -268,7 +268,7 @@ public final class WindowManager {
 
             ByteBuffer pixels = STBImage.stbi_load_from_memory(icon, w, h, channels, 4);
             if (pixels == null) {
-                throw new RuntimeException(
+                throw new IllegalStateException(
                         "Failed to load icon: " + STBImage.stbi_failure_reason());
             }
 

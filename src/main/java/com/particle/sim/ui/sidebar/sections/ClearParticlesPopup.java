@@ -10,6 +10,7 @@ import com.particle.sim.ui.theme.Fonts;
 import com.particle.sim.ui.theme.Theme;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
+import java.util.Objects;
 
 final class ClearParticlesPopup extends ModalPopup {
     private SimulationViewActions.Particles actions;
@@ -56,7 +57,7 @@ final class ClearParticlesPopup extends ModalPopup {
                 ComponentVariant.DESTRUCTIVE,
                 tokens.buttonWidthXxl(),
                 tokens.controlHeight())) {
-            actions.clear();
+            Objects.requireNonNull(actions, "actions").clear();
             close();
         }
         ImGui.sameLine();
