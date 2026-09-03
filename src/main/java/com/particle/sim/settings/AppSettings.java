@@ -271,20 +271,25 @@ public final class AppSettings {
 
     private void sanitize() {
         particleConfig.sanitize();
-        cameraSensitivity = Math.max(0.0001f, cameraSensitivity);
-        cameraFlySpeed = Math.max(0.1f, cameraFlySpeed);
+        cameraSensitivity =
+                Math.max(
+                        0.0001f,
+                        finiteOrDefault(cameraSensitivity, SimulationDefaults.CAMERA_SENSITIVITY));
+        cameraFlySpeed =
+                Math.max(
+                        0.1f, finiteOrDefault(cameraFlySpeed, SimulationDefaults.CAMERA_FLY_SPEED));
         fpsCap =
                 fpsCap <= 0
                         ? 0
                         : Math.max(
                                 SimulationDefaults.MIN_FPS_CAP,
                                 Math.min(SimulationDefaults.MAX_FPS_CAP, fpsCap));
-        matrixEditStep = clamp(matrixEditStep, 0.01f, 0.5f);
+        matrixEditStep = clamp(matrixEditStep, 0.01f, 0.5f, SimulationDefaults.MATRIX_EDIT_STEP);
         customSpawnAmount = Math.max(0, customSpawnAmount);
 
         int attractionValueCount = particleConfig.groupCount() * particleConfig.groupCount();
         for (int i = 0; i < attractionValueCount; i++) {
-            attractionMatrix[i] = clamp(attractionMatrix[i], -1.0f, 1.0f);
+            attractionMatrix[i] = clamp(attractionMatrix[i], -1.0f, 1.0f, 0.0f);
         }
     }
 
@@ -298,7 +303,8 @@ public final class AppSettings {
 
     private static float floatProperty(Properties properties, String key, float fallback) {
         try {
-            return Float.parseFloat(properties.getProperty(key, Float.toString(fallback)));
+            float value = Float.parseFloat(properties.getProperty(key, Float.toString(fallback)));
+            return finiteOrDefault(value, fallback);
         } catch (NumberFormatException e) {
             return fallback;
         }
@@ -394,7 +400,11 @@ public final class AppSettings {
         return copy;
     }
 
-    private static float clamp(float value, float min, float max) {
-        return Math.max(min, Math.min(max, value));
+    private static float clamp(float value, float min, float max, float fallback) {
+        return Math.max(min, Math.min(max, finiteOrDefault(value, fallback)));
+    }
+
+    private static float finiteOrDefault(float value, float fallback) {
+        return Float.isFinite(value) ? value : fallback;
     }
 }

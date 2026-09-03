@@ -207,4 +207,21 @@ class ParticleSystemTest {
         assertEquals(1.0f, system.groupColor(1).x, EPSILON);
         assertEquals(SimulationDefaults.MAX_GROUP_COUNT, system.groupColors().length);
     }
+
+    @Test
+    void nonFiniteSimulationValuesFallBackToDefaults() {
+        ParticleSystem system = new ParticleSystem();
+
+        system.pointSize(Float.NaN);
+        system.glowStrength(Float.POSITIVE_INFINITY);
+        system.bounds(Float.NEGATIVE_INFINITY);
+        system.interactionRange(Float.NaN);
+        system.attraction(0, 0, Float.POSITIVE_INFINITY);
+
+        assertEquals(SimulationDefaults.POINT_SIZE, system.pointSize(), EPSILON);
+        assertEquals(SimulationDefaults.GLOW_STRENGTH, system.glowStrength(), EPSILON);
+        assertEquals(SimulationDefaults.BOUNDS, system.bounds(), EPSILON);
+        assertEquals(SimulationDefaults.INTERACTION_RANGE, system.interactionRange(), EPSILON);
+        assertEquals(0.0f, system.attraction(0, 0), EPSILON);
+    }
 }

@@ -89,7 +89,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void pointSize(float pointSize) {
-        this.pointSize = clamp(pointSize, 1.0f, 8.0f);
+        this.pointSize = clamp(pointSize, 1.0f, 8.0f, SimulationDefaults.POINT_SIZE);
         trailThickness(trailThickness);
     }
 
@@ -154,7 +154,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void glowStrength(float glowStrength) {
-        this.glowStrength = clamp(glowStrength, 0.0f, 6.0f);
+        this.glowStrength = clamp(glowStrength, 0.0f, 6.0f, SimulationDefaults.GLOW_STRENGTH);
     }
 
     public float glowRadius() {
@@ -162,7 +162,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void glowRadius(float glowRadius) {
-        this.glowRadius = clamp(glowRadius, 0.5f, 12.0f);
+        this.glowRadius = clamp(glowRadius, 0.5f, 12.0f, SimulationDefaults.GLOW_RADIUS);
     }
 
     public float glowFalloff() {
@@ -170,7 +170,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void glowFalloff(float glowFalloff) {
-        this.glowFalloff = clamp(glowFalloff, 0.05f, 3.0f);
+        this.glowFalloff = clamp(glowFalloff, 0.05f, 3.0f, SimulationDefaults.GLOW_FALLOFF);
     }
 
     public TrailSettings trailSettings() {
@@ -194,7 +194,11 @@ public final class ParticleSimulationConfig {
 
     public void trailThickness(float trailThickness) {
         this.trailThickness =
-                clamp(trailThickness, SimulationDefaults.MIN_TRAIL_THICKNESS, pointSize);
+                clamp(
+                        trailThickness,
+                        SimulationDefaults.MIN_TRAIL_THICKNESS,
+                        pointSize,
+                        SimulationDefaults.TRAIL_THICKNESS);
     }
 
     public float bounds() {
@@ -202,7 +206,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void bounds(float bounds) {
-        this.bounds = clamp(bounds, 2.0f, 10.0f);
+        this.bounds = clamp(bounds, 2.0f, 10.0f, SimulationDefaults.BOUNDS);
     }
 
     public float forceFactor() {
@@ -210,7 +214,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void forceFactor(float forceFactor) {
-        this.forceFactor = clamp(forceFactor, 0.0f, 10.0f);
+        this.forceFactor = clamp(forceFactor, 0.0f, 10.0f, SimulationDefaults.FORCE_FACTOR);
     }
 
     public float velocityDamping() {
@@ -218,7 +222,8 @@ public final class ParticleSimulationConfig {
     }
 
     public void velocityDamping(float velocityDamping) {
-        this.velocityDamping = clamp(velocityDamping, 0.85f, 1.0f);
+        this.velocityDamping =
+                clamp(velocityDamping, 0.85f, 1.0f, SimulationDefaults.VELOCITY_DAMPING);
     }
 
     public float interactionRange() {
@@ -226,7 +231,8 @@ public final class ParticleSimulationConfig {
     }
 
     public void interactionRange(float interactionRange) {
-        this.interactionRange = clamp(interactionRange, 0.2f, 3.0f);
+        this.interactionRange =
+                clamp(interactionRange, 0.2f, 3.0f, SimulationDefaults.INTERACTION_RANGE);
     }
 
     public float repulsionRadius() {
@@ -234,7 +240,8 @@ public final class ParticleSimulationConfig {
     }
 
     public void repulsionRadius(float repulsionRadius) {
-        this.repulsionRadius = clamp(repulsionRadius, 0.02f, 0.95f);
+        this.repulsionRadius =
+                clamp(repulsionRadius, 0.02f, 0.95f, SimulationDefaults.REPULSION_RADIUS);
     }
 
     public float maxVelocity() {
@@ -242,7 +249,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void maxVelocity(float maxVelocity) {
-        this.maxVelocity = clamp(maxVelocity, 0.5f, 16.0f);
+        this.maxVelocity = clamp(maxVelocity, 0.5f, 16.0f, SimulationDefaults.MAX_VELOCITY);
     }
 
     public float boundaryBounce() {
@@ -250,7 +257,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void boundaryBounce(float boundaryBounce) {
-        this.boundaryBounce = clamp(boundaryBounce, 0.0f, 1.0f);
+        this.boundaryBounce = clamp(boundaryBounce, 0.0f, 1.0f, SimulationDefaults.BOUNDARY_BOUNCE);
     }
 
     public boolean toroidalWrap() {
@@ -274,7 +281,7 @@ public final class ParticleSimulationConfig {
     }
 
     public void densityLimit(float densityLimit) {
-        this.densityLimit = clamp(densityLimit, 0.0f, 500.0f);
+        this.densityLimit = clamp(densityLimit, 0.0f, 500.0f, SimulationDefaults.DENSITY_LIMIT);
     }
 
     public DistanceMetric distanceMetric() {
@@ -352,27 +359,28 @@ public final class ParticleSimulationConfig {
     public void sanitize() {
         particleCount(particleCount);
         effectModes(effectModes);
-        pointSize = clamp(pointSize, 1.0f, 8.0f);
+        pointSize(pointSize);
         glowBlurPasses(glowBlurPasses);
-        glowStrength = clamp(glowStrength, 0.0f, 6.0f);
-        glowRadius = clamp(glowRadius, 0.5f, 12.0f);
-        glowFalloff = clamp(glowFalloff, 0.05f, 3.0f);
+        glowStrength(glowStrength);
+        glowRadius(glowRadius);
+        glowFalloff(glowFalloff);
         trailLength(trailLength);
         trailThickness(trailThickness);
-        bounds = clamp(bounds, 2.0f, 10.0f);
-        forceFactor = clamp(forceFactor, 0.0f, 10.0f);
-        velocityDamping = clamp(velocityDamping, 0.85f, 1.0f);
-        interactionRange = clamp(interactionRange, 0.2f, 3.0f);
-        repulsionRadius = clamp(repulsionRadius, 0.02f, 0.95f);
-        maxVelocity = clamp(maxVelocity, 0.5f, 16.0f);
-        boundaryBounce = clamp(boundaryBounce, 0.0f, 1.0f);
-        densityLimit = clamp(densityLimit, 0.0f, 500.0f);
+        bounds(bounds);
+        forceFactor(forceFactor);
+        velocityDamping(velocityDamping);
+        interactionRange(interactionRange);
+        repulsionRadius(repulsionRadius);
+        maxVelocity(maxVelocity);
+        boundaryBounce(boundaryBounce);
+        densityLimit(densityLimit);
         groupCount(groupCount);
         groupColors(groupColors);
     }
 
-    private static float clamp(float value, float min, float max) {
-        return Math.max(min, Math.min(max, value));
+    private static float clamp(float value, float min, float max, float fallback) {
+        float finiteValue = Float.isFinite(value) ? value : fallback;
+        return Math.max(min, Math.min(max, finiteValue));
     }
 
     private static ImVec4[] copyColors(ImVec4[] colors) {
@@ -399,6 +407,6 @@ public final class ParticleSimulationConfig {
     }
 
     private static float colorComponent(float value, float fallback) {
-        return Float.isFinite(value) ? clamp(value, 0.0f, 1.0f) : fallback;
+        return Float.isFinite(value) ? clamp(value, 0.0f, 1.0f, fallback) : fallback;
     }
 }

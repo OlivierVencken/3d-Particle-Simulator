@@ -228,6 +228,38 @@ class AppSettingsTest {
         assertColorEquals(new ImVec4(0.1f, 0.2f, 0.3f, 1.0f), particles.groupColor(1));
     }
 
+    @Test
+    void nonFiniteSavedValuesFallBackToDefaults() throws Exception {
+        Path settingsFile = tempDir.resolve("settings.properties");
+        java.nio.file.Files.writeString(
+                settingsFile,
+                """
+                pointSize=NaN
+                glowStrength=Infinity
+                bounds=-Infinity
+                attraction.0=NaN
+                cameraSensitivity=Infinity
+                cameraFlySpeed=NaN
+                matrixEditStep=-Infinity
+                groupColors=NaN,0.2,0.3,1.0
+                """);
+
+        ParticleSystem particles = new ParticleSystem();
+        CameraController camera = new CameraController();
+        SimulationView ui = new SimulationView();
+        AppSettings.load(settingsFile).applyTo(particles, camera, ui);
+
+        assertEquals(SimulationDefaults.POINT_SIZE, particles.pointSize(), EPSILON);
+        assertEquals(SimulationDefaults.GLOW_STRENGTH, particles.glowStrength(), EPSILON);
+        assertEquals(SimulationDefaults.BOUNDS, particles.bounds(), EPSILON);
+        assertEquals(0.0f, particles.attraction(0, 0), EPSILON);
+        assertEquals(SimulationDefaults.CAMERA_SENSITIVITY, camera.getSensitivity(), EPSILON);
+        assertEquals(SimulationDefaults.CAMERA_FLY_SPEED, camera.getFlySpeed(), EPSILON);
+        assertEquals(SimulationDefaults.MATRIX_EDIT_STEP, ui.matrixEditStep(), EPSILON);
+        ImVec4 defaultColor = SimulationDefaults.defaultGroupColors()[0];
+        assertColorEquals(new ImVec4(defaultColor.x, 0.2f, 0.3f, 1.0f), particles.groupColor(0));
+    }
+
     private static void assertColorEquals(ImVec4 expected, ImVec4 actual) {
         assertEquals(expected.x, actual.x, EPSILON);
         assertEquals(expected.y, actual.y, EPSILON);

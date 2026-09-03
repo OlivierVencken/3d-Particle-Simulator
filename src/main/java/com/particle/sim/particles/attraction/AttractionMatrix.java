@@ -388,11 +388,11 @@ public final class AttractionMatrix {
     }
 
     private static float clamp(float value) {
-        return Math.max(-1.0f, Math.min(1.0f, value));
+        return Float.isFinite(value) ? Math.max(-1.0f, Math.min(1.0f, value)) : 0.0f;
     }
 
     private static float clamp01(float value) {
-        return Math.max(0.0f, Math.min(1.0f, value));
+        return Float.isFinite(value) ? Math.max(0.0f, Math.min(1.0f, value)) : 0.0f;
     }
 
     private int clampGroupCount(int groupCount) {
