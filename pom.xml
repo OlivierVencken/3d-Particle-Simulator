@@ -16,6 +16,7 @@
         <junit.version>5.12.2</junit.version>
         <spotless.version>3.9.0</spotless.version>
         <google.java.format.version>1.36.0</google.java.format.version>
+        <maven.pmd.version>3.28.0</maven.pmd.version>
         <lwjgl.natives>natives-windows</lwjgl.natives>
         <imgui.natives>imgui-java-natives-windows</imgui.natives>
     </properties>
@@ -230,6 +231,28 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.3</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>${maven.pmd.version}</version>
+                <configuration>
+                    <targetJdk>${maven.compiler.release}</targetJdk>
+                    <rulesets>
+                        <ruleset>pmd-ruleset.xml</ruleset>
+                    </rulesets>
+                    <linkXRef>false</linkXRef>
+                    <printFailingErrors>true</printFailingErrors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-code-quality</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

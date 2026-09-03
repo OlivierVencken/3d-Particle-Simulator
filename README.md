@@ -82,6 +82,14 @@ Run the test suite:
 .\mvnw.cmd test
 ```
 
+Check code quality with PMD:
+
+```powershell
+.\mvnw.cmd pmd:check
+```
+
+PMD also runs automatically as part of `mvn verify`.
+
 The regular tests do not require a display or GPU. To also compile the shaders and test the simulation against a CPU reference implementation:
 
 ```powershell
