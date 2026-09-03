@@ -133,7 +133,7 @@ public final class ParticleSpawner {
             float t = (float) i / count;
             float r = bounds * 0.8f * t;
             float theta =
-                    t * (float) Math.PI * 8.0f + (group % arms) * ((float) Math.PI * 2.0f / arms);
+                    t * (float) Math.PI * 8.0f + group % arms * ((float) Math.PI * 2.0f / arms);
             float x = r * (float) Math.cos(theta);
             float y = (random.nextFloat() - 0.5f) * bounds * 0.2f * (1.0f - t);
             float z = r * (float) Math.sin(theta);
@@ -178,11 +178,11 @@ public final class ParticleSpawner {
         if (gridSize == 0) {
             gridSize = 1;
         }
-        float gridSpacing = (bounds * 2.0f) / gridSize;
+        float gridSpacing = bounds * 2.0f / gridSize;
 
         for (int i = 0; i < count; i++) {
             int ix = i % gridSize;
-            int iy = (i / gridSize) % gridSize;
+            int iy = i / gridSize % gridSize;
             int iz = i / (gridSize * gridSize);
             float x = -bounds + ix * gridSpacing + gridSpacing * 0.5f;
             float y = -bounds + iy * gridSpacing + gridSpacing * 0.5f;

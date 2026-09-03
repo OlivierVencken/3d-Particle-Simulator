@@ -334,7 +334,7 @@ public final class AppSettings {
             try {
                 EffectMode effectMode = EffectMode.valueOf(token.trim());
                 effectModes.add(effectMode);
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException ignored) {
                 // Ignore unknown future effect names so older builds can still load the rest of the
                 // preset.
             }

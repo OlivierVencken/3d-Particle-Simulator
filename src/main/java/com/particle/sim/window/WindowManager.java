@@ -259,7 +259,7 @@ public final class WindowManager {
     }
 
     private void setWindowIcon(String path) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
+        try (MemoryStack stack = stackPush()) {
             ByteBuffer icon = ResourceLoader.loadBytes(path);
 
             IntBuffer w = stack.mallocInt(1);
