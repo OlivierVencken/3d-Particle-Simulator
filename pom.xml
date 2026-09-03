@@ -17,6 +17,7 @@
         <spotless.version>3.9.0</spotless.version>
         <google.java.format.version>1.36.0</google.java.format.version>
         <maven.pmd.version>3.28.0</maven.pmd.version>
+        <spotbugs.maven.version>4.10.3.0</spotbugs.maven.version>
         <lwjgl.natives>natives-windows</lwjgl.natives>
         <imgui.natives>imgui-java-natives-windows</imgui.natives>
     </properties>
@@ -247,6 +248,26 @@
                 <executions>
                     <execution>
                         <id>check-code-quality</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs.maven.version}</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Low</threshold>
+                    <xmlOutput>true</xmlOutput>
+                    <excludeFilterFile>${project.basedir}/spotbugs-exclude.xml</excludeFilterFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-bytecode-quality</id>
                         <phase>verify</phase>
                         <goals>
                             <goal>check</goal>

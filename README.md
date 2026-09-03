@@ -90,6 +90,14 @@ Check code quality with PMD:
 
 PMD also runs automatically as part of `mvn verify`.
 
+Analyze compiled bytecode with SpotBugs:
+
+```powershell
+.\mvnw.cmd compile spotbugs:check
+```
+
+SpotBugs also runs automatically as part of `mvn verify`.
+
 The regular tests do not require a display or GPU. To also compile the shaders and test the simulation against a CPU reference implementation:
 
 ```powershell
