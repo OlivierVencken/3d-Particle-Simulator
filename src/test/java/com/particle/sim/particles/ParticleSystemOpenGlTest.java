@@ -30,10 +30,10 @@ import static org.lwjgl.opengl.GL43C.glReadPixels;
 import static org.lwjgl.opengl.GL43C.glViewport;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import com.particle.sim.graphics.FramebufferViewport;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.settings.SimulationDefaults;
-import com.particle.sim.ui.FramebufferViewport;
 import java.nio.ByteBuffer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;

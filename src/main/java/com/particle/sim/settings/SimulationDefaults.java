@@ -1,9 +1,9 @@
 package com.particle.sim.settings;
 
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.spawning.SpawnMode;
-import imgui.ImVec4;
 
 public final class SimulationDefaults {
     private SimulationDefaults() {}
@@ -48,32 +48,27 @@ public final class SimulationDefaults {
     public static final int MAX_FPS_CAP = 360;
     public static final float MATRIX_EDIT_STEP = 0.1f;
     public static final int CUSTOM_SPAWN_AMOUNT = 5_000;
-    private static final ImVec4[] GROUP_COLORS =
-            new ImVec4[] {
-                new ImVec4(0.18f, 0.65f, 1.0f, 1.0f),
-                new ImVec4(1.0f, 0.35f, 0.16f, 1.0f),
-                new ImVec4(0.45f, 1.0f, 0.42f, 1.0f),
-                new ImVec4(1.0f, 0.86f, 0.25f, 1.0f),
-                new ImVec4(0.78f, 0.42f, 1.0f, 1.0f),
-                new ImVec4(0.15f, 0.95f, 0.86f, 1.0f),
-                new ImVec4(1.0f, 0.45f, 0.72f, 1.0f),
-                new ImVec4(0.5f, 0.95f, 0.2f, 1.0f),
-                new ImVec4(0.95f, 0.62f, 0.15f, 1.0f),
-                new ImVec4(0.35f, 0.55f, 1.0f, 1.0f),
-                new ImVec4(0.9f, 0.95f, 0.35f, 1.0f),
-                new ImVec4(0.55f, 0.25f, 1.0f, 1.0f),
-                new ImVec4(0.1f, 0.8f, 0.45f, 1.0f),
-                new ImVec4(1.0f, 0.2f, 0.35f, 1.0f),
-                new ImVec4(0.35f, 1.0f, 0.95f, 1.0f),
-                new ImVec4(0.85f, 0.85f, 0.9f, 1.0f)
+    private static final RgbaColor[] GROUP_COLORS =
+            new RgbaColor[] {
+                new RgbaColor(0.18f, 0.65f, 1.0f, 1.0f),
+                new RgbaColor(1.0f, 0.35f, 0.16f, 1.0f),
+                new RgbaColor(0.45f, 1.0f, 0.42f, 1.0f),
+                new RgbaColor(1.0f, 0.86f, 0.25f, 1.0f),
+                new RgbaColor(0.78f, 0.42f, 1.0f, 1.0f),
+                new RgbaColor(0.15f, 0.95f, 0.86f, 1.0f),
+                new RgbaColor(1.0f, 0.45f, 0.72f, 1.0f),
+                new RgbaColor(0.5f, 0.95f, 0.2f, 1.0f),
+                new RgbaColor(0.95f, 0.62f, 0.15f, 1.0f),
+                new RgbaColor(0.35f, 0.55f, 1.0f, 1.0f),
+                new RgbaColor(0.9f, 0.95f, 0.35f, 1.0f),
+                new RgbaColor(0.55f, 0.25f, 1.0f, 1.0f),
+                new RgbaColor(0.1f, 0.8f, 0.45f, 1.0f),
+                new RgbaColor(1.0f, 0.2f, 0.35f, 1.0f),
+                new RgbaColor(0.35f, 1.0f, 0.95f, 1.0f),
+                new RgbaColor(0.85f, 0.85f, 0.9f, 1.0f)
             };
 
-    public static ImVec4[] defaultGroupColors() {
-        ImVec4[] colors = new ImVec4[GROUP_COLORS.length];
-        for (int index = 0; index < GROUP_COLORS.length; index++) {
-            ImVec4 color = GROUP_COLORS[index];
-            colors[index] = new ImVec4(color.x, color.y, color.z, color.w);
-        }
-        return colors;
+    public static RgbaColor[] defaultGroupColors() {
+        return GROUP_COLORS.clone();
     }
 }

@@ -19,7 +19,6 @@ import com.particle.sim.camera.CameraController;
 import com.particle.sim.input.HotkeyManager;
 import com.particle.sim.input.HotkeyRoutingContext;
 import com.particle.sim.particles.ParticleSystem;
-import com.particle.sim.settings.SettingsController;
 import com.particle.sim.settings.SimulationDefaults;
 import com.particle.sim.ui.ImGuiLayer;
 import com.particle.sim.ui.PreparedFrame;
@@ -35,6 +34,7 @@ public final class ApplicationRuntime {
     private final ImGuiLayer imGui;
     private final HotkeyManager hotkeys;
     private final CameraController camera;
+    private final CameraInputAdapter cameraInput = new CameraInputAdapter();
     private final ParticleSystem particles;
     private final SimulationView ui;
     private final SimulationViewAdapter viewAdapter;
@@ -85,7 +85,7 @@ public final class ApplicationRuntime {
                             inputOwnership.keyboardOwnedByUi(),
                             inputOwnership.modalOpen(),
                             camera.isMouseCaptured()));
-            camera.update(window.handle(), deltaTime, inputOwnership);
+            cameraInput.update(camera, window.handle(), deltaTime, inputOwnership);
             particles.advanceAttractionMatrixAnimation(deltaTime);
 
             if (!ui.isPaused()) {
@@ -103,7 +103,7 @@ public final class ApplicationRuntime {
             viewAdapter.prepareFrame();
             ui.render(deltaTime);
             imGui.render();
-            settingsController.tick(now);
+            settingsController.tick();
 
             window.swapBuffers();
             limitFrameRate(now);

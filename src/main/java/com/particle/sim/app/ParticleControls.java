@@ -1,12 +1,12 @@
 package com.particle.sim.app;
 
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.particles.attraction.AttractionPattern;
 import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.ui.SimulationView;
 import com.particle.sim.ui.SimulationViewActions;
 import com.particle.sim.ui.SimulationViewModel;
-import imgui.ImVec4;
 
 final class ParticleControls
         implements SimulationViewModel.Particles, SimulationViewActions.Particles {
@@ -76,7 +76,7 @@ final class ParticleControls
     }
 
     @Override
-    public ImVec4 groupColor(int group) {
+    public RgbaColor groupColor(int group) {
         return particles.groupColor(group);
     }
 

@@ -1,5 +1,6 @@
 package com.particle.sim.ui.components;
 
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.ui.SimulationViewActions;
 import com.particle.sim.ui.SimulationViewModel;
 import com.particle.sim.ui.theme.Color;
@@ -240,7 +241,7 @@ public final class AttractionMatrixControl {
             float size,
             ImDrawList drawList,
             DesignTokens tokens) {
-        ImVec4 groupColor = particles.groupColor(group);
+        RgbaColor groupColor = particles.groupColor(group);
         float centerX = x + size * 0.5f;
         float centerY = y + size * 0.5f;
         float radius = size * HEADER_CIRCLE_RADIUS_SCALE;
@@ -255,7 +256,11 @@ public final class AttractionMatrixControl {
                     centerX,
                     centerY,
                     radius,
-                    ImGui.getColorU32(groupColor.x, groupColor.y, groupColor.z, groupColor.w),
+                    ImGui.getColorU32(
+                            groupColor.red(),
+                            groupColor.green(),
+                            groupColor.blue(),
+                            groupColor.alpha()),
                     24);
             drawList.addCircle(
                     centerX,

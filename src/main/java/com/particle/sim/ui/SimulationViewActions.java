@@ -1,11 +1,11 @@
 package com.particle.sim.ui;
 
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.attraction.AttractionPattern;
 import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.spawning.SpawnMode;
-import imgui.ImVec4;
 
 /** Commands available to the presentation layer. Setting commands also schedule persistence. */
 public interface SimulationViewActions {
@@ -94,7 +94,7 @@ public interface SimulationViewActions {
 
         void setColorMode(ColorMode value);
 
-        void setGroupColor(int group, ImVec4 color);
+        void setGroupColor(int group, RgbaColor color);
 
         void setEffectEnabled(EffectMode effectMode, boolean enabled);
 

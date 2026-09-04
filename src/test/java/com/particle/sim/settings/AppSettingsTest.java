@@ -4,14 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.particle.sim.app.AppSettingsMapper;
 import com.particle.sim.camera.CameraController;
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.ui.SimulationView;
-import imgui.ImVec4;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -43,7 +44,7 @@ class AppSettingsTest {
         particles.distanceMetric(DistanceMetric.MANHATTAN);
         particles.groupCount(8);
         particles.colorMode(ColorMode.DENSITY);
-        particles.groupColor(2, new ImVec4(0.12f, 0.34f, 0.56f, 1.0f));
+        particles.groupColor(2, new RgbaColor(0.12f, 0.34f, 0.56f, 1.0f));
         particles.effectEnabled(EffectMode.GLOW, true);
         particles.effectEnabled(EffectMode.TRAILS, true);
         particles.glowBlurPasses(24);
@@ -62,12 +63,13 @@ class AppSettingsTest {
         ui.setMatrixEditStep(0.2f);
         ui.setCustomSpawnAmount(42);
 
-        AppSettings.capture(particles, camera, ui).save(settingsFile);
+        AppSettingsMapper.capture(particles, camera, ui).save(settingsFile);
 
         ParticleSystem loadedParticles = new ParticleSystem();
         CameraController loadedCamera = new CameraController();
         SimulationView loadedUi = new SimulationView();
-        AppSettings.load(settingsFile).applyTo(loadedParticles, loadedCamera, loadedUi);
+        AppSettingsMapper.applyTo(
+                AppSettings.load(settingsFile), loadedParticles, loadedCamera, loadedUi);
 
         assertEquals(1234, loadedParticles.particleCount());
         assertEquals(4.5f, loadedParticles.pointSize(), EPSILON);
@@ -85,7 +87,7 @@ class AppSettingsTest {
         assertEquals(DistanceMetric.MANHATTAN, loadedParticles.distanceMetric());
         assertEquals(8, loadedParticles.groupCount());
         assertEquals(ColorMode.DENSITY, loadedParticles.colorMode());
-        assertColorEquals(new ImVec4(0.12f, 0.34f, 0.56f, 1.0f), loadedParticles.groupColor(2));
+        assertColorEquals(new RgbaColor(0.12f, 0.34f, 0.56f, 1.0f), loadedParticles.groupColor(2));
         assertTrue(loadedParticles.effectEnabled(EffectMode.GLOW));
         assertTrue(loadedParticles.effectEnabled(EffectMode.TRAILS));
         assertEquals(24, loadedParticles.glowBlurPasses());
@@ -114,7 +116,7 @@ class AppSettingsTest {
         particles.pointSize(8.0f);
         particles.fixedParticleScreenSize(true);
         particles.colorMode(ColorMode.DENSITY);
-        particles.groupColor(0, new ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+        particles.groupColor(0, new RgbaColor(0.0f, 0.0f, 0.0f, 1.0f));
         particles.effectEnabled(EffectMode.GLOW, true);
         particles.glowBlurPasses(24);
         particles.glowStrength(3.5f);
@@ -135,7 +137,7 @@ class AppSettingsTest {
         ui.setMatrixEditStep(0.4f);
         ui.setCustomSpawnAmount(99);
 
-        AppSettings.defaults().applySimulationTo(particles, camera, ui);
+        AppSettingsMapper.applySimulationTo(AppSettings.defaults(), particles, camera, ui);
 
         assertEquals(SimulationDefaults.PARTICLE_COUNT, particles.particleCount());
         assertEquals(SimulationDefaults.POINT_SIZE, particles.pointSize(), EPSILON);
@@ -174,7 +176,7 @@ class AppSettingsTest {
         particles.zeroAttractionMatrix();
         particles.attraction(1, 4, 0.65f);
 
-        AppSettings.defaults().applySimulationTo(particles, camera, ui);
+        AppSettingsMapper.applySimulationTo(AppSettings.defaults(), particles, camera, ui);
 
         assertEquals(0.65f, particles.attraction(1, 4), EPSILON);
     }
@@ -185,8 +187,11 @@ class AppSettingsTest {
         java.nio.file.Files.writeString(settingsFile, "groupCount=99\n");
 
         ParticleSystem particles = new ParticleSystem();
-        AppSettings.load(settingsFile)
-                .applySimulationTo(particles, new CameraController(), new SimulationView());
+        AppSettingsMapper.applySimulationTo(
+                AppSettings.load(settingsFile),
+                particles,
+                new CameraController(),
+                new SimulationView());
 
         assertEquals(SimulationDefaults.MAX_GROUP_COUNT, particles.groupCount());
     }
@@ -197,8 +202,8 @@ class AppSettingsTest {
         java.nio.file.Files.writeString(settingsFile, "fpsCap=999\n");
 
         SimulationView ui = new SimulationView();
-        AppSettings.load(settingsFile)
-                .applySimulationTo(new ParticleSystem(), new CameraController(), ui);
+        AppSettingsMapper.applySimulationTo(
+                AppSettings.load(settingsFile), new ParticleSystem(), new CameraController(), ui);
 
         assertEquals(SimulationDefaults.MAX_FPS_CAP, ui.fpsCap());
     }
@@ -209,8 +214,8 @@ class AppSettingsTest {
         java.nio.file.Files.writeString(settingsFile, "fpsCap=0\n");
 
         SimulationView ui = new SimulationView();
-        AppSettings.load(settingsFile)
-                .applySimulationTo(new ParticleSystem(), new CameraController(), ui);
+        AppSettingsMapper.applySimulationTo(
+                AppSettings.load(settingsFile), new ParticleSystem(), new CameraController(), ui);
 
         assertEquals(0, ui.fpsCap());
     }
@@ -221,11 +226,14 @@ class AppSettingsTest {
         java.nio.file.Files.writeString(settingsFile, "groupColors=invalid;0.1,0.2,0.3,1.0\n");
 
         ParticleSystem particles = new ParticleSystem();
-        AppSettings.load(settingsFile)
-                .applySimulationTo(particles, new CameraController(), new SimulationView());
+        AppSettingsMapper.applySimulationTo(
+                AppSettings.load(settingsFile),
+                particles,
+                new CameraController(),
+                new SimulationView());
 
         assertColorEquals(SimulationDefaults.defaultGroupColors()[0], particles.groupColor(0));
-        assertColorEquals(new ImVec4(0.1f, 0.2f, 0.3f, 1.0f), particles.groupColor(1));
+        assertColorEquals(new RgbaColor(0.1f, 0.2f, 0.3f, 1.0f), particles.groupColor(1));
     }
 
     @Test
@@ -247,7 +255,7 @@ class AppSettingsTest {
         ParticleSystem particles = new ParticleSystem();
         CameraController camera = new CameraController();
         SimulationView ui = new SimulationView();
-        AppSettings.load(settingsFile).applyTo(particles, camera, ui);
+        AppSettingsMapper.applyTo(AppSettings.load(settingsFile), particles, camera, ui);
 
         assertEquals(SimulationDefaults.POINT_SIZE, particles.pointSize(), EPSILON);
         assertEquals(SimulationDefaults.GLOW_STRENGTH, particles.glowStrength(), EPSILON);
@@ -256,14 +264,15 @@ class AppSettingsTest {
         assertEquals(SimulationDefaults.CAMERA_SENSITIVITY, camera.getSensitivity(), EPSILON);
         assertEquals(SimulationDefaults.CAMERA_FLY_SPEED, camera.getFlySpeed(), EPSILON);
         assertEquals(SimulationDefaults.MATRIX_EDIT_STEP, ui.matrixEditStep(), EPSILON);
-        ImVec4 defaultColor = SimulationDefaults.defaultGroupColors()[0];
-        assertColorEquals(new ImVec4(defaultColor.x, 0.2f, 0.3f, 1.0f), particles.groupColor(0));
+        RgbaColor defaultColor = SimulationDefaults.defaultGroupColors()[0];
+        assertColorEquals(
+                new RgbaColor(defaultColor.red(), 0.2f, 0.3f, 1.0f), particles.groupColor(0));
     }
 
-    private static void assertColorEquals(ImVec4 expected, ImVec4 actual) {
-        assertEquals(expected.x, actual.x, EPSILON);
-        assertEquals(expected.y, actual.y, EPSILON);
-        assertEquals(expected.z, actual.z, EPSILON);
-        assertEquals(expected.w, actual.w, EPSILON);
+    private static void assertColorEquals(RgbaColor expected, RgbaColor actual) {
+        assertEquals(expected.red(), actual.red(), EPSILON);
+        assertEquals(expected.green(), actual.green(), EPSILON);
+        assertEquals(expected.blue(), actual.blue(), EPSILON);
+        assertEquals(expected.alpha(), actual.alpha(), EPSILON);
     }
 }

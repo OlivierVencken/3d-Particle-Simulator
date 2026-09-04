@@ -6,6 +6,7 @@ import static org.lwjgl.opengl.GL43C.glGetInteger64;
 import static org.lwjgl.opengl.GL43C.glGetIntegeri;
 
 import com.particle.sim.diagnostics.PerformanceSnapshot;
+import com.particle.sim.graphics.FramebufferViewport;
 import com.particle.sim.particles.attraction.AttractionMatrix;
 import com.particle.sim.particles.gpu.ParticleBuffers;
 import com.particle.sim.particles.gpu.ParticleCompute;
@@ -17,7 +18,6 @@ import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.rendering.ParticleRenderer;
 import com.particle.sim.particles.rendering.RenderFrame;
 import com.particle.sim.settings.SimulationDefaults;
-import com.particle.sim.ui.FramebufferViewport;
 import java.util.Random;
 
 /** Owns the OpenGL-backed lifetime and execution of a particle system. */

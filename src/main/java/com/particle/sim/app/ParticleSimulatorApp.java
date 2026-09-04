@@ -12,7 +12,6 @@ import com.particle.sim.camera.CameraController;
 import com.particle.sim.input.AppHotkeys;
 import com.particle.sim.input.HotkeyManager;
 import com.particle.sim.particles.ParticleSystem;
-import com.particle.sim.settings.SettingsController;
 import com.particle.sim.ui.ImGuiLayer;
 import com.particle.sim.ui.PresetFileDialog;
 import com.particle.sim.ui.SimulationView;

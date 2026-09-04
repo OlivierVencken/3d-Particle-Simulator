@@ -1,14 +1,11 @@
 package com.particle.sim.settings;
 
-import com.particle.sim.camera.CameraController;
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.ParticleSimulationConfig;
-import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.spawning.SpawnMode;
-import com.particle.sim.ui.SimulationView;
-import imgui.ImVec4;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -237,45 +234,49 @@ public final class AppSettings {
         }
     }
 
-    public void applyTo(ParticleSystem particles, CameraController camera, SimulationView ui) {
-        applySimulationTo(particles, camera, ui);
-        particles.attractionMatrix(attractionMatrix);
-    }
-
-    public void applySimulationTo(
-            ParticleSystem particles, CameraController camera, SimulationView ui) {
-        sanitize();
-        particles.applyConfig(particleConfig);
-
-        camera.setSensitivity(cameraSensitivity);
-        camera.setFlySpeed(cameraFlySpeed);
-        ui.setPaused(paused);
-        ui.setFpsCap(fpsCap);
-        ui.setMatrixEditStep(matrixEditStep);
-        ui.setCustomSpawnAmount(customSpawnAmount);
-    }
-
     public static AppSettings capture(
-            ParticleSystem particles, CameraController camera, SimulationView ui) {
+            ParticleSimulationConfig particleConfig,
+            float[] attractionMatrix,
+            CameraSettings camera,
+            InterfaceSettings interfaceSettings) {
         AppSettings settings = defaults();
-        settings.particleConfig.applyFrom(particles.config());
-        int attractionIndex = 0;
-        for (int row = 0; row < settings.particleConfig.groupCount(); row++) {
-            for (int column = 0; column < settings.particleConfig.groupCount(); column++) {
-                settings.attractionMatrix[attractionIndex] = particles.attraction(row, column);
-                attractionIndex++;
-            }
-        }
-
-        settings.cameraSensitivity = camera.getSensitivity();
-        settings.cameraFlySpeed = camera.getFlySpeed();
-        settings.paused = ui.isPaused();
-        settings.fpsCap = ui.fpsCap();
-        settings.matrixEditStep = ui.matrixEditStep();
-        settings.customSpawnAmount = ui.customSpawnAmount();
+        settings.particleConfig.applyFrom(particleConfig);
+        System.arraycopy(
+                attractionMatrix,
+                0,
+                settings.attractionMatrix,
+                0,
+                Math.min(attractionMatrix.length, settings.attractionMatrix.length));
+        settings.cameraSensitivity = camera.sensitivity();
+        settings.cameraFlySpeed = camera.flySpeed();
+        settings.paused = interfaceSettings.paused();
+        settings.fpsCap = interfaceSettings.fpsCap();
+        settings.matrixEditStep = interfaceSettings.matrixEditStep();
+        settings.customSpawnAmount = interfaceSettings.customSpawnAmount();
         settings.sanitize();
         return settings;
     }
+
+    public ParticleSimulationConfig particleConfig() {
+        return particleConfig.copy();
+    }
+
+    public float[] attractionMatrix() {
+        return attractionMatrix.clone();
+    }
+
+    public CameraSettings camera() {
+        return new CameraSettings(cameraSensitivity, cameraFlySpeed);
+    }
+
+    public InterfaceSettings interfaceSettings() {
+        return new InterfaceSettings(paused, fpsCap, matrixEditStep, customSpawnAmount);
+    }
+
+    public record CameraSettings(float sensitivity, float flySpeed) {}
+
+    public record InterfaceSettings(
+            boolean paused, int fpsCap, float matrixEditStep, int customSpawnAmount) {}
 
     private void sanitize() {
         particleConfig.sanitize();
@@ -354,12 +355,12 @@ public final class AppSettings {
         return effectModes.stream().map(EffectMode::name).collect(Collectors.joining(","));
     }
 
-    private static ImVec4[] groupColorsProperty(String value, ImVec4[] fallback) {
+    private static RgbaColor[] groupColorsProperty(String value, RgbaColor[] fallback) {
         if (value == null || value.isBlank()) {
             return fallback;
         }
 
-        ImVec4[] colors = copyColors(fallback);
+        RgbaColor[] colors = fallback.clone();
         String[] encodedColors = value.split(";", -1);
         int colorCount = Math.min(colors.length, encodedColors.length);
         for (int index = 0; index < colorCount; index++) {
@@ -369,7 +370,7 @@ public final class AppSettings {
             }
             try {
                 colors[index] =
-                        new ImVec4(
+                        new RgbaColor(
                                 Float.parseFloat(components[0]),
                                 Float.parseFloat(components[1]),
                                 Float.parseFloat(components[2]),
@@ -381,31 +382,22 @@ public final class AppSettings {
         return colors;
     }
 
-    private static String groupColorsString(ImVec4[] colors) {
+    private static String groupColorsString(RgbaColor[] colors) {
         StringBuilder value = new StringBuilder();
         for (int index = 0; index < colors.length; index++) {
             if (index > 0) {
                 value.append(';');
             }
-            ImVec4 color = colors[index];
-            value.append(color.x)
+            RgbaColor color = colors[index];
+            value.append(color.red())
                     .append(',')
-                    .append(color.y)
+                    .append(color.green())
                     .append(',')
-                    .append(color.z)
+                    .append(color.blue())
                     .append(',')
-                    .append(color.w);
+                    .append(color.alpha());
         }
         return value.toString();
-    }
-
-    private static ImVec4[] copyColors(ImVec4[] colors) {
-        ImVec4[] copy = new ImVec4[colors.length];
-        for (int index = 0; index < colors.length; index++) {
-            ImVec4 color = colors[index];
-            copy[index] = new ImVec4(color.x, color.y, color.z, color.w);
-        }
-        return copy;
     }
 
     private static float clamp(float value, float min, float max, float fallback) {

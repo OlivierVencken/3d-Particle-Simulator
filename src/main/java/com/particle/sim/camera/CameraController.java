@@ -1,34 +1,9 @@
 package com.particle.sim.camera;
 
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_DISABLED;
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
-import static org.lwjgl.glfw.GLFW.GLFW_FOCUSED;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_HOME;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_CONTROL;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_CONTROL;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
-import static org.lwjgl.glfw.GLFW.glfwGetKey;
-import static org.lwjgl.glfw.GLFW.glfwGetMouseButton;
-import static org.lwjgl.glfw.GLFW.glfwGetWindowAttrib;
-import static org.lwjgl.glfw.GLFW.glfwSetInputMode;
-
 import com.particle.sim.math.Math3d;
 import com.particle.sim.settings.SimulationDefaults;
-import com.particle.sim.ui.InputOwnership;
-import imgui.ImGui;
-import imgui.flag.ImGuiConfigFlags;
 
+/** Pure camera state updated from toolkit-neutral input snapshots. */
 public final class CameraController {
     private float posX;
     private float posY;
@@ -43,38 +18,36 @@ public final class CameraController {
         reset();
     }
 
-    public void update(long window, float deltaTime, InputOwnership ownership) {
-        var io = ImGui.getIO();
-
+    public CameraCaptureTransition update(float deltaTime, CameraInput input) {
         float cosPitch = (float) Math.cos(pitch);
         float[] forward = {
             cosPitch * (float) Math.sin(yaw),
             (float) Math.sin(pitch),
             cosPitch * (float) Math.cos(yaw)
         };
-
         float[] right =
                 Math3d.normalize(
                         Math3d.cross(forward[0], forward[1], forward[2], 0.0f, 1.0f, 0.0f));
 
-        boolean windowFocused = glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE;
-        CameraCaptureState.Transition captureTransition =
+        CameraInput.Pointer pointer = input.pointer();
+        CameraCaptureTransition transition =
                 captureState.update(
-                        glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS,
-                        glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS,
-                        isPressed(window, GLFW_KEY_ESCAPE),
-                        windowFocused,
-                        ownership);
-        applyCaptureTransition(window, captureTransition);
+                        pointer.primaryDown(),
+                        pointer.secondaryDown(),
+                        pointer.escapeDown(),
+                        input.windowFocused(),
+                        input.captureAllowed(),
+                        input.modalOpen());
 
         if (captureState.captured()) {
-            yaw -= io.getMouseDeltaX() * sensitivity;
-            pitch = Math3d.clamp(pitch - io.getMouseDeltaY() * sensitivity, -1.5f, 1.5f);
+            yaw -= pointer.deltaX() * sensitivity;
+            pitch = Math3d.clamp(pitch - pointer.deltaY() * sensitivity, -1.5f, 1.5f);
         }
 
-        if (windowFocused && (captureState.captured() || ownership.allowsSimulationKeyboard())) {
-            updateKeyboard(window, deltaTime, forward, right);
+        if (input.windowFocused() && (captureState.captured() || input.keyboardAllowed())) {
+            updateMovement(input.movement(), deltaTime, forward, right);
         }
+        return transition;
     }
 
     public float[] viewMatrix() {
@@ -82,7 +55,6 @@ public final class CameraController {
         float targetX = posX + (cosPitch * (float) Math.sin(yaw));
         float targetY = posY + (float) Math.sin(pitch);
         float targetZ = posZ + (cosPitch * (float) Math.cos(yaw));
-
         return Math3d.lookAt(posX, posY, posZ, targetX, targetY, targetZ);
     }
 
@@ -92,16 +64,6 @@ public final class CameraController {
         posZ = -18.5f;
         yaw = 0.0f;
         pitch = 0.0f;
-    }
-
-    private void applyCaptureTransition(long window, CameraCaptureState.Transition transition) {
-        if (transition == CameraCaptureState.Transition.CAPTURED) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            ImGui.getIO().addConfigFlags(ImGuiConfigFlags.NoMouse);
-        } else if (transition == CameraCaptureState.Transition.RELEASED) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            ImGui.getIO().removeConfigFlags(ImGuiConfigFlags.NoMouse);
-        }
     }
 
     public float getSensitivity() {
@@ -124,28 +86,28 @@ public final class CameraController {
         return captureState.captured();
     }
 
-    private void updateKeyboard(long window, float deltaTime, float[] forward, float[] right) {
+    private void updateMovement(
+            CameraInput.Movement movement, float deltaTime, float[] forward, float[] right) {
         float step = flySpeed * deltaTime;
-
-        if (isPressed(window, GLFW_KEY_W)) {
+        if (movement.forward()) {
             move(forward, step);
         }
-        if (isPressed(window, GLFW_KEY_S)) {
+        if (movement.backward()) {
             move(forward, -step);
         }
-        if (isPressed(window, GLFW_KEY_D)) {
+        if (movement.right()) {
             move(right, step);
         }
-        if (isPressed(window, GLFW_KEY_A)) {
+        if (movement.left()) {
             move(right, -step);
         }
-        if (isPressed(window, GLFW_KEY_LEFT_SHIFT) || isPressed(window, GLFW_KEY_RIGHT_SHIFT)) {
+        if (movement.up()) {
             posY += step;
         }
-        if (isPressed(window, GLFW_KEY_LEFT_CONTROL) || isPressed(window, GLFW_KEY_RIGHT_CONTROL)) {
+        if (movement.down()) {
             posY -= step;
         }
-        if (isPressed(window, GLFW_KEY_HOME)) {
+        if (movement.reset()) {
             reset();
         }
     }
@@ -154,9 +116,5 @@ public final class CameraController {
         posX += direction[0] * amount;
         posY += direction[1] * amount;
         posZ += direction[2] * amount;
-    }
-
-    private static boolean isPressed(long window, int key) {
-        return glfwGetKey(window, key) == GLFW_PRESS;
     }
 }

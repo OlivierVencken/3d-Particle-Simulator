@@ -1,12 +1,12 @@
 package com.particle.sim.particles;
 
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.rendering.GlowSettings;
 import com.particle.sim.particles.rendering.TrailSettings;
 import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.settings.SimulationDefaults;
-import imgui.ImVec4;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -35,7 +35,7 @@ public final class ParticleSimulationConfig {
     private int groupCount = SimulationDefaults.GROUP_COUNT;
     private ColorMode colorMode = SimulationDefaults.COLOR_MODE;
     private SpawnMode spawnMode = SimulationDefaults.SPAWN_MODE;
-    private ImVec4[] groupColors = SimulationDefaults.defaultGroupColors();
+    private RgbaColor[] groupColors = SimulationDefaults.defaultGroupColors();
 
     public static ParticleSimulationConfig defaults() {
         return new ParticleSimulationConfig();
@@ -317,12 +317,12 @@ public final class ParticleSimulationConfig {
         this.spawnMode = spawnMode == null ? SimulationDefaults.SPAWN_MODE : spawnMode;
     }
 
-    public ImVec4[] groupColors() {
-        return copyColors(groupColors);
+    public RgbaColor[] groupColors() {
+        return groupColors.clone();
     }
 
-    public void groupColors(ImVec4[] groupColors) {
-        ImVec4[] defaults = SimulationDefaults.defaultGroupColors();
+    public void groupColors(RgbaColor[] groupColors) {
+        RgbaColor[] defaults = SimulationDefaults.defaultGroupColors();
         if (groupColors != null) {
             int colorCount = Math.min(groupColors.length, defaults.length);
             for (int index = 0; index < colorCount; index++) {
@@ -332,12 +332,11 @@ public final class ParticleSimulationConfig {
         this.groupColors = defaults;
     }
 
-    public ImVec4 groupColor(int group) {
-        ImVec4 color = groupColors[Math.floorMod(group, groupColors.length)];
-        return copyColor(color);
+    public RgbaColor groupColor(int group) {
+        return groupColors[Math.floorMod(group, groupColors.length)];
     }
 
-    public void groupColor(int group, ImVec4 color) {
+    public void groupColor(int group, RgbaColor color) {
         if (group < 0 || group >= groupColors.length || color == null) {
             return;
         }
@@ -347,11 +346,11 @@ public final class ParticleSimulationConfig {
     public float[] groupColorRgbComponents() {
         float[] components = new float[groupColors.length * 3];
         for (int index = 0; index < groupColors.length; index++) {
-            ImVec4 color = groupColors[index];
+            RgbaColor color = groupColors[index];
             int componentIndex = index * 3;
-            components[componentIndex] = color.x;
-            components[componentIndex + 1] = color.y;
-            components[componentIndex + 2] = color.z;
+            components[componentIndex] = color.red();
+            components[componentIndex + 1] = color.green();
+            components[componentIndex + 2] = color.blue();
         }
         return components;
     }
@@ -383,27 +382,15 @@ public final class ParticleSimulationConfig {
         return Math.max(min, Math.min(max, finiteValue));
     }
 
-    private static ImVec4[] copyColors(ImVec4[] colors) {
-        ImVec4[] copy = new ImVec4[colors.length];
-        for (int index = 0; index < colors.length; index++) {
-            copy[index] = copyColor(colors[index]);
-        }
-        return copy;
-    }
-
-    private static ImVec4 copyColor(ImVec4 color) {
-        return new ImVec4(color.x, color.y, color.z, color.w);
-    }
-
-    private static ImVec4 sanitizeColor(ImVec4 color, ImVec4 fallback) {
+    private static RgbaColor sanitizeColor(RgbaColor color, RgbaColor fallback) {
         if (color == null) {
-            return copyColor(fallback);
+            return fallback;
         }
-        return new ImVec4(
-                colorComponent(color.x, fallback.x),
-                colorComponent(color.y, fallback.y),
-                colorComponent(color.z, fallback.z),
-                colorComponent(color.w, fallback.w));
+        return new RgbaColor(
+                colorComponent(color.red(), fallback.red()),
+                colorComponent(color.green(), fallback.green()),
+                colorComponent(color.blue(), fallback.blue()),
+                colorComponent(color.alpha(), fallback.alpha()));
     }
 
     private static float colorComponent(float value, float fallback) {

@@ -1,6 +1,8 @@
 package com.particle.sim.particles;
 
 import com.particle.sim.diagnostics.PerformanceSnapshot;
+import com.particle.sim.graphics.FramebufferViewport;
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.particles.attraction.AttractionMatrix;
 import com.particle.sim.particles.attraction.AttractionPattern;
 import com.particle.sim.particles.gpu.SpatialGridSizing;
@@ -10,8 +12,6 @@ import com.particle.sim.particles.rendering.GlowSettings;
 import com.particle.sim.particles.rendering.TrailSettings;
 import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.settings.SimulationDefaults;
-import com.particle.sim.ui.FramebufferViewport;
-import imgui.ImVec4;
 import java.util.Random;
 import java.util.Set;
 
@@ -423,19 +423,19 @@ public final class ParticleSystem {
         return attractionMatrix.maximumGroupCount();
     }
 
-    public ImVec4[] groupColors() {
+    public RgbaColor[] groupColors() {
         return config.groupColors();
     }
 
-    public void groupColors(ImVec4[] groupColors) {
+    public void groupColors(RgbaColor[] groupColors) {
         config.groupColors(groupColors);
     }
 
-    public ImVec4 groupColor(int group) {
+    public RgbaColor groupColor(int group) {
         return config.groupColor(group);
     }
 
-    public void groupColor(int group, ImVec4 color) {
+    public void groupColor(int group, RgbaColor color) {
         config.groupColor(group, color);
     }
 

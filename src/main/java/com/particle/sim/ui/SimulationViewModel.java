@@ -1,10 +1,10 @@
 package com.particle.sim.ui;
 
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.spawning.SpawnMode;
-import imgui.ImVec4;
 
 /** Read-only application data exposed to the presentation layer. */
 public interface SimulationViewModel {
@@ -67,7 +67,7 @@ public interface SimulationViewModel {
 
         boolean attractionMutationAnimated();
 
-        ImVec4 groupColor(int group);
+        RgbaColor groupColor(int group);
     }
 
     interface Visuals {

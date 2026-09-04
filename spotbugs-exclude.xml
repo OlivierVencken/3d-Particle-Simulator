@@ -2,7 +2,7 @@
 <FindBugsFilter>
     <!-- These classes intentionally share live GPU/UI/action state rather than defensive copies. -->
     <Match>
-        <Class name="~com\.particle\.sim\.(app\.(ParticleSimulatorApp|SimulationViewAdapter\$ViewActions)|particles\.attraction\.AttractionMatrix|particles\.rendering\.RenderFrame|settings\.SettingsController|ui\.theme\.(Fonts|Theme))" />
+        <Class name="~com\.particle\.sim\.(app\.(ParticleSimulatorApp|SettingsController|SimulationViewAdapter\$ViewActions)|particles\.attraction\.AttractionMatrix|particles\.rendering\.RenderFrame|ui\.theme\.(Fonts|Theme))" />
         <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2,EI_EXPOSE_STATIC_REP2,MS_EXPOSE_REP" />
     </Match>
 </FindBugsFilter>

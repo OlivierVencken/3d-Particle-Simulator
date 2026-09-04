@@ -1,11 +1,11 @@
 package com.particle.sim.particles.rendering;
 
+import com.particle.sim.graphics.FramebufferViewport;
 import com.particle.sim.particles.ParticleSimulationConfig;
 import com.particle.sim.particles.gpu.ParticleBuffers;
 import com.particle.sim.particles.gpu.SpatialGridBuffers;
 import com.particle.sim.particles.gpu.SpatialGridSizing;
 import com.particle.sim.particles.gpu.TrailHistoryBuffers;
-import com.particle.sim.ui.FramebufferViewport;
 import java.util.Objects;
 
 /** Inputs shared by every rendering pass for one frame. */

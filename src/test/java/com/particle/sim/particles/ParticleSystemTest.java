@@ -3,15 +3,14 @@ package com.particle.sim.particles;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.settings.SimulationDefaults;
-import imgui.ImVec4;
 import org.junit.jupiter.api.Test;
 
 class ParticleSystemTest {
@@ -188,23 +187,19 @@ class ParticleSystemTest {
     }
 
     @Test
-    void groupColorsAreClampedAndDefensivelyCopied() {
+    void groupColorsAreClampedAndStoredAsImmutableValues() {
         ParticleSystem system = new ParticleSystem();
-        float fallbackBlue = system.groupColor(1).z;
-        ImVec4 requested = new ImVec4(2.0f, -1.0f, Float.NaN, 0.4f);
+        float fallbackBlue = system.groupColor(1).blue();
+        RgbaColor requested = new RgbaColor(2.0f, -1.0f, Float.NaN, 0.4f);
 
         system.groupColor(1, requested);
-        requested.x = 0.25f;
-        ImVec4 stored = system.groupColor(1);
+        RgbaColor stored = system.groupColor(1);
 
-        assertEquals(1.0f, stored.x, EPSILON);
-        assertEquals(0.0f, stored.y, EPSILON);
-        assertEquals(fallbackBlue, stored.z, EPSILON);
-        assertEquals(0.4f, stored.w, EPSILON);
-        assertNotSame(stored, system.groupColor(1));
-
-        stored.x = 0.0f;
-        assertEquals(1.0f, system.groupColor(1).x, EPSILON);
+        assertEquals(1.0f, stored.red(), EPSILON);
+        assertEquals(0.0f, stored.green(), EPSILON);
+        assertEquals(fallbackBlue, stored.blue(), EPSILON);
+        assertEquals(0.4f, stored.alpha(), EPSILON);
+        assertEquals(stored, system.groupColor(1));
         assertEquals(SimulationDefaults.MAX_GROUP_COUNT, system.groupColors().length);
     }
 

@@ -1,6 +1,6 @@
-package com.particle.sim.ui;
+package com.particle.sim.graphics;
 
-/** OpenGL viewport in framebuffer pixels with a bottom-left origin. */
+/** Framebuffer-pixel viewport with a bottom-left origin. */
 public record FramebufferViewport(int x, int y, int width, int height) {
     public FramebufferViewport {
         x = Math.max(0, x);

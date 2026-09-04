@@ -1,12 +1,12 @@
 package com.particle.sim.ui.testing;
 
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.particles.DistanceMetric;
 import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.ui.SimulationViewDiagnostics;
 import com.particle.sim.ui.SimulationViewModel;
-import imgui.ImVec4;
 import java.util.EnumSet;
 
 /** Mutable, native-free model fixture for headless UI tests. */
@@ -129,7 +129,7 @@ public final class FakeSimulationViewModel implements SimulationViewModel {
         public boolean canUndoAttractionMatrix;
         public boolean canRedoAttractionMatrix;
         public boolean attractionMutationAnimated;
-        public ImVec4[] groupColors = {new ImVec4(1.0f, 1.0f, 1.0f, 1.0f)};
+        public RgbaColor[] groupColors = {new RgbaColor(1.0f, 1.0f, 1.0f, 1.0f)};
 
         @Override
         public int particleCount() {
@@ -187,7 +187,7 @@ public final class FakeSimulationViewModel implements SimulationViewModel {
         }
 
         @Override
-        public ImVec4 groupColor(int group) {
+        public RgbaColor groupColor(int group) {
             return groupColors[Math.floorMod(group, groupColors.length)];
         }
     }

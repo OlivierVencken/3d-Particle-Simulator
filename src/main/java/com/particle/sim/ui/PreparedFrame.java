@@ -1,5 +1,6 @@
 package com.particle.sim.ui;
 
+import com.particle.sim.graphics.FramebufferViewport;
 import java.util.Objects;
 
 /** Layout and coordinate-space decisions shared by scene and UI rendering for one frame. */

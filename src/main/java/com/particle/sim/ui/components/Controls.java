@@ -1,8 +1,8 @@
 package com.particle.sim.ui.components;
 
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.ui.theme.Fonts;
 import imgui.ImGui;
-import imgui.ImVec4;
 import imgui.flag.ImGuiColorEditFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
@@ -59,10 +59,10 @@ public final class Controls {
         }
     }
 
-    public void settingColor(String label, String id, ImVec4 value, ColorSetter setter) {
-        colorRef[0] = value.x;
-        colorRef[1] = value.y;
-        colorRef[2] = value.z;
+    public void settingColor(String label, String id, RgbaColor value, ColorSetter setter) {
+        colorRef[0] = value.red();
+        colorRef[1] = value.green();
+        colorRef[2] = value.blue();
 
         ImGui.pushFont(Fonts.medium());
         try {
@@ -74,7 +74,7 @@ public final class Controls {
                             | ImGuiColorEditFlags.Uint8
                             | ImGuiColorEditFlags.InputRGB;
             if (ImGui.colorEdit3("###color-" + id, colorRef, flags)) {
-                setter.set(new ImVec4(colorRef[0], colorRef[1], colorRef[2], 1.0f));
+                setter.set(new RgbaColor(colorRef[0], colorRef[1], colorRef[2], 1.0f));
             }
         } finally {
             ImGui.popFont();
@@ -136,6 +136,6 @@ public final class Controls {
 
     @FunctionalInterface
     public interface ColorSetter {
-        void set(ImVec4 value);
+        void set(RgbaColor value);
     }
 }

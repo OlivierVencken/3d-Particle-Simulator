@@ -1,11 +1,11 @@
 package com.particle.sim.app;
 
+import com.particle.sim.graphics.RgbaColor;
 import com.particle.sim.particles.ParticleSystem;
 import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.ui.SimulationViewActions;
 import com.particle.sim.ui.SimulationViewModel;
-import imgui.ImVec4;
 
 final class VisualControls implements SimulationViewModel.Visuals, SimulationViewActions.Visuals {
     private final ParticleSystem particles;
@@ -97,7 +97,7 @@ final class VisualControls implements SimulationViewModel.Visuals, SimulationVie
     }
 
     @Override
-    public void setGroupColor(int group, ImVec4 color) {
+    public void setGroupColor(int group, RgbaColor color) {
         changes.apply(() -> particles.groupColor(group, color));
     }
 

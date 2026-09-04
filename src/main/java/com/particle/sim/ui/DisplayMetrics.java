@@ -1,5 +1,6 @@
 package com.particle.sim.ui;
 
+import com.particle.sim.graphics.FramebufferViewport;
 import imgui.ImGuiIO;
 
 /** Explicit logical-display, design-scale, and framebuffer-pixel metrics. */
