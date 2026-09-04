@@ -15,7 +15,6 @@ import static org.lwjgl.opengl.GL43C.glUseProgram;
 
 import com.particle.sim.graphics.GpuTimerQuery;
 import com.particle.sim.graphics.ShaderProgram;
-import com.particle.sim.particles.ParticleSystem;
 
 public final class ParticleCompute {
     private static final int PARTICLE_WORK_GROUP_SIZE = 256;
@@ -87,9 +86,11 @@ public final class ParticleCompute {
     }
 
     public void buildGrid(
-            ParticleSystem system, ParticleBuffers particles, SpatialGridBuffers grid) {
-        int particleCount = system.particleCount();
-        int cellCount = system.gridCellCount();
+            ParticleComputeParameters parameters,
+            ParticleBuffers particles,
+            SpatialGridBuffers grid) {
+        int particleCount = parameters.particleCount();
+        int cellCount = parameters.gridCellCount();
         grid.clearCounts(cellCount);
         glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
 
@@ -98,9 +99,9 @@ public final class ParticleCompute {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particles.positionSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, grid.countsSsbo());
         glUniform1i(countParticleCountLoc, particleCount);
-        glUniform1f(countBoundsLoc, system.bounds());
-        glUniform1f(countInteractionRangeLoc, system.interactionRange());
-        glUniform1i(countGridSizeLoc, system.gridSize());
+        glUniform1f(countBoundsLoc, parameters.bounds());
+        glUniform1f(countInteractionRangeLoc, parameters.interactionRange());
+        glUniform1i(countGridSizeLoc, parameters.gridSize());
         dispatchParticles(particleCount);
         countTimer.end();
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -118,16 +119,16 @@ public final class ParticleCompute {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, grid.particleIdsSsbo());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, grid.cursorsSsbo());
         glUniform1i(scatterParticleCountLoc, particleCount);
-        glUniform1f(scatterBoundsLoc, system.bounds());
-        glUniform1f(scatterInteractionRangeLoc, system.interactionRange());
-        glUniform1i(scatterGridSizeLoc, system.gridSize());
+        glUniform1f(scatterBoundsLoc, parameters.bounds());
+        glUniform1f(scatterInteractionRangeLoc, parameters.interactionRange());
+        glUniform1i(scatterGridSizeLoc, parameters.gridSize());
         dispatchParticles(particleCount);
         scatterTimer.end();
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 
     public void integrate(
-            ParticleSystem system,
+            ParticleComputeParameters parameters,
             ParticleBuffers particles,
             SpatialGridBuffers grid,
             TrailHistoryBuffers trailHistory,
@@ -146,25 +147,25 @@ public final class ParticleCompute {
                 GL_SHADER_STORAGE_BUFFER, 8, captureTrail ? trailHistory.historySsbo() : 0);
 
         glUniform1f(uDeltaTimeLoc, deltaTime);
-        glUniform1i(uParticleCountLoc, system.particleCount());
-        glUniform1i(uGroupCountLoc, system.groupCount());
-        glUniform1f(uForceFactorLoc, system.forceFactor());
-        glUniform1f(uVelocityDampingLoc, system.velocityDamping());
-        glUniform1f(uInteractionRangeLoc, system.interactionRange());
-        glUniform1f(uRepulsionRadiusLoc, system.repulsionRadius());
-        glUniform1f(uMaxVelocityLoc, system.maxVelocity());
-        glUniform1f(uBoundaryBounceLoc, system.boundaryBounce());
-        glUniform1f(uBoundsLoc, system.bounds());
-        glUniform1i(uDensityRegulationEnabledLoc, system.densityRegulationEnabled() ? 1 : 0);
-        glUniform1f(uDensityLimitLoc, system.densityLimit());
-        glUniform1i(uDistanceMetricLoc, system.distanceMetric().ordinal());
-        glUniform1i(uGridSizeLoc, system.gridSize());
-        glUniform1i(uToroidalWrapLoc, system.toroidalWrap() ? 1 : 0);
-        glUniform1fv(uAttractionMatrixLoc, system.attractionMatrix());
+        glUniform1i(uParticleCountLoc, parameters.particleCount());
+        glUniform1i(uGroupCountLoc, parameters.groupCount());
+        glUniform1f(uForceFactorLoc, parameters.forceFactor());
+        glUniform1f(uVelocityDampingLoc, parameters.velocityDamping());
+        glUniform1f(uInteractionRangeLoc, parameters.interactionRange());
+        glUniform1f(uRepulsionRadiusLoc, parameters.repulsionRadius());
+        glUniform1f(uMaxVelocityLoc, parameters.maximumVelocity());
+        glUniform1f(uBoundaryBounceLoc, parameters.boundaryBounce());
+        glUniform1f(uBoundsLoc, parameters.bounds());
+        glUniform1i(uDensityRegulationEnabledLoc, parameters.densityRegulationEnabled() ? 1 : 0);
+        glUniform1f(uDensityLimitLoc, parameters.densityLimit());
+        glUniform1i(uDistanceMetricLoc, parameters.distanceMetric().ordinal());
+        glUniform1i(uGridSizeLoc, parameters.gridSize());
+        glUniform1i(uToroidalWrapLoc, parameters.toroidalWrap() ? 1 : 0);
+        glUniform1fv(uAttractionMatrixLoc, parameters.attractionMatrix());
         glUniform1i(uTrailCaptureEnabledLoc, captureTrail ? 1 : 0);
         glUniform1i(uTrailWriteOffsetLoc, captureTrail ? trailHistory.writeElementOffset() : 0);
 
-        dispatchParticles(system.particleCount());
+        dispatchParticles(parameters.particleCount());
         integrationTimer.end();
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }

@@ -1,23 +1,12 @@
 package com.particle.sim.particles;
 
-import static org.lwjgl.opengl.GL43C.GL_MAX_COMPUTE_WORK_GROUP_COUNT;
-import static org.lwjgl.opengl.GL43C.GL_MAX_SHADER_STORAGE_BLOCK_SIZE;
-import static org.lwjgl.opengl.GL43C.glGetInteger64;
-import static org.lwjgl.opengl.GL43C.glGetIntegeri;
-
 import com.particle.sim.diagnostics.PerformanceSnapshot;
 import com.particle.sim.particles.attraction.AttractionMatrix;
 import com.particle.sim.particles.attraction.AttractionPattern;
-import com.particle.sim.particles.gpu.ParticleBuffers;
-import com.particle.sim.particles.gpu.ParticleCompute;
-import com.particle.sim.particles.gpu.SpatialGridBuffers;
 import com.particle.sim.particles.gpu.SpatialGridSizing;
-import com.particle.sim.particles.gpu.TrailHistoryBuffers;
 import com.particle.sim.particles.rendering.ColorMode;
 import com.particle.sim.particles.rendering.EffectMode;
 import com.particle.sim.particles.rendering.GlowSettings;
-import com.particle.sim.particles.rendering.ParticleRenderer;
-import com.particle.sim.particles.rendering.RenderFrame;
 import com.particle.sim.particles.rendering.TrailSettings;
 import com.particle.sim.particles.spawning.SpawnMode;
 import com.particle.sim.settings.SimulationDefaults;
@@ -27,31 +16,16 @@ import java.util.Random;
 import java.util.Set;
 
 public final class ParticleSystem {
-    private static final int COMPUTE_WORK_GROUP_SIZE = 256;
-    private static final int BYTES_PER_PARTICLE = 4 * 4 * Float.BYTES + Integer.BYTES;
-    private final ParticleBuffers particleBuffers = new ParticleBuffers();
-    private final TrailHistoryBuffers trailHistoryBuffers = new TrailHistoryBuffers();
-    private final SpatialGridBuffers spatialGridBuffers = new SpatialGridBuffers();
-    private final ParticleRenderer renderer = new ParticleRenderer();
-    private final ParticleCompute compute = new ParticleCompute();
+    private final ParticleSystemRuntime runtime = new ParticleSystemRuntime();
     private final ParticleSimulationConfig config = ParticleSimulationConfig.defaults();
     private final AttractionMatrix attractionMatrix =
             new AttractionMatrix(
                     SimulationDefaults.GROUP_COUNT, SimulationDefaults.MAX_GROUP_COUNT);
     private final Random particleRandom = new Random();
     private int maximumParticleCount = SimulationDefaults.MAX_PARTICLE_COUNT;
-    private boolean initialized;
 
     public void init() {
-        compute.init();
-        renderer.init();
-        maximumParticleCount = detectMaximumParticleCount();
-        config.particleCount(Math.min(config.particleCount(), maximumParticleCount));
-        spatialGridBuffers.init(particleCount(), gridCellCount());
-        attractionMatrix.randomize();
-        attractionMatrix.clearHistory();
-        initialized = true;
-        reset();
+        maximumParticleCount = runtime.init(config, attractionMatrix, particleRandom);
     }
 
     public void step() {
@@ -67,47 +41,15 @@ public final class ParticleSystem {
     }
 
     private void advanceSimulation(float deltaTime) {
-        if (!initialized || particleCount() == 0) {
-            return;
-        }
-
-        spatialGridBuffers.ensureCapacity(particleCount(), gridCellCount());
-        compute.buildGrid(this, particleBuffers, spatialGridBuffers);
-        boolean captureTrail =
-                effectEnabled(EffectMode.TRAILS)
-                        && trailHistoryBuffers.prepareCapture(particleCount(), trailLength());
-        compute.integrate(
-                this,
-                particleBuffers,
-                spatialGridBuffers,
-                trailHistoryBuffers,
-                captureTrail,
-                deltaTime);
-        particleBuffers.swapState();
-
-        if (captureTrail) {
-            trailHistoryBuffers.commitCapture();
-        }
+        runtime.advance(config, attractionMatrix, deltaTime);
     }
 
     public void render(FramebufferViewport viewport, float[] viewMatrix) {
-        renderer.render(
-                new RenderFrame(
-                        viewport,
-                        viewMatrix,
-                        particleBuffers,
-                        spatialGridBuffers,
-                        trailHistoryBuffers,
-                        particleCount(),
-                        config));
+        runtime.render(viewport, viewMatrix, config);
     }
 
     public void dispose() {
-        particleBuffers.dispose();
-        trailHistoryBuffers.dispose();
-        spatialGridBuffers.dispose();
-        compute.dispose();
-        renderer.dispose();
+        runtime.dispose();
     }
 
     public int particleCount() {
@@ -134,18 +76,8 @@ public final class ParticleSystem {
         int oldParticleCount = particleCount();
         this.config.applyFrom(sanitized);
         attractionMatrix.groupCount(this.config.groupCount());
-        if (initialized) {
-            particleBuffers.resize(
-                    oldParticleCount,
-                    this.config.particleCount(),
-                    false,
-                    this.config,
-                    particleRandom);
-            if (effectEnabled(EffectMode.TRAILS)) {
-                trailHistoryBuffers.clear();
-            } else {
-                trailHistoryBuffers.dispose();
-            }
+        if (runtime.initialized()) {
+            runtime.applyConfig(oldParticleCount, this.config, particleRandom);
         }
     }
 
@@ -174,7 +106,7 @@ public final class ParticleSystem {
 
     private void updateParticleCount(int requestedParticleCount, boolean preserveExisting) {
         int newParticleCount = Math.max(0, Math.min(maximumParticleCount, requestedParticleCount));
-        if (initialized) {
+        if (runtime.initialized()) {
             resizeParticles(newParticleCount, preserveExisting);
         } else {
             config.particleCount(newParticleCount);
@@ -192,9 +124,8 @@ public final class ParticleSystem {
     private void resizeParticles(int requestedParticleCount, boolean preserveExisting) {
         int oldParticleCount = particleCount();
         int newParticleCount = Math.max(0, Math.min(maximumParticleCount, requestedParticleCount));
-        particleBuffers.resize(
+        runtime.resizeParticles(
                 oldParticleCount, newParticleCount, preserveExisting, config, particleRandom);
-        trailHistoryBuffers.clear();
         config.particleCount(newParticleCount);
     }
 
@@ -228,9 +159,7 @@ public final class ParticleSystem {
 
     public void effectEnabled(EffectMode effectMode, boolean enabled) {
         config.effectEnabled(effectMode, enabled);
-        if (initialized && effectMode == EffectMode.TRAILS && !enabled) {
-            trailHistoryBuffers.dispose();
-        }
+        runtime.effectChanged(effectMode, enabled);
     }
 
     public GlowSettings glowSettings() {
@@ -286,15 +215,15 @@ public final class ParticleSystem {
     }
 
     public int effectiveTrailLength() {
-        return trailHistoryBuffers.sampleCapacity();
+        return runtime.effectiveTrailLength();
     }
 
     public int effectiveTrailParticleStride() {
-        return renderer.effectiveTrailParticleStride();
+        return runtime.effectiveTrailParticleStride();
     }
 
     public int effectiveBloomDivisor() {
-        return renderer.effectiveBloomDivisor();
+        return runtime.effectiveBloomDivisor();
     }
 
     public void trailThickness(float trailThickness) {
@@ -485,7 +414,7 @@ public final class ParticleSystem {
         int previousGroupCount = config.groupCount();
         config.groupCount(groupCount);
         attractionMatrix.groupCount(config.groupCount());
-        if (initialized && previousGroupCount != config.groupCount()) {
+        if (runtime.initialized() && previousGroupCount != config.groupCount()) {
             reset();
         }
     }
@@ -519,66 +448,20 @@ public final class ParticleSystem {
     }
 
     public PerformanceSnapshot performanceSnapshot() {
-        if (!initialized) {
-            return new PerformanceSnapshot(
-                    -1.0,
-                    -1.0,
-                    -1.0,
-                    -1.0,
-                    -1.0,
-                    -1.0,
-                    -1.0,
-                    -1.0,
-                    0L,
-                    particleCount(),
-                    maximumParticleCount(),
-                    gridCellCount());
-        }
-        double countMilliseconds = compute.gridCountMilliseconds();
-        double scanMilliseconds = compute.gridScanMilliseconds();
-        double scatterMilliseconds = compute.gridScatterMilliseconds();
-        double integrationMilliseconds = compute.integrationMilliseconds();
-        double simulationMilliseconds =
-                countMilliseconds < 0.0
-                                || scanMilliseconds < 0.0
-                                || scatterMilliseconds < 0.0
-                                || integrationMilliseconds < 0.0
-                        ? -1.0
-                        : countMilliseconds
-                                + scanMilliseconds
-                                + scatterMilliseconds
-                                + integrationMilliseconds;
-        long allocatedBytes =
-                particleBuffers.allocatedBytes()
-                        + spatialGridBuffers.allocatedBytes()
-                        + trailHistoryBuffers.allocatedBytes()
-                        + renderer.allocatedEffectBytes();
-        return new PerformanceSnapshot(
-                countMilliseconds,
-                scanMilliseconds,
-                scatterMilliseconds,
-                integrationMilliseconds,
-                simulationMilliseconds,
-                renderer.particleRenderMilliseconds(),
-                renderer.trailRenderMilliseconds(),
-                renderer.bloomMilliseconds(),
-                allocatedBytes,
-                particleCount(),
-                maximumParticleCount(),
-                gridCellCount());
+        return runtime.performanceSnapshot(config, maximumParticleCount);
     }
 
     float[] readPositions() {
-        return particleBuffers.readPositions(particleCount());
+        return runtime.readPositions(particleCount());
     }
 
     float[] readVelocities() {
-        return particleBuffers.readVelocities(particleCount());
+        return runtime.readVelocities(particleCount());
     }
 
     void replaceState(float[] positions, float[] velocities) {
         int expectedFloatCount = Math.multiplyExact(particleCount(), 4);
-        if (!initialized) {
+        if (!runtime.initialized()) {
             throw new IllegalStateException(
                     "Particle system must be initialized before replacing its state");
         }
@@ -586,28 +469,14 @@ public final class ParticleSystem {
             throw new IllegalArgumentException(
                     "Particle state must contain four floats per particle");
         }
-        particleBuffers.replaceState(positions, velocities);
-        trailHistoryBuffers.clear();
+        runtime.replaceState(positions, velocities);
     }
 
     int[] readGridCounts() {
-        return spatialGridBuffers.readCounts(gridCellCount());
+        return runtime.readGridCounts(gridCellCount());
     }
 
     int[] readGridParticleIds() {
-        return spatialGridBuffers.readParticleIds(particleCount());
-    }
-
-    private int detectMaximumParticleCount() {
-        long storageBlockLimit =
-                glGetInteger64(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / (4L * Float.BYTES);
-        long dispatchLimit =
-                (long) glGetIntegeri(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0) * COMPUTE_WORK_GROUP_SIZE;
-        long memoryLimit = SimulationDefaults.SIMULATION_MEMORY_BUDGET_BYTES / BYTES_PER_PARTICLE;
-        long supported =
-                Math.min(
-                        SimulationDefaults.MAX_PARTICLE_COUNT,
-                        Math.min(storageBlockLimit, Math.min(dispatchLimit, memoryLimit)));
-        return (int) Math.max(1L, supported);
+        return runtime.readGridParticleIds(particleCount());
     }
 }
